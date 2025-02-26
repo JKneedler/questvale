@@ -1,4 +1,4 @@
-import 'package:questvale/data/models/combatant.dart';
+import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/models/quest.dart';
 
 class QuestRoom {
@@ -23,7 +23,7 @@ class QuestRoom {
   final Quest? quest;
   final int roomNumber;
   final bool isCompleted;
-  final List<Combatant> combatants;
+  final List<Enemy> enemies;
 
   const QuestRoom({
     required this.id,
@@ -31,8 +31,12 @@ class QuestRoom {
     this.quest,
     required this.roomNumber,
     required this.isCompleted,
-    required this.combatants,
+    required this.enemies,
   });
+
+  bool get allEnemiesDead {
+    return !enemies.any((enemy) => !enemy.isDead);
+  }
 
   Map<String, Object?> toMap() {
     return {
@@ -45,10 +49,8 @@ class QuestRoom {
 
   @override
   String toString() {
-    final combatantNameList = [
-      for (Combatant combatant in combatants) combatant.name
-    ];
-    return 'QuestRoom { id: $id, quest: $questId, combatants: [${combatantNameList.join(", ")}], roomNumber: $roomNumber, isCompleted: $isCompleted}';
+    final enemyNameList = [for (Enemy enemy in enemies) enemy.name];
+    return 'QuestRoom { id: $id, quest: $questId, enemies: [${enemyNameList.join(", ")}], roomNumber: $roomNumber, isCompleted: $isCompleted, allEnemiesDead: $allEnemiesDead}';
   }
 
   QuestRoom copyWith({
@@ -56,7 +58,7 @@ class QuestRoom {
     Quest? quest,
     int? roomNumber,
     bool? isCompleted,
-    List<Combatant>? combatants,
+    List<Enemy>? enemies,
   }) {
     return QuestRoom(
       id: id,
@@ -64,7 +66,7 @@ class QuestRoom {
       quest: quest ?? this.quest,
       roomNumber: roomNumber ?? this.roomNumber,
       isCompleted: isCompleted ?? this.isCompleted,
-      combatants: combatants ?? this.combatants,
+      enemies: enemies ?? this.enemies,
     );
   }
 }

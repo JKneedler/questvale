@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:questvale/cubits/tasks_overview/tasks_overview_page.dart';
-import 'package:questvale/cubits/character_overview/character_overview_page.dart';
+import 'package:questvale/cubits/skills_overview/skills_overview_page.dart';
 import 'package:questvale/cubits/quest_overview/quest_overview_page.dart';
 import 'package:questvale/pages/settings_page.dart';
 
@@ -72,8 +72,7 @@ class MainDrawer extends StatelessWidget {
             onTap: () => {
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(
-                    builder: (context) => CharacterOverviewPage()),
+                MaterialPageRoute(builder: (context) => SkillsOverviewPage()),
                 ModalRoute.withName('/'),
               )
             },

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:questvale/cubits/home/home_page.dart';
 import 'package:questvale/data/questvale_db.dart';
 import 'package:sqflite/sqflite.dart';
-import 'cubits/tasks_overview/tasks_overview_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,12 +37,11 @@ class MyApp extends StatelessWidget {
             // Notice that the counter didn't reset back to zero; the application
             // is not restarted.
             colorScheme: ColorScheme.fromSeed(
-                seedColor: Colors.orange, contrastLevel: -0.5),
+              seedColor: Colors.indigo,
+              contrastLevel: -0.5,
+            ),
             useMaterial3: true),
-        initialRoute: '/',
-        routes: {
-          '/': (context) => TasksOverviewPage(),
-        },
+        home: HomePage(),
       ),
     );
   }

@@ -31,11 +31,13 @@ class CharacterOverview extends StatelessWidget {
                             strokeWidth: 12,
                           ),
                         ),
-                        Text("50",
-                            style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.red))
+                        Text(
+                          "50",
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red),
+                        )
                       ],
                     ),
                   ),
@@ -52,11 +54,13 @@ class CharacterOverview extends StatelessWidget {
                             strokeWidth: 12,
                           ),
                         ),
-                        Text("50",
-                            style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue))
+                        Text(
+                          "50",
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue),
+                        )
                       ],
                     ),
                   ),
@@ -82,11 +86,13 @@ class CharacterOverview extends StatelessWidget {
                             strokeWidth: 12,
                           ),
                         ),
-                        Text("80",
-                            style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.amber))
+                        Text(
+                          "80",
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.amber),
+                        )
                       ],
                     ),
                   ),
@@ -108,11 +114,13 @@ class CharacterOverview extends StatelessWidget {
                               Icons.attach_money,
                               color: Colors.white,
                             ),
-                            Text("50",
-                                style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white)),
+                            Text(
+                              "50",
+                              style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white),
+                            ),
                           ],
                         )
                       ],

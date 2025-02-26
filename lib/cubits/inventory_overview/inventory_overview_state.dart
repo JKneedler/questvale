@@ -1,15 +1,15 @@
 import 'package:equatable/equatable.dart';
 import 'package:questvale/data/models/character.dart';
 
-class CharacterOverviewState extends Equatable {
+class InventoryOverviewState extends Equatable {
   final Character? character;
 
-  const CharacterOverviewState({this.character});
+  const InventoryOverviewState({this.character});
 
-  CharacterOverviewState copyWith({
+  InventoryOverviewState copyWith({
     Character? character,
   }) {
-    return CharacterOverviewState(
+    return InventoryOverviewState(
       character: character ?? this.character,
     );
   }
