@@ -1,7 +1,7 @@
 import 'package:questvale/data/models/quest_room.dart';
 
-class Combatant {
-  static const String combatantTableName = 'Combatants';
+class Enemy {
+  static const String enemyTableName = 'Enemies';
 
   static const String idColumnName = 'id';
   static const String questRoomColumnName = 'questRoom';
@@ -13,15 +13,15 @@ class Combatant {
   static const String lastAttackColumnName = 'lastAttack';
 
   static const createTableSQL = '''
-		CREATE TABLE ${Combatant.combatantTableName} (
-			${Combatant.idColumnName} VARCHAR PRIMARY KEY,
-			${Combatant.questRoomColumnName} VARCHAR NOT NULL,
-			${Combatant.nameColumnName} VARCHAR NOT NULL,
-			${Combatant.currentHealthColumnName} INTEGER NOT NULL,
-			${Combatant.maxHealthColumnName} INTEGER NOT NULL,
-			${Combatant.attackDamageColumnName} INTEGER NOT NULL,
-			${Combatant.attackIntervalColumnName} INTEGER NOT NULL,
-			${Combatant.lastAttackColumnName} VARCHAR NOT NULL
+		CREATE TABLE ${Enemy.enemyTableName} (
+			${Enemy.idColumnName} VARCHAR PRIMARY KEY,
+			${Enemy.questRoomColumnName} VARCHAR NOT NULL,
+			${Enemy.nameColumnName} VARCHAR NOT NULL,
+			${Enemy.currentHealthColumnName} INTEGER NOT NULL,
+			${Enemy.maxHealthColumnName} INTEGER NOT NULL,
+			${Enemy.attackDamageColumnName} INTEGER NOT NULL,
+			${Enemy.attackIntervalColumnName} INTEGER NOT NULL,
+			${Enemy.lastAttackColumnName} VARCHAR NOT NULL
 		);
 	''';
 
@@ -35,7 +35,7 @@ class Combatant {
   final int attackInterval;
   final String lastAttack;
 
-  const Combatant({
+  const Enemy({
     required this.id,
     required this.questRoomId,
     this.questRoom,
@@ -47,22 +47,24 @@ class Combatant {
     required this.lastAttack,
   });
 
+  bool get isDead => (currentHealth <= 0);
+
   Map<String, Object?> toMap() {
     return {
-      Combatant.idColumnName: id,
-      Combatant.questRoomColumnName: questRoomId,
-      Combatant.nameColumnName: name,
-      Combatant.currentHealthColumnName: currentHealth,
-      Combatant.maxHealthColumnName: maxHealth,
-      Combatant.attackDamageColumnName: attackDamage,
-      Combatant.attackIntervalColumnName: attackInterval,
-      Combatant.lastAttackColumnName: lastAttack,
+      Enemy.idColumnName: id,
+      Enemy.questRoomColumnName: questRoomId,
+      Enemy.nameColumnName: name,
+      Enemy.currentHealthColumnName: currentHealth,
+      Enemy.maxHealthColumnName: maxHealth,
+      Enemy.attackDamageColumnName: attackDamage,
+      Enemy.attackIntervalColumnName: attackInterval,
+      Enemy.lastAttackColumnName: lastAttack,
     };
   }
 
   @override
   String toString() {
-    return '''Combatant {
+    return '''Enemy {
 				id: $id
 				questRoom: $questRoomId
 				name: $name
@@ -74,7 +76,7 @@ class Combatant {
 		''';
   }
 
-  Combatant copyWith({
+  Enemy copyWith({
     String? questRoomId,
     QuestRoom? questRoom,
     String? name,
@@ -84,7 +86,7 @@ class Combatant {
     int? attackInterval,
     String? lastAttack,
   }) {
-    return Combatant(
+    return Enemy(
       id: id,
       questRoomId: questRoomId ?? this.questRoomId,
       questRoom: questRoom ?? this.questRoom,

@@ -1,15 +1,15 @@
-import 'package:questvale/data/models/combatant.dart';
+import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/models/quest_room.dart';
-import 'package:questvale/data/repositories/combatant_repository.dart';
+import 'package:questvale/data/repositories/enemy_repository.dart';
 import 'package:sqflite/sqflite.dart';
 
 class QuestRoomRepository {
   final Database db;
 
-  late CombatantRepository combatantRepository;
+  late EnemyRepository enemyRepository;
 
   QuestRoomRepository({required this.db}) {
-    combatantRepository = CombatantRepository(db: db);
+    enemyRepository = EnemyRepository(db: db);
   }
 
   // GET by id
@@ -42,8 +42,8 @@ class QuestRoomRepository {
       QuestRoom.questRoomTableName,
       questRoom.toMap(),
     );
-    for (Combatant combatant in questRoom.combatants) {
-      combatantRepository.addCombatant(combatant);
+    for (Enemy enemy in questRoom.enemies) {
+      enemyRepository.addEnemy(enemy);
     }
   }
 
@@ -64,14 +64,13 @@ class QuestRoomRepository {
       roomNumber: map[QuestRoom.roomNumberColumnName] as int,
       isCompleted:
           map[QuestRoom.isCompletedColumnName] as int == 1 ? true : false,
-      combatants: [],
+      enemies: [],
     );
-    final initialCombatants =
-        await combatantRepository.getCombatantsByQuestRoomId(questRoom.id);
-    final combatants = [
-      for (Combatant combatant in initialCombatants)
-        combatant.copyWith(questRoom: questRoom)
+    final initialEnemies =
+        await enemyRepository.getEnemiesByQuestRoomId(questRoom.id);
+    final enemies = [
+      for (Enemy enemy in initialEnemies) enemy.copyWith(questRoom: questRoom)
     ];
-    return questRoom.copyWith(combatants: combatants);
+    return questRoom.copyWith(enemies: enemies);
   }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:questvale/cubits/edit_task/edit_task_view.dart';
+import 'package:questvale/cubits/home/home_page.dart';
 import 'package:questvale/cubits/tasks_overview/tasks_overview_cubit.dart';
 import 'package:questvale/cubits/tasks_overview/tasks_overview_item.dart';
 import 'package:questvale/cubits/tasks_overview/tasks_overview_state.dart';
@@ -16,13 +18,24 @@ class TasksOverviewView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title:
-            Text('Questvale', style: TextStyle(color: colorScheme.onPrimary)),
-        backgroundColor: colorScheme.primary,
-        iconTheme: IconThemeData(color: colorScheme.onPrimary),
-      ),
+          title:
+              Text('Questvale', style: TextStyle(color: colorScheme.onPrimary)),
+          backgroundColor: colorScheme.primary,
+          iconTheme: IconThemeData(color: colorScheme.onPrimary),
+          actions: [
+            IconButton(
+              icon: Icon(
+                Symbols.add,
+                color: colorScheme.onPrimary,
+                size: 28,
+              ),
+              onPressed: () async {
+                await Navigator.push(
+                    context, EditTaskView.route(pageTitle: "Create Task"));
+                taskCubit.loadTasks();
+              },
+            ),
+          ]),
       body: Expanded(child: BlocBuilder<TasksOverviewCubit, TasksOverviewState>(
           builder: (context, tasksOverviewState) {
         return ListView.builder(
@@ -34,22 +47,6 @@ class TasksOverviewView extends StatelessWidget {
             });
       })),
       backgroundColor: colorScheme.surface,
-      drawer: MainDrawer(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await Navigator.push(
-              context, EditTaskView.route(pageTitle: "Create Task"));
-          taskCubit.loadTasks();
-        },
-        shape: const BeveledRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(25))),
-        backgroundColor: colorScheme.primary,
-        child: Icon(
-          Icons.add,
-          color: colorScheme.onPrimary,
-        ),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }

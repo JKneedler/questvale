@@ -74,7 +74,6 @@ class QuestRepository {
       characterId: map[Quest.characterColumnName] as String,
       name: map[Quest.nameColumnName] as String,
       isActive: map[Quest.isActiveColumnName] == 1 ? true : false,
-      currentRoomNumber: map[Quest.currentRoomNumberColumnName] as int,
       rooms: [],
     );
     final initialRooms =

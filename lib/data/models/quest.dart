@@ -8,15 +8,13 @@ class Quest {
   static const String characterColumnName = 'character';
   static const String nameColumnName = 'name';
   static const String isActiveColumnName = 'isActive';
-  static const String currentRoomNumberColumnName = 'currentRoomNumber';
 
   static const createTableSQL = '''
 		CREATE TABLE ${Quest.questTableName}(
 			${Quest.idColumnName} VARCHAR PRIMARY KEY,
 			${Quest.characterColumnName} VARCHAR NOT NULL,
 			${Quest.nameColumnName} VARCHAR NOT NULL,
-			${Quest.isActiveColumnName} BOOLEAN NOT NULL,
-			${Quest.currentRoomNumberColumnName} INTEGER NOT NULL
+			${Quest.isActiveColumnName} BOOLEAN NOT NULL
 		);
 	''';
 
@@ -25,7 +23,6 @@ class Quest {
   final Character? character;
   final String name;
   final bool isActive;
-  final int currentRoomNumber;
   final List<QuestRoom> rooms;
 
   const Quest({
@@ -34,9 +31,14 @@ class Quest {
     this.character,
     required this.name,
     required this.isActive,
-    required this.currentRoomNumber,
     required this.rooms,
   });
+
+  QuestRoom get currentRoom => rooms.firstWhere((room) => !room.isCompleted);
+
+  int get currentRoomNumber => rooms.indexOf(currentRoom) + 1;
+
+  bool get allRoomsCompleted => !rooms.any((room) => !room.isCompleted);
 
   Map<String, Object?> toMap() {
     return {
@@ -44,7 +46,6 @@ class Quest {
       Quest.characterColumnName: characterId,
       Quest.nameColumnName: name,
       Quest.isActiveColumnName: isActive ? 1 : 0,
-      Quest.currentRoomNumberColumnName: currentRoomNumber,
     };
   }
 
@@ -67,7 +68,6 @@ class Quest {
       character: character ?? this.character,
       name: name ?? this.name,
       isActive: isActive ?? this.isActive,
-      currentRoomNumber: currentRoomNumber ?? this.currentRoomNumber,
       rooms: rooms ?? this.rooms,
     );
   }

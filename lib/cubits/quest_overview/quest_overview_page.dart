@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:questvale/cubits/quest_overview/quest_overview_cubit.dart';
 import 'package:questvale/cubits/quest_overview/quest_overview_state.dart';
 import 'package:questvale/data/models/character.dart';
+import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/models/quest.dart';
+import 'package:questvale/data/models/quest_room.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
-import 'package:questvale/data/repositories/combatant_repository.dart';
+import 'package:questvale/data/repositories/enemy_repository.dart';
 import 'package:questvale/data/repositories/quest_repository.dart';
 import 'package:questvale/data/repositories/quest_room_repository.dart';
-import 'package:questvale/main_drawer.dart';
 import 'package:sqflite/sqflite.dart';
 
 class QuestOverviewPage extends StatelessWidget {
@@ -21,7 +23,7 @@ class QuestOverviewPage extends StatelessWidget {
         CharacterRepository(db: context.read<Database>().database),
         QuestRepository(db: context.read<Database>().database),
         QuestRoomRepository(db: context.read<Database>().database),
-        CombatantRepository(db: context.read<Database>().database),
+        EnemyRepository(db: context.read<Database>().database),
       ),
       child: QuestOverviewView(),
     );
@@ -35,13 +37,6 @@ class QuestOverviewView extends StatelessWidget {
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     QuestOverviewCubit questOverviewCubit = context.read<QuestOverviewCubit>();
-    Quest? quest = questOverviewCubit.state.quest;
-
-    final activeQuestWidget = quest != null
-        ? Text(quest.name)
-        : GetQuestButton(
-            onGetQuestPressed: questOverviewCubit.createQuest,
-          );
 
     return Scaffold(
       appBar: AppBar(
@@ -107,7 +102,6 @@ class QuestOverviewView extends StatelessWidget {
           );
         }),
       ),
-      drawer: MainDrawer(),
     );
   }
 }
@@ -145,7 +139,6 @@ class QuestView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
-    final combatant = quest.rooms[quest.currentRoomNumber].combatants[0];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -159,62 +152,252 @@ class QuestView extends StatelessWidget {
           ),
           child: Column(
             children: [
-              Text('Room ${quest.currentRoomNumber} / ${quest.rooms.length}')
+              Text(quest.allRoomsCompleted
+                  ? 'Quest Completed!'
+                  : 'Room ${quest.currentRoomNumber} / ${quest.rooms.length}')
             ],
           ),
         ),
-        Container(
-          padding: EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(10)),
-            color: colorScheme.surfaceContainerHighest,
+        (quest.allRoomsCompleted
+            ? QuestLootView()
+            : RoomView(room: quest.currentRoom)),
+      ],
+    );
+  }
+}
+
+class QuestLootView extends StatelessWidget {
+  const QuestLootView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.all(Radius.circular(10)),
+      ),
+      height: 350,
+      padding: EdgeInsets.all(10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Loot',
+            textAlign: TextAlign.center,
           ),
-          child: Column(
-            spacing: 4,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(
-                child: Text(
-                  combatant.name,
-                  style: TextStyle(fontSize: 16),
-                ),
+          Divider(
+            color: colorScheme.onSurfaceVariant,
+          ),
+          Expanded(child: const SizedBox()),
+          TextButton(
+            onPressed: () => context.read<QuestOverviewCubit>().completeQuest(),
+            style: TextButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                    side: BorderSide(width: 2, color: colorScheme.onSurface),
+                    borderRadius: BorderRadius.all(Radius.circular(10))),
+                backgroundColor: colorScheme.surfaceContainerHighest),
+            child: Text(
+              'Return to Town',
+              style: TextStyle(
+                color: colorScheme.onSurface,
               ),
-              Container(
-                decoration: BoxDecoration(
-                    color: Colors.redAccent,
-                    borderRadius: BorderRadius.all(Radius.circular(8))),
-                height: 20,
-                alignment: Alignment.center,
-                child:
-                    Text('${combatant.currentHealth} / ${combatant.maxHealth}'),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class RoomView extends StatelessWidget {
+  final QuestRoom room;
+
+  const RoomView({super.key, required this.room});
+
+  @override
+  Widget build(BuildContext context) {
+    return (room.allEnemiesDead
+        ? RoomLootView()
+        : ListView.builder(
+            shrinkWrap: true,
+            itemCount: room.enemies.length,
+            itemBuilder: (context, index) {
+              return EnemyTile(enemy: room.enemies[index], index: index);
+            },
+          ));
+  }
+}
+
+class RoomLootView extends StatelessWidget {
+  const RoomLootView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.all(Radius.circular(10)),
+      ),
+      height: 350,
+      padding: EdgeInsets.all(10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Loot',
+            textAlign: TextAlign.center,
+          ),
+          Divider(
+            color: colorScheme.onSurfaceVariant,
+          ),
+          Expanded(child: const SizedBox()),
+          TextButton(
+            onPressed: () => context.read<QuestOverviewCubit>().nextRoom(),
+            style: TextButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                    side: BorderSide(width: 2, color: colorScheme.onSurface),
+                    borderRadius: BorderRadius.all(Radius.circular(10))),
+                backgroundColor: colorScheme.surfaceContainerHighest),
+            child: Text(
+              'Next Room',
+              style: TextStyle(
+                color: colorScheme.onSurface,
               ),
-              Flex(
-                direction: Axis.horizontal,
-                mainAxisAlignment: MainAxisAlignment.center,
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class EnemyTile extends StatelessWidget {
+  final Enemy enemy;
+  final int index;
+
+  const EnemyTile({super.key, required this.enemy, required this.index});
+
+  @override
+  Widget build(BuildContext context) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Container(
+        padding: EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+          color: colorScheme.surfaceContainerHighest,
+        ),
+        height: 100,
+        child: Flex(
+          direction: Axis.horizontal,
+          spacing: 10,
+          children: [
+            SizedBox(
+              width: 75,
+              child: (enemy.isDead
+                  ? Icon(
+                      Symbols.skull,
+                      fill: 1,
+                      color: colorScheme.onSurface,
+                      size: 30,
+                    )
+                  : TextButton(
+                      onPressed: () =>
+                          context.read<QuestOverviewCubit>().attackEnemy(index),
+                      style: TextButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                              side: BorderSide(
+                                  width: 2, color: colorScheme.onSurface),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10))),
+                          backgroundColor: colorScheme.surfaceContainerHighest),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Symbols.swords,
+                            fill: 1,
+                            color: colorScheme.onSurface,
+                            size: 30,
+                          ),
+                        ],
+                      ),
+                    )),
+            ),
+            Expanded(
+              child: Column(
+                spacing: 4,
+                //crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Icon(
-                    Icons.sign_language,
-                    color: colorScheme.onSurface,
+                  Center(
+                    child: Text(
+                      enemy.name,
+                      style: TextStyle(fontSize: 16),
+                    ),
                   ),
-                  Text(
-                    '${combatant.attackDamage}',
-                    style: TextStyle(fontSize: 16),
+                  Container(
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(8)),
+                        border: Border.all(color: Colors.red, width: 2)),
+                    height: 25,
+                    alignment: Alignment.centerLeft,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.redAccent,
+                            borderRadius: BorderRadius.all(Radius.circular(2)),
+                          ),
+                          width: 260 * (enemy.currentHealth / enemy.maxHealth),
+                        ),
+                        Text('${enemy.currentHealth} / ${enemy.maxHealth}'),
+                      ],
+                    ),
                   ),
-                  VerticalDivider(),
-                  Icon(
-                    Icons.speed,
-                    color: colorScheme.onSurface,
-                  ),
-                  Text(
-                    '${combatant.attackInterval}',
-                    style: TextStyle(fontSize: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Symbols.swords,
+                        fill: 1,
+                        color: colorScheme.onSurface,
+                        size: 16,
+                      ),
+                      Text(
+                        '${enemy.attackDamage}',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      VerticalDivider(
+                        thickness: 2,
+                        color: colorScheme.onSurface,
+                        indent: 1,
+                        endIndent: 1,
+                      ),
+                      Icon(
+                        Symbols.fast_forward,
+                        fill: 1,
+                        color: colorScheme.onSurface,
+                        size: 16,
+                      ),
+                      Text(
+                        '${enemy.attackInterval}',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
-        )
-      ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -232,18 +415,6 @@ class CharacterView extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: 10,
       children: [
-        TextButton(
-          onPressed: () => context.read<QuestOverviewCubit>().attackCombatant(),
-          style: TextButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                  side: BorderSide(width: 2, color: colorScheme.onSurface),
-                  borderRadius: BorderRadius.all(Radius.circular(10))),
-              backgroundColor: colorScheme.surfaceContainerHighest),
-          child: Text(
-            'Attack',
-            style: TextStyle(color: colorScheme.onSurface),
-          ),
-        ),
         Container(
           decoration: BoxDecoration(
             color: colorScheme.surfaceContainerHighest,

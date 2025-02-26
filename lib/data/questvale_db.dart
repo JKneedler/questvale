@@ -1,12 +1,18 @@
 import 'package:path/path.dart';
 import 'package:questvale/data/models/character.dart';
+import 'package:questvale/data/models/inventory_equipment.dart';
+import 'package:questvale/data/models/inventory.dart';
 import 'package:questvale/data/models/checklist_item.dart';
-import 'package:questvale/data/models/combatant.dart';
+import 'package:questvale/data/models/enemy.dart';
+import 'package:questvale/data/models/equipment.dart';
+import 'package:questvale/data/models/equipment_modifier.dart';
 import 'package:questvale/data/models/quest.dart';
 import 'package:questvale/data/models/quest_room.dart';
+import 'package:questvale/data/models/character_skill.dart';
 import 'package:questvale/data/models/tag.dart';
 import 'package:questvale/data/models/task.dart';
 import 'package:questvale/data/models/task_tag.dart';
+import 'package:questvale/data/repositories/character_repository.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 
@@ -15,35 +21,30 @@ class QuestvaleDB {
     return await openDatabase(join(await getDatabasesPath(), 'questvaledb'),
         onCreate: (db, version) async {
       await db.execute(Task.createTableSQL);
-      print('Created Task table');
       await db.execute(TaskTag.createTableSQL);
-      print('Created TaskTag table');
       await db.execute(Tag.createTableSQL);
-      print('Created Tag table');
       await db.execute(ChecklistItem.createTableSQL);
-      print('Created ChecklistItem table');
       await db.execute(Character.createTableSQL);
-      print('Created Characters table');
       await db.execute(Quest.createTableSQL);
-      print('Created Quests table');
       await db.execute(QuestRoom.createTableSQL);
-      print('Created QuestRooms table');
-      await db.execute(Combatant.createTableSQL);
-      print('Created Combatants table');
-      await db.insert(
-        'Characters',
-        Character(
+      await db.execute(Enemy.createTableSQL);
+      await db.execute(Equipment.createTableSQL);
+      await db.execute(InventoryEquipment.createTableSQL);
+      await db.execute(EquipmentModifier.createTableSQL);
+      await db.execute(Inventory.createTableSQL);
+      await db.execute(CharacterSkill.createTableSQL);
+      final CharacterRepository characterRepo = CharacterRepository(db: db);
+      characterRepo.insertCharacter(Character(
           id: Uuid().v1(),
-          name: 'Kelsier',
-          level: 1,
+          name: 'Doug',
+          characterClass: CharacterClass.warrior,
+          level: 20,
           currentExp: 0,
+          inventory: Inventory(id: Uuid().v1(), gold: 0, equipments: []),
           currentHealth: 20,
-          maxHealth: 20,
           currentMana: 10,
-          maxMana: 10,
           attacksRemaining: 10,
-        ).toMap(),
-      );
+          skills: []));
 
       await db.insert(
         'Tags',
@@ -52,7 +53,6 @@ class QuestvaleDB {
           name: 'Work',
         ).toMap(),
       );
-      print('Inserted initial Tag');
     }, version: 1);
   }
 }

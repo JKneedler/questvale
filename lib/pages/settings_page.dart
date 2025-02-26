@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:questvale/cubits/character_overview/character_overview_cubit.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
 import 'package:questvale/data/repositories/task_repository.dart';
-import 'package:questvale/main_drawer.dart';
 import 'package:sqflite/sqflite.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -55,10 +53,13 @@ class SettingsPage extends StatelessWidget {
               name: 'Log Quests',
               onPressed: () => cr.printQuests(),
             ),
+            SettingButton(
+              name: 'Log Equipment',
+              onPressed: () => cr.printEquipment(),
+            )
           ],
         ),
       ),
-      drawer: MainDrawer(),
     );
   }
 }

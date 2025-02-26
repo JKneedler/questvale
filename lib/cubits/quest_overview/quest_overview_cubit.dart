@@ -2,7 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/quest_overview/quest_overview_state.dart';
 import 'package:questvale/data/models/quest.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
-import 'package:questvale/data/repositories/combatant_repository.dart';
+import 'package:questvale/data/repositories/enemy_repository.dart';
 import 'package:questvale/data/repositories/quest_repository.dart';
 import 'package:questvale/data/repositories/quest_room_repository.dart';
 import 'package:questvale/services/quest_service.dart';
@@ -11,10 +11,10 @@ class QuestOverviewCubit extends Cubit<QuestOverviewState> {
   final CharacterRepository characterRepository;
   final QuestRepository questRepository;
   final QuestRoomRepository questRoomRepository;
-  final CombatantRepository combatantRepository;
+  final EnemyRepository enemyRepository;
 
   QuestOverviewCubit(this.characterRepository, this.questRepository,
-      this.questRoomRepository, this.combatantRepository)
+      this.questRoomRepository, this.enemyRepository)
       : super(QuestOverviewState()) {
     init();
   }
@@ -30,7 +30,7 @@ class QuestOverviewCubit extends Cubit<QuestOverviewState> {
     if (quest != null) {
       emit(state.copyWith(quest: quest, character: character));
     } else {
-      emit(state.copyWith(character: character));
+      emit(state.copyWith(character: character, quest: null));
     }
   }
 
@@ -53,19 +53,28 @@ class QuestOverviewCubit extends Cubit<QuestOverviewState> {
     }
   }
 
-  Future<void> attackCombatant() async {
+  Future<void> attackEnemy(int index) async {
     print('Attacking');
     if (state.character!.attacksRemaining > 0) {
-      final combatant =
-          state.quest!.rooms[state.quest!.currentRoomNumber].combatants[0];
-      // TODO move this to db
-      final characterDamage = 5;
-      final combatantHealth = combatant.currentHealth - characterDamage;
-      await combatantRepository
-          .updateCombatant(combatant.copyWith(currentHealth: combatantHealth));
-      await load();
+      final enemy = state.quest!.currentRoom.enemies[index];
+      final enemyHealth = enemy.currentHealth - state.character!.attackDamage;
+      await enemyRepository
+          .updateEnemy(enemy.copyWith(currentHealth: enemyHealth));
     } else {
       print('No attacks remaining');
     }
+    await load();
+  }
+
+  Future<void> nextRoom() async {
+    final currentRoom = state.quest!.currentRoom;
+    await questRoomRepository
+        .updateQuestRoom(currentRoom.copyWith(isCompleted: true));
+    load();
+  }
+
+  Future<void> completeQuest() async {
+    await questRepository.updateQuest(state.quest!.copyWith(isActive: false));
+    load();
   }
 }

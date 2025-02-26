@@ -43,70 +43,69 @@ class EditTaskView extends StatelessWidget {
           current.status == EditTaskStatus.done,
       listener: (context, state) => Navigator.of(context).pop(),
       child: Scaffold(
-          appBar: AppBar(
-            title: Text(
-              pageTitle,
-              style: TextStyle(color: colorScheme.onPrimary),
-            ),
-            backgroundColor: colorScheme.primary,
-            leading: IconButton(
-              icon: Icon(
-                Icons.close,
-                color: colorScheme.onPrimary,
-              ),
-              onPressed: () => state.status != EditTaskStatus.loading
-                  ? Navigator.of(context).pop()
-                  : {},
-            ),
-            actions: [
-              IconButton(
-                icon: Icon(Icons.check, color: colorScheme.onPrimary),
-                onPressed: () => context.read<EditTaskCubit>().submit(),
-              ),
-            ],
+        appBar: AppBar(
+          title: Text(
+            pageTitle,
+            style: TextStyle(color: colorScheme.onPrimary),
           ),
-          body: SingleChildScrollView(
-            child: Padding(
-              padding:
-                  EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 100),
-              child: Column(
-                spacing: 40,
-                children: [
-                  NameField(
-                      name: state.name,
-                      onNameChange: context.read<EditTaskCubit>().updateName),
-                  DescriptionField(
-                    description: state.description,
-                    onDescriptionChange:
-                        context.read<EditTaskCubit>().updateDescription,
-                  ),
-                  DifficultyField(
-                    difficulty: state.difficulty,
-                    onDifficultyChange:
-                        context.read<EditTaskCubit>().updateDifficulty,
-                  ),
-                  DueDateField(
-                    dueDate: state.dueDate,
-                    onDueDateChange:
-                        context.read<EditTaskCubit>().updateDueDate,
-                  ),
-                  ChecklistSection(
-                    checklist: state.checklist,
-                    onAddChecklistItem:
-                        context.read<EditTaskCubit>().addToChecklist,
-                    onChecklistItemChange:
-                        context.read<EditTaskCubit>().editChecklistItem,
-                    onRemoveFromChecklist:
-                        context.read<EditTaskCubit>().removeChecklistItem,
-                  ),
-                  TagsField(
-                    tags: state.tags,
-                    onTagChange: context.read<EditTaskCubit>().updateTag,
-                  ),
-                ],
-              ),
+          backgroundColor: colorScheme.primary,
+          leading: IconButton(
+            icon: Icon(
+              Icons.close,
+              color: colorScheme.onPrimary,
             ),
-          )),
+            onPressed: () => state.status != EditTaskStatus.loading
+                ? Navigator.of(context).pop()
+                : {},
+          ),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.check, color: colorScheme.onPrimary),
+              onPressed: () => context.read<EditTaskCubit>().submit(),
+            ),
+          ],
+        ),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 100),
+            child: Column(
+              spacing: 40,
+              children: [
+                NameField(
+                    name: state.name,
+                    onNameChange: context.read<EditTaskCubit>().updateName),
+                DescriptionField(
+                  description: state.description,
+                  onDescriptionChange:
+                      context.read<EditTaskCubit>().updateDescription,
+                ),
+                DifficultyField(
+                  difficulty: state.difficulty,
+                  onDifficultyChange:
+                      context.read<EditTaskCubit>().updateDifficulty,
+                ),
+                DueDateField(
+                  dueDate: state.dueDate,
+                  onDueDateChange: context.read<EditTaskCubit>().updateDueDate,
+                ),
+                ChecklistSection(
+                  checklist: state.checklist,
+                  onAddChecklistItem:
+                      context.read<EditTaskCubit>().addToChecklist,
+                  onChecklistItemChange:
+                      context.read<EditTaskCubit>().editChecklistItem,
+                  onRemoveFromChecklist:
+                      context.read<EditTaskCubit>().removeChecklistItem,
+                ),
+                TagsField(
+                  tags: state.tags,
+                  onTagChange: context.read<EditTaskCubit>().updateTag,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
