@@ -4,6 +4,7 @@ import 'package:questvale/cubits/todos_overview/todos_overview_cubit.dart';
 import 'package:questvale/cubits/todos_overview/todos_overview_item.dart';
 import 'package:questvale/cubits/todos_overview/todos_overview_state.dart';
 import 'package:questvale/cubits/add_todo/add_todo_page.dart';
+import 'package:questvale/data/models/character.dart';
 
 class TodosOverviewView extends StatelessWidget {
   const TodosOverviewView({super.key});
@@ -24,10 +25,14 @@ class TodosOverviewView extends StatelessWidget {
         backgroundColor: colorScheme.primary,
         shape: CircleBorder(),
         onPressed: () async {
-          await AddTodoPage.showModal(
-            context,
-            () => todoCubit.loadTodos(),
-          );
+          Character? character = todoCubit.state.character;
+          if (character != null) {
+            await AddTodoPage.showModal(
+              context,
+              () => todoCubit.loadCharacter(),
+              character.id,
+            );
+          }
         },
         child: Icon(
           Icons.add,

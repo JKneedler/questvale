@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:questvale/cubits/todos_overview/todos_overview_cubit.dart';
+import 'package:questvale/data/models/character_tag.dart';
+import 'package:questvale/data/models/tag.dart';
 import 'package:questvale/widgets/check_box.dart';
 import '../../data/models/todo.dart';
 
@@ -42,7 +44,7 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
           ],
         ),
         child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
+            duration: const Duration(milliseconds: 100),
             curve: Curves.easeInOut,
             decoration: BoxDecoration(
                 color: isHighlighted
@@ -61,14 +63,6 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
                     isHighlighted = false;
                   });
                 }
-                // await Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) => EditTodoPage(
-                //         pageTitle: 'Edit Todo', startTodo: widget.todo),
-                //   ),
-                // );
-                // todoCubit.loadTodos();
               },
               child: Material(
                 color: Colors.transparent,
@@ -93,22 +87,19 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
                       child: Padding(
                         padding: const EdgeInsets.only(top: 14, bottom: 14),
                         child: Column(
+                          spacing: 4,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               widget.todo.name,
                               softWrap: true,
-                              style: (widget.todo.isCompleted
-                                  ? TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: colorScheme.onPrimaryFixedVariant,
-                                    )
-                                  : TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: colorScheme.onPrimaryContainer,
-                                    )),
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: widget.todo.isCompleted
+                                    ? colorScheme.onPrimaryFixedVariant
+                                    : colorScheme.onPrimaryContainer,
+                              ),
                             ),
                             if (widget.todo.description.isNotEmpty)
                               Text(
@@ -121,6 +112,13 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
                                   color: colorScheme.onPrimaryFixedVariant,
                                 ),
                               ),
+                            if (widget.todo.tags.isNotEmpty)
+                              Wrap(
+                                spacing: 4,
+                                children: widget.todo.tags
+                                    .map((tag) => TodoItemTagChip(tag: tag))
+                                    .toList(),
+                              ),
                           ],
                         ),
                       ),
@@ -129,6 +127,33 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
                 ),
               ),
             )),
+      ),
+    );
+  }
+}
+
+class TodoItemTagChip extends StatelessWidget {
+  final Tag tag;
+  const TodoItemTagChip({super.key, required this.tag});
+
+  @override
+  Widget build(BuildContext context) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      width: 40,
+      height: 20,
+      decoration: BoxDecoration(
+        color: Color.lerp(colorScheme.surfaceContainer,
+            CharacterTag.availableColors[tag.colorIndex], 0.6),
+        borderRadius: BorderRadius.circular(100),
+      ),
+      child: Center(
+        child: Icon(
+          CharacterTag.availableIcons[tag.iconIndex],
+          color: Color.lerp(
+              colorScheme.onPrimary, colorScheme.onPrimaryFixedVariant, 0.3),
+          size: 15,
+        ),
       ),
     );
   }

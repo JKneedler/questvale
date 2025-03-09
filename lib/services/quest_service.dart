@@ -22,7 +22,7 @@ const _maxNumEnemies = 3;
 
 class QuestService {
   Quest generateQuest(Character character) {
-    final String questId = Uuid().v1();
+    final String questId = Uuid().v4();
     final String questName =
         _sampleQuestNames[Random().nextInt(_sampleQuestNames.length)];
 
@@ -30,7 +30,7 @@ class QuestService {
         Random().nextInt(1 + (_maxNumRooms - _minNumRooms)) + _minNumRooms;
     List<QuestRoom> rooms = [];
     for (int r = 0; r < numberOfRooms; r++) {
-      final String questRoomId = Uuid().v1();
+      final String questRoomId = Uuid().v4();
       final int numberOfEnemies =
           Random().nextInt(1 + (_maxNumEnemies - _minNumEnemies)) +
               _minNumEnemies;
@@ -38,7 +38,7 @@ class QuestService {
       List<Enemy> enemies = [];
       for (int e = 0; e < numberOfEnemies; e++) {
         final Enemy enemy = Enemy(
-          id: Uuid().v1(),
+          id: Uuid().v4(),
           questRoomId: questRoomId,
           name: 'Goblin',
           currentHealth: 20,

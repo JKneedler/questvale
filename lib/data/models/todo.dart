@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:questvale/data/models/tag.dart';
 
 enum DifficultyLevel {
   trivial,
@@ -37,6 +38,7 @@ class Todo {
   static const todoTableName = 'Todos';
 
   static const idColumnName = 'id';
+  static const characterIdColumnName = 'characterId';
   static const nameColumnName = 'name';
   static const descriptionColumnName = 'description';
   static const isCompletedColumnName = 'isCompleted';
@@ -46,6 +48,7 @@ class Todo {
   static const createTableSQL = '''
 		CREATE TABLE ${Todo.todoTableName}(
 			${Todo.idColumnName} VARCHAR PRIMARY KEY, 
+			${Todo.characterIdColumnName} VARCHAR NOT NULL, 
 			${Todo.nameColumnName} VARCHAR NOT NULL, 
 			${Todo.descriptionColumnName} VARCHAR, 
 			${Todo.isCompletedColumnName} BOOLEAN,
@@ -55,24 +58,29 @@ class Todo {
 	''';
 
   final String id;
+  final String characterId;
   final String name;
   final String description;
   final bool isCompleted;
   final int difficulty;
   final String dueDate;
+  final List<Tag> tags;
 
   const Todo({
     required this.id,
+    required this.characterId,
     required this.name,
     required this.description,
     required this.isCompleted,
     required this.difficulty,
     required this.dueDate,
+    required this.tags,
   });
 
   Map<String, Object?> toMap() {
     return {
       Todo.idColumnName: id,
+      Todo.characterIdColumnName: characterId,
       Todo.nameColumnName: name,
       Todo.descriptionColumnName: description,
       Todo.isCompletedColumnName: isCompleted ? 1 : 0,
@@ -90,6 +98,7 @@ class Todo {
 				isCompleted: $isCompleted
 				difficulty: $difficulty
 				dueDate: $dueDate
+				tags: $tags
 			}''';
   }
 
@@ -99,14 +108,17 @@ class Todo {
     bool? isCompleted,
     int? difficulty,
     String? dueDate,
+    List<Tag>? tags,
   }) {
     return Todo(
       id: id,
+      characterId: characterId,
       name: name ?? this.name,
       description: description ?? this.description,
       isCompleted: isCompleted ?? this.isCompleted,
       difficulty: difficulty ?? this.difficulty,
       dueDate: dueDate ?? this.dueDate,
+      tags: tags ?? this.tags,
     );
   }
 }

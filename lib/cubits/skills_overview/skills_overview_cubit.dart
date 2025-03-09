@@ -48,7 +48,7 @@ class SkillsOverviewCubit extends Cubit<SkillsOverviewState> {
               .updateSkill(skill.copyWith(level: skill.level + 1));
         } else {
           await skillRepository.insertSkill(CharacterSkill(
-            id: Uuid().v1(),
+            id: Uuid().v4(),
             characterId: character.id,
             type: type,
             level: 1,
