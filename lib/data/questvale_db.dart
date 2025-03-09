@@ -53,6 +53,27 @@ class QuestvaleDB {
           name: 'Work',
         ).toMap(),
       );
+      await db.insert(
+        'Tags',
+        Tag(
+          id: Uuid().v1(),
+          name: 'Health',
+        ).toMap(),
+      );
+      await db.insert(
+        'Tags',
+        Tag(
+          id: Uuid().v1(),
+          name: 'Education',
+        ).toMap(),
+      );
+      await db.insert(
+        'Tags',
+        Tag(
+          id: Uuid().v1(),
+          name: 'Finance',
+        ).toMap(),
+      );
     }, version: 1);
   }
 }

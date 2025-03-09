@@ -1,6 +1,39 @@
-import 'package:questvale/cubits/edit_task/edit_task_state.dart';
 import 'package:questvale/data/models/checklist_item.dart';
 import 'package:questvale/data/models/tag.dart';
+import 'package:flutter/material.dart';
+
+enum DifficultyLevel {
+  trivial,
+  easy,
+  medium,
+  hard;
+
+  String get name {
+    switch (this) {
+      case DifficultyLevel.trivial:
+        return 'Trivial';
+      case DifficultyLevel.easy:
+        return 'Easy';
+      case DifficultyLevel.medium:
+        return 'Medium';
+      case DifficultyLevel.hard:
+        return 'Hard';
+    }
+  }
+
+  Color get color {
+    switch (this) {
+      case DifficultyLevel.trivial:
+        return Colors.grey;
+      case DifficultyLevel.easy:
+        return Color(0xFFCD7F32); // Bronze
+      case DifficultyLevel.medium:
+        return Color(0xFFC0C0C0); // Silver
+      case DifficultyLevel.hard:
+        return Color(0xFFFFD700); // Gold
+    }
+  }
+}
 
 class Task {
   static const taskTableName = 'Tasks';
