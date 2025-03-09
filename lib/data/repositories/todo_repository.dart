@@ -13,12 +13,12 @@ class TodoRepository {
     final List<Map<String, dynamic>> maps = await db.query(Todo.todoTableName);
     return List.generate(maps.length, (i) {
       return Todo(
-        id: maps[i]['id'] as String,
-        name: maps[i]['name'] as String,
-        description: maps[i]['description'] as String,
-        difficulty: maps[i]['difficulty'] as int,
-        dueDate: maps[i]['due_date'] as String? ?? '',
-        isCompleted: maps[i]['is_completed'] == 1,
+        id: maps[i][Todo.idColumnName] as String,
+        name: maps[i][Todo.nameColumnName] as String,
+        description: maps[i][Todo.descriptionColumnName] as String,
+        difficulty: maps[i][Todo.difficultyColumnName] as int,
+        dueDate: maps[i][Todo.dueDateColumnName] as String? ?? '',
+        isCompleted: maps[i][Todo.isCompletedColumnName] == 1,
       );
     });
   }

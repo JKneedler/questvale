@@ -35,16 +35,18 @@ class TodosOverviewView extends StatelessWidget {
           color: colorScheme.onPrimary,
         ),
       ),
-      body: Expanded(child: BlocBuilder<TodosOverviewCubit, TodosOverviewState>(
-          builder: (context, todosOverviewState) {
-        return ListView.builder(
-            shrinkWrap: true,
-            itemCount: todosOverviewState.todos.length,
-            padding: const EdgeInsets.all(2),
-            itemBuilder: (context, index) {
-              return TodosOverviewItem(todo: todosOverviewState.todos[index]);
-            });
-      })),
+      body: Expanded(
+        child: BlocBuilder<TodosOverviewCubit, TodosOverviewState>(
+            builder: (context, todosOverviewState) {
+          return ListView.builder(
+              shrinkWrap: true,
+              itemCount: todosOverviewState.todos.length,
+              padding: const EdgeInsets.all(2),
+              itemBuilder: (context, index) {
+                return TodosOverviewItem(todo: todosOverviewState.todos[index]);
+              });
+        }),
+      ),
       backgroundColor: colorScheme.surface,
     );
   }

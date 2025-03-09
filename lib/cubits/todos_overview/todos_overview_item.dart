@@ -76,7 +76,7 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     GestureDetector(
-                      onTapDown: (_) => todoCubit.toggleCompletion(widget.todo),
+                      onTapUp: (_) => todoCubit.toggleCompletion(widget.todo),
                       child: Material(
                         color: Colors.transparent,
                         child: Container(
