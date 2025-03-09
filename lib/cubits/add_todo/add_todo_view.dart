@@ -7,6 +7,7 @@ import 'package:questvale/cubits/add_todo/difficulty_selector_view.dart';
 import 'package:questvale/cubits/character_tag/create_character_tag_page.dart';
 import 'package:questvale/cubits/due_date/due_date_page.dart';
 import 'package:questvale/data/models/character_tag.dart';
+import 'package:questvale/data/models/todo.dart';
 
 class AddTodoView extends StatelessWidget {
   final void Function() onTodoAdded;
@@ -279,16 +280,48 @@ class EtcFields extends StatelessWidget {
         const SizedBox(width: 18),
         GestureDetector(
           onTap: () async {
-            await DifficultyPage.showModal(
-              context,
-              onDifficultySelected: (difficulty) =>
-                  context.read<AddTodoCubit>().difficultyChanged(difficulty),
+            final RenderBox button = context.findRenderObject() as RenderBox;
+            final RenderBox overlay = Navigator.of(context)
+                .overlay!
+                .context
+                .findRenderObject() as RenderBox;
+            final RelativeRect position = RelativeRect.fromRect(
+              Rect.fromPoints(
+                button.localToGlobal(Offset.zero, ancestor: overlay),
+                button.localToGlobal(button.size.bottomRight(Offset.zero),
+                    ancestor: overlay),
+              ),
+              Offset.zero & overlay.size,
             );
+
+            final difficulty = await showMenu<DifficultyLevel>(
+              context: context,
+              position: position,
+              items: DifficultyLevel.values
+                  .map((level) => PopupMenuItem(
+                        value: level,
+                        child: Row(
+                          children: [
+                            Icon(
+                              Symbols.trophy,
+                              color: level.color,
+                              weight: 600,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(level.name),
+                          ],
+                        ),
+                      ))
+                  .toList(),
+            );
+            if (difficulty != null) {
+              context.read<AddTodoCubit>().difficultyChanged(difficulty);
+            }
           },
           child: Icon(
             Symbols.trophy,
-            color: state.difficulty > 1
-                ? colorScheme.primary
+            color: state.difficulty != DifficultyLevel.trivial
+                ? state.difficulty.color
                 : colorScheme.onPrimaryFixedVariant,
             weight: 600,
           ),
