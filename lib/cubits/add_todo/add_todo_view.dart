@@ -272,10 +272,53 @@ class EtcFields extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 18),
-        Icon(
-          Symbols.flag_2,
-          color: colorScheme.onPrimaryFixedVariant,
-          weight: 600,
+        GestureDetector(
+          onTap: () async {
+            final RenderBox button = context.findRenderObject() as RenderBox;
+            final RenderBox overlay = Navigator.of(context)
+                .overlay!
+                .context
+                .findRenderObject() as RenderBox;
+            final RelativeRect position = RelativeRect.fromRect(
+              Rect.fromPoints(
+                button.localToGlobal(Offset.zero, ancestor: overlay),
+                button.localToGlobal(button.size.bottomRight(Offset.zero),
+                    ancestor: overlay),
+              ),
+              Offset.zero & overlay.size,
+            );
+
+            final priority = await showMenu<PriorityLevel>(
+              context: context,
+              position: position,
+              items: PriorityLevel.values
+                  .map((level) => PopupMenuItem(
+                        value: level,
+                        child: Row(
+                          children: [
+                            Icon(
+                              Symbols.flag_2,
+                              color: level.color,
+                              weight: 600,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(level.name),
+                          ],
+                        ),
+                      ))
+                  .toList(),
+            );
+            if (priority != null) {
+              context.read<AddTodoCubit>().priorityChanged(priority);
+            }
+          },
+          child: Icon(
+            Symbols.flag_2,
+            color: state.priority != PriorityLevel.noPriority
+                ? state.priority.color
+                : colorScheme.onPrimaryFixedVariant,
+            weight: 600,
+          ),
         ),
         const SizedBox(width: 18),
         GestureDetector(

@@ -5,12 +5,14 @@ class CheckBox extends StatelessWidget {
   final double width;
   final double height;
   final bool isChecked;
+  final Color? outlineColor;
 
   const CheckBox(
       {super.key,
       required this.width,
       required this.height,
-      required this.isChecked});
+      required this.isChecked,
+      this.outlineColor});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +24,9 @@ class CheckBox extends StatelessWidget {
         color: isChecked ? colorScheme.onPrimaryFixedVariant : null,
         borderRadius: BorderRadius.circular(4),
         border: Border.all(
-          color: colorScheme.onPrimaryFixedVariant,
+          color: isChecked
+              ? Colors.transparent
+              : outlineColor ?? colorScheme.onPrimaryFixedVariant,
           width: 1.5,
         ),
       ),

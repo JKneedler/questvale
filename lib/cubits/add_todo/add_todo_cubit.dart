@@ -52,6 +52,10 @@ class AddTodoCubit extends Cubit<AddTodoState> {
     emit(state.copyWith(difficulty: value));
   }
 
+  void priorityChanged(PriorityLevel value) {
+    emit(state.copyWith(priority: value));
+  }
+
   void toggleTag(Tag tag) {
     if (state.selectedTags.contains(tag)) {
       emit(state.copyWith(
@@ -72,6 +76,7 @@ class AddTodoCubit extends Cubit<AddTodoState> {
         description: state.description,
         dueDate: state.dueDate,
         difficulty: state.difficulty,
+        priority: state.priority,
         isCompleted: false,
         tags: state.selectedTags,
       );
@@ -84,6 +89,7 @@ class AddTodoCubit extends Cubit<AddTodoState> {
         description: '',
         dueDate: '',
         difficulty: DifficultyLevel.trivial,
+        priority: PriorityLevel.noPriority,
         selectedTags: [],
       ));
     } catch (e) {

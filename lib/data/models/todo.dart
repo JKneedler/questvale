@@ -34,6 +34,39 @@ enum DifficultyLevel {
   }
 }
 
+enum PriorityLevel {
+  noPriority,
+  low,
+  medium,
+  high;
+
+  String get name {
+    switch (this) {
+      case PriorityLevel.noPriority:
+        return 'No Priority';
+      case PriorityLevel.low:
+        return 'Low Priority';
+      case PriorityLevel.medium:
+        return 'Medium Priority';
+      case PriorityLevel.high:
+        return 'High Priority';
+    }
+  }
+
+  Color get color {
+    switch (this) {
+      case PriorityLevel.noPriority:
+        return Colors.grey;
+      case PriorityLevel.low:
+        return Color(0xFF00BFFF); // Light Blue
+      case PriorityLevel.medium:
+        return Color(0xFFFFA500); // Orange
+      case PriorityLevel.high:
+        return Color(0xFFDC143C); // Red
+    }
+  }
+}
+
 class Todo {
   static const todoTableName = 'Todos';
 
@@ -43,6 +76,7 @@ class Todo {
   static const descriptionColumnName = 'description';
   static const isCompletedColumnName = 'isCompleted';
   static const difficultyColumnName = 'difficulty';
+  static const priorityColumnName = 'priority';
   static const dueDateColumnName = 'dueDate';
 
   static const createTableSQL = '''
@@ -53,6 +87,7 @@ class Todo {
 			${Todo.descriptionColumnName} VARCHAR, 
 			${Todo.isCompletedColumnName} BOOLEAN,
 			${Todo.difficultyColumnName} INTEGER,
+			${Todo.priorityColumnName} INTEGER,
 			${Todo.dueDateColumnName} VARCHAR
 		);
 	''';
@@ -63,6 +98,7 @@ class Todo {
   final String description;
   final bool isCompleted;
   final DifficultyLevel difficulty;
+  final PriorityLevel priority;
   final String dueDate;
   final List<Tag> tags;
 
@@ -73,6 +109,7 @@ class Todo {
     required this.description,
     required this.isCompleted,
     required this.difficulty,
+    required this.priority,
     required this.dueDate,
     required this.tags,
   });
@@ -85,6 +122,7 @@ class Todo {
       Todo.descriptionColumnName: description,
       Todo.isCompletedColumnName: isCompleted ? 1 : 0,
       Todo.difficultyColumnName: difficulty.index,
+      Todo.priorityColumnName: priority.index,
       Todo.dueDateColumnName: dueDate,
     };
   }
@@ -107,6 +145,7 @@ class Todo {
     String? description,
     bool? isCompleted,
     DifficultyLevel? difficulty,
+    PriorityLevel? priority,
     String? dueDate,
     List<Tag>? tags,
   }) {
@@ -117,6 +156,7 @@ class Todo {
       description: description ?? this.description,
       isCompleted: isCompleted ?? this.isCompleted,
       difficulty: difficulty ?? this.difficulty,
+      priority: priority ?? this.priority,
       dueDate: dueDate ?? this.dueDate,
       tags: tags ?? this.tags,
     );
