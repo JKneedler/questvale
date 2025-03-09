@@ -3,6 +3,8 @@ import 'package:questvale/data/models/inventory.dart';
 import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/data/models/quest.dart';
 import 'package:questvale/data/models/character_skill.dart';
+import 'package:questvale/data/models/character_tag.dart';
+import 'package:questvale/data/models/tag.dart';
 import 'package:questvale/data/repositories/character_skill_repository.dart';
 import 'package:questvale/data/repositories/equipment_repository.dart';
 import 'package:sqflite/sqflite.dart';
@@ -70,6 +72,51 @@ class CharacterRepository {
       updateInventory.toMap(),
       where: '${Inventory.idColumnName} = ?',
       whereArgs: [updateInventory.id],
+    );
+  }
+
+  // CHARACTER TAGS METHODS
+  Future<List<CharacterTag>> getCharacterTags(String characterId) async {
+    final tagMaps = await db.query(
+      CharacterTag.characterTagTableName,
+      where: '${CharacterTag.characterIdColumnName} = ?',
+      whereArgs: [characterId],
+    );
+
+    return [
+      for (final tagMap in tagMaps)
+        CharacterTag(
+          id: tagMap[CharacterTag.idColumnName] as String,
+          characterId: tagMap[CharacterTag.characterIdColumnName] as String,
+          name: tagMap[CharacterTag.nameColumnName] as String,
+          colorIndex: tagMap[CharacterTag.colorIndexColumnName] as int,
+          iconIndex: tagMap[CharacterTag.iconIndexColumnName] as int,
+        ),
+    ];
+  }
+
+  Future<void> createCharacterTag(CharacterTag tag) async {
+    await db.insert(
+      CharacterTag.characterTagTableName,
+      tag.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> updateCharacterTag(CharacterTag tag) async {
+    await db.update(
+      CharacterTag.characterTagTableName,
+      tag.toMap(),
+      where: '${CharacterTag.idColumnName} = ?',
+      whereArgs: [tag.id],
+    );
+  }
+
+  Future<void> deleteCharacterTag(CharacterTag tag) async {
+    await db.delete(
+      CharacterTag.characterTagTableName,
+      where: '${CharacterTag.idColumnName} = ?',
+      whereArgs: [tag.id],
     );
   }
 

@@ -4,7 +4,9 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:questvale/cubits/add_todo/add_todo_cubit.dart';
 import 'package:questvale/cubits/add_todo/add_todo_state.dart';
 import 'package:questvale/cubits/add_todo/difficulty_selector_view.dart';
+import 'package:questvale/cubits/character_tag/create_character_tag_page.dart';
 import 'package:questvale/cubits/due_date/due_date_page.dart';
+import 'package:questvale/data/models/character_tag.dart';
 
 class AddTodoView extends StatelessWidget {
   final void Function() onTodoAdded;
@@ -34,6 +36,7 @@ class AddTodoView extends StatelessWidget {
                 children: [
                   NameField(onTodoAdded: onTodoAdded, id: state.id),
                   DescriptionField(onTodoAdded: onTodoAdded, id: state.id),
+                  TagsField(state: state),
                   EtcFields(onTodoAdded: onTodoAdded, state: state),
                 ],
               ),
@@ -121,6 +124,121 @@ class DescriptionField extends StatelessWidget {
         textInputAction: TextInputAction.newline,
         onChanged: (value) =>
             context.read<AddTodoCubit>().descriptionChanged(value),
+      ),
+    );
+  }
+}
+
+class TagsField extends StatelessWidget {
+  final AddTodoState state;
+
+  const TagsField({super.key, required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 30,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: state.availableTags.length + 1,
+        itemBuilder: (context, index) {
+          if (index == state.availableTags.length) {
+            return TagChip(
+              icon: Icons.add,
+              name: 'Tag',
+              color: Colors.transparent,
+              onPressed: () => CreateCharacterTagPage.showModal(
+                context,
+                state.characterId,
+                () {
+                  context.read<AddTodoCubit>().loadAvailableTags();
+                },
+              ),
+              margin: const EdgeInsets.only(left: 2, right: 50),
+            );
+          }
+          return TagChip(
+            icon: CharacterTag
+                .availableIcons[state.availableTags[index].iconIndex],
+            name: state.availableTags[index].name,
+            color: CharacterTag
+                .availableColors[state.availableTags[index].colorIndex],
+            isSelected: state.selectedTags.contains(state.availableTags[index]),
+            onPressed: () {
+              context
+                  .read<AddTodoCubit>()
+                  .toggleTag(state.availableTags[index]);
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+class TagChip extends StatelessWidget {
+  final IconData icon;
+  final String name;
+  final Color color;
+  final bool isSelected;
+  final void Function() onPressed;
+  final EdgeInsets margin;
+
+  const TagChip({
+    super.key,
+    required this.icon,
+    required this.name,
+    required this.color,
+    required this.onPressed,
+    this.isSelected = false,
+    this.margin = const EdgeInsets.symmetric(horizontal: 2),
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        margin: margin,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+        decoration: BoxDecoration(
+          color: isSelected ? color : colorScheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(100),
+          border: isSelected
+              ? Border.all(
+                  color: Colors.transparent,
+                  width: 1.5,
+                )
+              : Border.all(
+                  color: colorScheme.onPrimaryFixedVariant,
+                  width: 1.5,
+                ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 2,
+          children: [
+            Icon(
+              icon,
+              color: isSelected
+                  ? colorScheme.onPrimary
+                  : colorScheme.onPrimaryFixedVariant,
+              size: 16,
+            ),
+            Text(
+              name,
+              style: TextStyle(
+                color: isSelected
+                    ? colorScheme.onPrimary
+                    : colorScheme.onPrimaryFixedVariant,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

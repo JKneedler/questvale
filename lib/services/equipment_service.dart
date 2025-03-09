@@ -7,7 +7,7 @@ import 'package:uuid/uuid.dart';
 
 class EquipmentService {
   Equipment? generateEquipment(int equipmentLevel) {
-    final String id = Uuid().v1();
+    final String id = Uuid().v4();
     final type =
         EquipmentType.values[Random().nextInt(EquipmentType.values.length)];
 
@@ -147,7 +147,7 @@ class EquipmentService {
         .values[modifierList[Random().nextInt(modifierList.length)]];
     final modifierInfo = EquipmentModifier.modiferInfoMap[modifierType]!;
     return EquipmentModifier(
-        id: Uuid().v1(),
+        id: Uuid().v4(),
         equipmentId: equipmentId,
         type: modifierType,
         stat: modifierInfo['stat'] as CombatStat,

@@ -76,7 +76,7 @@ class EquipmentRepository {
     await db.insert(
       InventoryEquipment.inventoryEquipmentTableName,
       InventoryEquipment(
-        id: Uuid().v1(),
+        id: Uuid().v4(),
         inventoryId: inventoryId,
         equipmentId: equipmentId,
       ).toMap(),
