@@ -86,6 +86,7 @@ class TodoRepository {
       name: map[Todo.nameColumnName] as String,
       description: map[Todo.descriptionColumnName] as String,
       difficulty: DifficultyLevel.values[map[Todo.difficultyColumnName] as int],
+      priority: PriorityLevel.values[map[Todo.priorityColumnName] as int],
       dueDate: map[Todo.dueDateColumnName] as String? ?? '',
       isCompleted: map[Todo.isCompletedColumnName] == 1,
       tags: tags,

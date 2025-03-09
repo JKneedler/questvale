@@ -80,6 +80,10 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
                             width: 20,
                             height: 20,
                             isChecked: widget.todo.isCompleted,
+                            outlineColor:
+                                widget.todo.priority == PriorityLevel.noPriority
+                                    ? colorScheme.onPrimaryFixedVariant
+                                    : widget.todo.priority.color,
                           ),
                         ),
                       ),

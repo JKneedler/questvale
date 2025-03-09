@@ -12,6 +12,7 @@ class AddTodoState extends Equatable {
   final String description;
   final String dueDate;
   final DifficultyLevel difficulty;
+  final PriorityLevel priority;
   final List<Tag> availableTags;
   final List<Tag> selectedTags;
 
@@ -23,6 +24,7 @@ class AddTodoState extends Equatable {
     this.description = '',
     this.dueDate = '',
     this.difficulty = DifficultyLevel.trivial,
+    this.priority = PriorityLevel.noPriority,
     this.availableTags = const [],
     this.selectedTags = const [],
   });
@@ -35,6 +37,7 @@ class AddTodoState extends Equatable {
     String? description,
     String? dueDate,
     DifficultyLevel? difficulty,
+    PriorityLevel? priority,
     List<Tag>? availableTags,
     List<Tag>? selectedTags,
   }) {
@@ -46,6 +49,7 @@ class AddTodoState extends Equatable {
       description: description ?? this.description,
       dueDate: dueDate ?? this.dueDate,
       difficulty: difficulty ?? this.difficulty,
+      priority: priority ?? this.priority,
       availableTags: availableTags ?? this.availableTags,
       selectedTags: selectedTags ?? this.selectedTags,
     );
@@ -60,6 +64,7 @@ class AddTodoState extends Equatable {
         description,
         dueDate,
         difficulty,
+        priority,
         availableTags,
         selectedTags,
       ];
