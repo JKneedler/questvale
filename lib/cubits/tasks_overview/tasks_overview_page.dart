@@ -11,9 +11,11 @@ class TasksOverviewPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final db = context.read<Database>();
+    final taskRepository = TaskRepository(db: db);
 
     return BlocProvider(
-        create: (context) => TasksOverviewCubit(TaskRepository(db: db)),
-        child: TasksOverviewView());
+      create: (context) => TasksOverviewCubit(taskRepository),
+      child: TasksOverviewView(),
+    );
   }
 }

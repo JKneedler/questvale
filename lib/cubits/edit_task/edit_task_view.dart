@@ -61,7 +61,9 @@ class EditTaskView extends StatelessWidget {
           actions: [
             IconButton(
               icon: Icon(Icons.check, color: colorScheme.onPrimary),
-              onPressed: () => context.read<EditTaskCubit>().submit(),
+              onPressed: () {
+                context.read<EditTaskCubit>().saveTask();
+              },
             ),
           ],
         ),

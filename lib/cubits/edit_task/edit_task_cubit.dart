@@ -93,7 +93,7 @@ class EditTaskCubit extends Cubit<EditTaskState> {
     emit(state.copyWith(tags: newTags));
   }
 
-  Future<void> submit() async {
+  Future<void> saveTask() async {
     emit(state.copyWith(status: EditTaskStatus.loading));
     if (state.startTask != null) {
       final updatedTask = state.startTask?.copyWith(
