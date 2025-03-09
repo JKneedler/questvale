@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:questvale/cubits/add_task/add_task_cubit.dart';
-import 'package:questvale/cubits/add_task/add_task_state.dart';
-import 'package:questvale/cubits/add_task/difficulty_selector_view.dart';
+import 'package:questvale/cubits/add_todo/add_todo_cubit.dart';
+import 'package:questvale/cubits/add_todo/add_todo_state.dart';
+import 'package:questvale/cubits/add_todo/difficulty_selector_view.dart';
 import 'package:questvale/cubits/due_date/due_date_page.dart';
-import 'package:questvale/data/models/task.dart';
+import 'package:questvale/data/models/todo.dart';
 
-class AddTaskView extends StatelessWidget {
-  final void Function() onTaskAdded;
+class AddTodoView extends StatelessWidget {
+  final void Function() onTodoAdded;
 
-  const AddTaskView({
+  const AddTodoView({
     super.key,
-    required this.onTaskAdded,
+    required this.onTodoAdded,
   });
 
   @override
@@ -25,7 +25,7 @@ class AddTaskView extends StatelessWidget {
       ),
       child: Container(
         color: colorScheme.surfaceContainerLow,
-        child: BlocBuilder<AddTaskCubit, AddTaskState>(
+        child: BlocBuilder<AddTodoCubit, AddTodoState>(
           builder: (context, state) {
             return Padding(
               padding: const EdgeInsets.all(12.0),
@@ -33,10 +33,9 @@ class AddTaskView extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  NameField(onTaskAdded: onTaskAdded, id: state.id),
-                  DescriptionField(onTaskAdded: onTaskAdded, id: state.id),
-                  TagFields(),
-                  EtcFields(onTaskAdded: onTaskAdded, state: state),
+                  NameField(onTodoAdded: onTodoAdded, id: state.id),
+                  DescriptionField(onTodoAdded: onTodoAdded, id: state.id),
+                  EtcFields(onTodoAdded: onTodoAdded, state: state),
                 ],
               ),
             );
@@ -48,10 +47,10 @@ class AddTaskView extends StatelessWidget {
 }
 
 class NameField extends StatelessWidget {
-  final Function() onTaskAdded;
+  final Function() onTodoAdded;
   final String id;
 
-  const NameField({super.key, required this.onTaskAdded, required this.id});
+  const NameField({super.key, required this.onTodoAdded, required this.id});
 
   @override
   Widget build(BuildContext context) {
@@ -60,9 +59,9 @@ class NameField extends StatelessWidget {
     return SizedBox(
       height: 36,
       child: TextField(
-        key: Key('addTaskView_name_${id}_textField'),
+        key: Key('addTodoView_name_${id}_textField'),
         decoration: InputDecoration(
-          hintText: 'Task Name',
+          hintText: 'Todo Name',
           hintStyle: TextStyle(color: colorScheme.onPrimaryFixedVariant),
           border: InputBorder.none,
           contentPadding: EdgeInsets.zero,
@@ -74,11 +73,11 @@ class NameField extends StatelessWidget {
           fontWeight: FontWeight.w500,
         ),
         textInputAction: TextInputAction.done,
-        onChanged: (value) => context.read<AddTaskCubit>().updateName(value),
+        onChanged: (value) => context.read<AddTodoCubit>().nameChanged(value),
         onSubmitted: (value) async {
           if (value.isNotEmpty) {
-            await context.read<AddTaskCubit>().addTask();
-            onTaskAdded();
+            await context.read<AddTodoCubit>().submit();
+            onTodoAdded();
           }
         },
       ),
@@ -87,12 +86,12 @@ class NameField extends StatelessWidget {
 }
 
 class DescriptionField extends StatelessWidget {
-  final void Function() onTaskAdded;
+  final void Function() onTodoAdded;
   final String id;
 
   const DescriptionField({
     super.key,
-    required this.onTaskAdded,
+    required this.onTodoAdded,
     required this.id,
   });
 
@@ -105,7 +104,7 @@ class DescriptionField extends StatelessWidget {
         maxHeight: 150.0,
       ),
       child: TextField(
-        key: Key('addTaskView_description_${id}_textField'),
+        key: Key('addTodoView_description_${id}_textField'),
         decoration: InputDecoration(
           hintText: 'Description',
           hintStyle: TextStyle(color: colorScheme.onPrimaryFixedVariant),
@@ -122,83 +121,28 @@ class DescriptionField extends StatelessWidget {
         keyboardType: TextInputType.multiline,
         textInputAction: TextInputAction.newline,
         onChanged: (value) =>
-            context.read<AddTaskCubit>().updateDescription(value),
-      ),
-    );
-  }
-}
-
-class TagFields extends StatelessWidget {
-  const TagFields({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 6, bottom: 6),
-      child: Row(
-        spacing: 6,
-        children: [
-          for (var tag in context.read<AddTaskCubit>().state.tags)
-            TagToggle(tag: tag),
-        ],
-      ),
-    );
-  }
-}
-
-class TagToggle extends StatelessWidget {
-  final TaskTags tag;
-  const TagToggle({super.key, required this.tag});
-
-  @override
-  Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-    return GestureDetector(
-      onTap: () => context.read<AddTaskCubit>().toggleTag(tag),
-      child: Chip(
-        label: Text(tag.name,
-            style: TextStyle(
-              fontSize: 12,
-              color: tag.isSelected
-                  ? colorScheme.onPrimary
-                  : colorScheme.onPrimaryFixedVariant,
-            )),
-        labelPadding: EdgeInsets.symmetric(horizontal: 8, vertical: -2),
-        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        padding: EdgeInsets.zero,
-        backgroundColor: tag.isSelected
-            ? colorScheme.primary
-            : colorScheme.surfaceContainerLow,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-          side: BorderSide(
-            color: tag.isSelected
-                ? colorScheme.primary
-                : colorScheme.onPrimaryFixedVariant,
-          ),
-        ),
+            context.read<AddTodoCubit>().descriptionChanged(value),
       ),
     );
   }
 }
 
 class EtcFields extends StatelessWidget {
-  final Function() onTaskAdded;
-  final AddTaskState state;
-  const EtcFields({super.key, required this.onTaskAdded, required this.state});
+  final Function() onTodoAdded;
+  final AddTodoState state;
+  const EtcFields({super.key, required this.onTodoAdded, required this.state});
 
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     return Row(
-      spacing: 18,
       children: [
         GestureDetector(
           onTap: () async {
             await DueDatePage.showModal(
               context,
               onDateSelected: (date) =>
-                  context.read<AddTaskCubit>().updateDueDate(date),
+                  context.read<AddTodoCubit>().dueDateChanged(date),
             );
           },
           child: Icon(
@@ -209,27 +153,30 @@ class EtcFields extends StatelessWidget {
             weight: 600,
           ),
         ),
+        const SizedBox(width: 18),
         Icon(
           Symbols.flag_2,
           color: colorScheme.onPrimaryFixedVariant,
           weight: 600,
         ),
+        const SizedBox(width: 18),
         GestureDetector(
           onTap: () async {
             await DifficultyPage.showModal(
               context,
               onDifficultySelected: (difficulty) =>
-                  context.read<AddTaskCubit>().updateDifficulty(difficulty),
+                  context.read<AddTodoCubit>().difficultyChanged(difficulty),
             );
           },
           child: Icon(
             Symbols.trophy,
-            color: state.difficulty != DifficultyLevel.trivial
-                ? state.difficulty.color
+            color: state.difficulty > 1
+                ? colorScheme.primary
                 : colorScheme.onPrimaryFixedVariant,
             weight: 600,
           ),
         ),
+        const SizedBox(width: 18),
         Icon(
           Symbols.more_horiz,
           color: colorScheme.onPrimaryFixedVariant,
@@ -240,8 +187,8 @@ class EtcFields extends StatelessWidget {
             alignment: Alignment.centerRight,
             child: GestureDetector(
               onTap: () async {
-                await context.read<AddTaskCubit>().addTask();
-                onTaskAdded();
+                await context.read<AddTodoCubit>().submit();
+                onTodoAdded();
               },
               child: Container(
                 width: 36,

@@ -6,7 +6,7 @@ import 'package:questvale/cubits/home/home_cubit.dart';
 import 'package:questvale/cubits/home/home_state.dart';
 import 'package:questvale/cubits/inventory_overview/inventory_overview_page.dart';
 import 'package:questvale/cubits/quest_overview/quest_overview_page.dart';
-import 'package:questvale/cubits/tasks_overview/tasks_overview_page.dart';
+import 'package:questvale/cubits/todos_overview/todos_overview_page.dart';
 import 'package:questvale/pages/settings_page.dart';
 
 class HomePage extends StatelessWidget {
@@ -33,8 +33,9 @@ class HomeView extends StatelessWidget {
         body: [
           SkillsOverviewPage(),
           QuestOverviewPage(),
-          TasksOverviewPage(),
+          TodosOverviewPage(),
           InventoryOverviewPage(),
+          TodosOverviewPage(),
           SettingsPage(),
         ][homeState.tab],
         bottomNavigationBar: BottomNavigationBar(

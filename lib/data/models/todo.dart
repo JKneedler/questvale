@@ -1,5 +1,3 @@
-import 'package:questvale/data/models/checklist_item.dart';
-import 'package:questvale/data/models/tag.dart';
 import 'package:flutter/material.dart';
 
 enum DifficultyLevel {
@@ -35,8 +33,8 @@ enum DifficultyLevel {
   }
 }
 
-class Task {
-  static const taskTableName = 'Tasks';
+class Todo {
+  static const todoTableName = 'Todos';
 
   static const idColumnName = 'id';
   static const nameColumnName = 'name';
@@ -46,13 +44,13 @@ class Task {
   static const dueDateColumnName = 'dueDate';
 
   static const createTableSQL = '''
-		CREATE TABLE ${Task.taskTableName}(
-			${Task.idColumnName} VARCHAR PRIMARY KEY, 
-			${Task.nameColumnName} VARCHAR NOT NULL, 
-			${Task.descriptionColumnName} VARCHAR, 
-			${Task.isCompletedColumnName} BOOLEAN,
-			${Task.difficultyColumnName} INTEGER,
-			${Task.dueDateColumnName} VARCHAR
+		CREATE TABLE ${Todo.todoTableName}(
+			${Todo.idColumnName} VARCHAR PRIMARY KEY, 
+			${Todo.nameColumnName} VARCHAR NOT NULL, 
+			${Todo.descriptionColumnName} VARCHAR, 
+			${Todo.isCompletedColumnName} BOOLEAN,
+			${Todo.difficultyColumnName} INTEGER,
+			${Todo.dueDateColumnName} VARCHAR
 		);
 	''';
 
@@ -60,69 +58,55 @@ class Task {
   final String name;
   final String description;
   final bool isCompleted;
-  final DifficultyLevel difficulty;
+  final int difficulty;
   final String dueDate;
-  final List<Tag> tags;
-  final List<ChecklistItem> checklist;
 
-  const Task(
-      {required this.id,
-      required this.name,
-      required this.description,
-      required this.isCompleted,
-      required this.difficulty,
-      required this.dueDate,
-      required this.tags,
-      required this.checklist});
+  const Todo({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.isCompleted,
+    required this.difficulty,
+    required this.dueDate,
+  });
 
   Map<String, Object?> toMap() {
     return {
-      Task.idColumnName: id,
-      Task.nameColumnName: name,
-      Task.descriptionColumnName: description,
-      Task.isCompletedColumnName: isCompleted ? 1 : 0,
-      Task.difficultyColumnName: difficulty.index,
-      Task.dueDateColumnName: dueDate,
+      Todo.idColumnName: id,
+      Todo.nameColumnName: name,
+      Todo.descriptionColumnName: description,
+      Todo.isCompletedColumnName: isCompleted ? 1 : 0,
+      Todo.difficultyColumnName: difficulty,
+      Todo.dueDateColumnName: dueDate,
     };
   }
 
   @override
   String toString() {
-    final tagNameList = [for (Tag tag in tags) tag.name];
-    final checklistItemNameList = [
-      for (ChecklistItem checklistItem in checklist)
-        '${checklistItem.name}: ${checklistItem.isCompleted}'
-    ];
-    return '''Task {
+    return '''Todo {
 				id: $id
 				name: $name
 				description: $description
 				isCompleted: $isCompleted
-				difficulty: ${difficulty.toString()}
+				difficulty: $difficulty
 				dueDate: $dueDate
-				tags: [${tagNameList.join(", ")}]
-				checklist: [${checklistItemNameList.join(", ")}]
 			}''';
   }
 
-  Task copyWith({
+  Todo copyWith({
     String? name,
     String? description,
     bool? isCompleted,
-    DifficultyLevel? difficulty,
+    int? difficulty,
     String? dueDate,
-    List<Tag>? tags,
-    List<ChecklistItem>? checklist,
   }) {
-    return Task(
+    return Todo(
       id: id,
       name: name ?? this.name,
       description: description ?? this.description,
       isCompleted: isCompleted ?? this.isCompleted,
       difficulty: difficulty ?? this.difficulty,
       dueDate: dueDate ?? this.dueDate,
-      tags: tags ?? this.tags,
-      checklist: checklist ?? this.checklist,
     );
   }
 }

@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:questvale/cubits/tasks_overview/tasks_overview_cubit.dart';
-import 'package:questvale/cubits/tasks_overview/tasks_overview_item.dart';
-import 'package:questvale/cubits/tasks_overview/tasks_overview_state.dart';
-import 'package:questvale/cubits/add_task/add_task_page.dart';
+import 'package:questvale/cubits/todos_overview/todos_overview_cubit.dart';
+import 'package:questvale/cubits/todos_overview/todos_overview_item.dart';
+import 'package:questvale/cubits/todos_overview/todos_overview_state.dart';
+import 'package:questvale/cubits/add_todo/add_todo_page.dart';
 
-class TasksOverviewView extends StatelessWidget {
-  const TasksOverviewView({super.key});
+class TodosOverviewView extends StatelessWidget {
+  const TodosOverviewView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final taskCubit = context.read<TasksOverviewCubit>();
+    final todoCubit = context.read<TodosOverviewCubit>();
     ColorScheme colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -24,9 +24,9 @@ class TasksOverviewView extends StatelessWidget {
         backgroundColor: colorScheme.primary,
         shape: CircleBorder(),
         onPressed: () async {
-          await AddTaskPage.showModal(
+          await AddTodoPage.showModal(
             context,
-            () => taskCubit.loadTasks(),
+            () => todoCubit.loadTodos(),
           );
         },
         child: Icon(
@@ -35,14 +35,14 @@ class TasksOverviewView extends StatelessWidget {
           color: colorScheme.onPrimary,
         ),
       ),
-      body: Expanded(child: BlocBuilder<TasksOverviewCubit, TasksOverviewState>(
-          builder: (context, tasksOverviewState) {
+      body: Expanded(child: BlocBuilder<TodosOverviewCubit, TodosOverviewState>(
+          builder: (context, todosOverviewState) {
         return ListView.builder(
             shrinkWrap: true,
-            itemCount: tasksOverviewState.tasks.length,
+            itemCount: todosOverviewState.todos.length,
             padding: const EdgeInsets.all(2),
             itemBuilder: (context, index) {
-              return TasksOverviewItem(task: tasksOverviewState.tasks[index]);
+              return TodosOverviewItem(todo: todosOverviewState.todos[index]);
             });
       })),
       backgroundColor: colorScheme.surface,
