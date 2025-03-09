@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:questvale/cubits/tasks_overview/tasks_overview_cubit.dart';
+import 'package:questvale/cubits/todos_overview/todos_overview_cubit.dart';
 import 'package:questvale/widgets/check_box.dart';
-import '../../data/models/task.dart';
+import '../../data/models/todo.dart';
 
-class TasksOverviewItem extends StatefulWidget {
-  final Task task;
-  const TasksOverviewItem({super.key, required this.task});
+class TodosOverviewItem extends StatefulWidget {
+  final Todo todo;
+  const TodosOverviewItem({super.key, required this.todo});
 
   @override
-  State<TasksOverviewItem> createState() => _TasksOverviewItemState();
+  State<TodosOverviewItem> createState() => _TodosOverviewItemState();
 }
 
-class _TasksOverviewItemState extends State<TasksOverviewItem> {
+class _TodosOverviewItemState extends State<TodosOverviewItem> {
   bool isHighlighted = false;
 
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
-    final taskCubit = context.read<TasksOverviewCubit>();
+    final todoCubit = context.read<TodosOverviewCubit>();
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -29,7 +29,7 @@ class _TasksOverviewItemState extends State<TasksOverviewItem> {
           extentRatio: 0.3,
           children: [
             SlidableAction(
-              onPressed: (context) => taskCubit.deleteTask(widget.task),
+              onPressed: (context) => todoCubit.deleteTodo(widget.todo),
               backgroundColor: colorScheme.error,
               foregroundColor: colorScheme.onError,
               icon: Icons.delete,
@@ -64,11 +64,11 @@ class _TasksOverviewItemState extends State<TasksOverviewItem> {
                 // await Navigator.push(
                 //   context,
                 //   MaterialPageRoute(
-                //     builder: (context) => EditTaskPage(
-                //         pageTitle: 'Edit Task', startTask: widget.task),
+                //     builder: (context) => EditTodoPage(
+                //         pageTitle: 'Edit Todo', startTodo: widget.todo),
                 //   ),
                 // );
-                // taskCubit.loadTasks();
+                // todoCubit.loadTodos();
               },
               child: Material(
                 color: Colors.transparent,
@@ -76,7 +76,7 @@ class _TasksOverviewItemState extends State<TasksOverviewItem> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     GestureDetector(
-                      onTapDown: (_) => taskCubit.toggleCompletion(widget.task),
+                      onTapDown: (_) => todoCubit.toggleCompletion(widget.todo),
                       child: Material(
                         color: Colors.transparent,
                         child: Container(
@@ -84,7 +84,7 @@ class _TasksOverviewItemState extends State<TasksOverviewItem> {
                           child: CheckBox(
                             width: 20,
                             height: 20,
-                            isChecked: widget.task.isCompleted,
+                            isChecked: widget.todo.isCompleted,
                           ),
                         ),
                       ),
@@ -96,9 +96,9 @@ class _TasksOverviewItemState extends State<TasksOverviewItem> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              widget.task.name,
+                              widget.todo.name,
                               softWrap: true,
-                              style: (widget.task.isCompleted
+                              style: (widget.todo.isCompleted
                                   ? TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,
@@ -110,9 +110,9 @@ class _TasksOverviewItemState extends State<TasksOverviewItem> {
                                       color: colorScheme.onPrimaryContainer,
                                     )),
                             ),
-                            if (widget.task.description.isNotEmpty)
+                            if (widget.todo.description.isNotEmpty)
                               Text(
-                                widget.task.description,
+                                widget.todo.description,
                                 softWrap: true,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:questvale/cubits/tasks_overview/tasks_overview_page.dart';
+import 'package:questvale/cubits/todos_overview/todos_overview_page.dart';
 import 'package:questvale/cubits/skills_overview/skills_overview_page.dart';
 import 'package:questvale/cubits/quest_overview/quest_overview_page.dart';
 import 'package:questvale/pages/settings_page.dart';
@@ -42,7 +42,7 @@ class MainDrawer extends StatelessWidget {
             onTap: () => {
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (context) => TasksOverviewPage()),
+                MaterialPageRoute(builder: (context) => TodosOverviewPage()),
                 ModalRoute.withName('/'),
               )
             },
@@ -100,6 +100,18 @@ class MainDrawer extends StatelessWidget {
                 ModalRoute.withName('/'),
               )
             },
+          ),
+          ListTile(
+            title: Text(
+              'Todos',
+              style: TextStyle(color: colorScheme.onSurface),
+            ),
+            leading: Icon(Icons.list, color: colorScheme.primary),
+            contentPadding: const EdgeInsets.only(left: 30, right: 30),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => TodosOverviewPage()),
+            ),
           ),
         ],
       ),
