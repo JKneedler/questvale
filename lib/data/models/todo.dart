@@ -62,7 +62,7 @@ class Todo {
   final String name;
   final String description;
   final bool isCompleted;
-  final int difficulty;
+  final DifficultyLevel difficulty;
   final String dueDate;
   final List<Tag> tags;
 
@@ -84,7 +84,7 @@ class Todo {
       Todo.nameColumnName: name,
       Todo.descriptionColumnName: description,
       Todo.isCompletedColumnName: isCompleted ? 1 : 0,
-      Todo.difficultyColumnName: difficulty,
+      Todo.difficultyColumnName: difficulty.index,
       Todo.dueDateColumnName: dueDate,
     };
   }
@@ -106,7 +106,7 @@ class Todo {
     String? name,
     String? description,
     bool? isCompleted,
-    int? difficulty,
+    DifficultyLevel? difficulty,
     String? dueDate,
     List<Tag>? tags,
   }) {

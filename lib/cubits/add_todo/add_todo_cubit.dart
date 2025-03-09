@@ -48,7 +48,7 @@ class AddTodoCubit extends Cubit<AddTodoState> {
     emit(state.copyWith(dueDate: value));
   }
 
-  void difficultyChanged(int value) {
+  void difficultyChanged(DifficultyLevel value) {
     emit(state.copyWith(difficulty: value));
   }
 
@@ -83,7 +83,7 @@ class AddTodoCubit extends Cubit<AddTodoState> {
         name: '',
         description: '',
         dueDate: '',
-        difficulty: 1,
+        difficulty: DifficultyLevel.trivial,
         selectedTags: [],
       ));
     } catch (e) {

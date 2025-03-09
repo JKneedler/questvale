@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:questvale/data/models/tag.dart';
+import 'package:questvale/data/models/todo.dart';
 
 enum AddTodoStatus { initial, loading, done }
 
@@ -10,7 +11,7 @@ class AddTodoState extends Equatable {
   final String name;
   final String description;
   final String dueDate;
-  final int difficulty;
+  final DifficultyLevel difficulty;
   final List<Tag> availableTags;
   final List<Tag> selectedTags;
 
@@ -21,7 +22,7 @@ class AddTodoState extends Equatable {
     this.name = '',
     this.description = '',
     this.dueDate = '',
-    this.difficulty = 1,
+    this.difficulty = DifficultyLevel.trivial,
     this.availableTags = const [],
     this.selectedTags = const [],
   });
@@ -33,7 +34,7 @@ class AddTodoState extends Equatable {
     String? name,
     String? description,
     String? dueDate,
-    int? difficulty,
+    DifficultyLevel? difficulty,
     List<Tag>? availableTags,
     List<Tag>? selectedTags,
   }) {
