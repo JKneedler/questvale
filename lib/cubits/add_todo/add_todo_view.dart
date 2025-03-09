@@ -5,7 +5,6 @@ import 'package:questvale/cubits/add_todo/add_todo_cubit.dart';
 import 'package:questvale/cubits/add_todo/add_todo_state.dart';
 import 'package:questvale/cubits/add_todo/difficulty_selector_view.dart';
 import 'package:questvale/cubits/due_date/due_date_page.dart';
-import 'package:questvale/data/models/todo.dart';
 
 class AddTodoView extends StatelessWidget {
   final void Function() onTodoAdded;
