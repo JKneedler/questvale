@@ -23,23 +23,25 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ColorScheme darkScheme = ColorScheme(
-        brightness: Brightness.dark,
-        primary: Color(0xfff67900),
-        onPrimary: Color(0xffeeeeee),
-        secondary: Color(0xff472d14),
-        onSecondary: Color(0xfff67900),
-        error: Color(0xffd83030),
-        onError: Color(0xffeeeeee),
-        surface: Color(0xff000000),
-        onSurface: Color(0xfff6f6f6),
-        primaryContainer: Color(0xff222222),
-        surfaceContainer: Color(0xff242424),
-        surfaceContainerLow: Color(0xff292929),
-        surfaceContainerLowest: Color(0xff181818),
-        onPrimaryContainer: Color(0xfff6f6f6),
-        onSecondaryContainer: Color(0xffa7a7a7),
-        onSurfaceVariant: Color(0xff313131),
-        onPrimaryFixedVariant: Color(0xff8c8c8c));
+      brightness: Brightness.dark,
+      primary: Color(0xfff67900),
+      onPrimary: Color(0xffeeeeee),
+      secondary: Color(0xff472d14),
+      onSecondary: Color(0xfff67900),
+      error: Color(0xffd83030),
+      onError: Color(0xffeeeeee),
+      surface: Color(0xff000000),
+      onSurface: Color(0xfff6f6f6),
+      primaryContainer: Color(0xff222222),
+      surfaceContainerHigh: Color(0xff383838),
+      surfaceContainer: Color(0xff242424),
+      surfaceContainerLow: Color(0xff292929),
+      surfaceContainerLowest: Color(0xff181818),
+      onPrimaryContainer: Color(0xfff6f6f6),
+      onSecondaryContainer: Color(0xffa7a7a7),
+      onSurfaceVariant: Color(0xff313131),
+      onPrimaryFixedVariant: Color(0xff8c8c8c),
+    );
 
     return Provider(
       create: (_) => questvaleDB,

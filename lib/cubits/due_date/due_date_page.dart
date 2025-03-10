@@ -6,7 +6,9 @@ import 'package:questvale/cubits/due_date/due_date_view.dart';
 class DueDatePage {
   static Future<void> showModal(
     BuildContext context, {
-    required void Function(String) onDateSelected,
+    required void Function(DateTime?, bool) onDateSelected,
+    DateTime? initialDate,
+    bool initialHasTime = false,
   }) async {
     await showModalBottomSheet(
       context: context,
@@ -16,7 +18,11 @@ class DueDatePage {
       ),
       clipBehavior: Clip.antiAliasWithSaveLayer,
       builder: (context) => BlocProvider(
-        create: (context) => DueDateCubit(onDateSelected: onDateSelected),
+        create: (context) => DueDateCubit(
+          onDateSelected: onDateSelected,
+          initialDueDate: initialDate,
+          initialHasTime: initialHasTime,
+        ),
         child: const DueDateView(),
       ),
     );

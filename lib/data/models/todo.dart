@@ -78,6 +78,7 @@ class Todo {
   static const difficultyColumnName = 'difficulty';
   static const priorityColumnName = 'priority';
   static const dueDateColumnName = 'dueDate';
+  static const hasTimeColumnName = 'hasTime';
 
   static const createTableSQL = '''
 		CREATE TABLE ${Todo.todoTableName}(
@@ -88,7 +89,8 @@ class Todo {
 			${Todo.isCompletedColumnName} BOOLEAN,
 			${Todo.difficultyColumnName} INTEGER,
 			${Todo.priorityColumnName} INTEGER,
-			${Todo.dueDateColumnName} VARCHAR
+			${Todo.dueDateColumnName} VARCHAR,
+			${Todo.hasTimeColumnName} BOOLEAN
 		);
 	''';
 
@@ -100,6 +102,7 @@ class Todo {
   final DifficultyLevel difficulty;
   final PriorityLevel priority;
   final String dueDate;
+  final bool hasTime;
   final List<Tag> tags;
 
   const Todo({
@@ -111,6 +114,7 @@ class Todo {
     required this.difficulty,
     required this.priority,
     required this.dueDate,
+    required this.hasTime,
     required this.tags,
   });
 
@@ -124,6 +128,7 @@ class Todo {
       Todo.difficultyColumnName: difficulty.index,
       Todo.priorityColumnName: priority.index,
       Todo.dueDateColumnName: dueDate,
+      Todo.hasTimeColumnName: hasTime ? 1 : 0,
     };
   }
 
@@ -136,6 +141,7 @@ class Todo {
 				isCompleted: $isCompleted
 				difficulty: $difficulty
 				dueDate: $dueDate
+				hasTime: $hasTime
 				tags: $tags
 			}''';
   }
@@ -147,6 +153,7 @@ class Todo {
     DifficultyLevel? difficulty,
     PriorityLevel? priority,
     String? dueDate,
+    bool? hasTime,
     List<Tag>? tags,
   }) {
     return Todo(
@@ -158,6 +165,7 @@ class Todo {
       difficulty: difficulty ?? this.difficulty,
       priority: priority ?? this.priority,
       dueDate: dueDate ?? this.dueDate,
+      hasTime: hasTime ?? this.hasTime,
       tags: tags ?? this.tags,
     );
   }

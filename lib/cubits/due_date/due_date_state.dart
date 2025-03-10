@@ -5,26 +5,26 @@ enum DueDateStatus { initial, loading, done }
 class DueDateState extends Equatable {
   final DueDateStatus status;
   final DateTime? selectedDate;
-  final DateTime? selectedTime;
+  final bool hasTime;
 
   const DueDateState({
     this.status = DueDateStatus.initial,
     this.selectedDate,
-    this.selectedTime,
+    this.hasTime = false,
   });
 
   DueDateState copyWith({
     DueDateStatus? status,
     DateTime? selectedDate,
-    DateTime? selectedTime,
+    bool? hasTime,
   }) {
     return DueDateState(
       status: status ?? this.status,
       selectedDate: selectedDate ?? this.selectedDate,
-      selectedTime: selectedTime ?? this.selectedTime,
+      hasTime: hasTime ?? this.hasTime,
     );
   }
 
   @override
-  List<Object?> get props => [status, selectedDate, selectedTime];
+  List<Object?> get props => [status, selectedDate, hasTime];
 }

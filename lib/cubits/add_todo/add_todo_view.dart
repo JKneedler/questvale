@@ -8,6 +8,7 @@ import 'package:questvale/cubits/character_tag/create_character_tag_page.dart';
 import 'package:questvale/cubits/due_date/due_date_page.dart';
 import 'package:questvale/data/models/character_tag.dart';
 import 'package:questvale/data/models/todo.dart';
+import 'package:questvale/helpers/data_formatters.dart';
 
 class AddTodoView extends StatelessWidget {
   final void Function() onTodoAdded;
@@ -259,19 +260,35 @@ class EtcFields extends StatelessWidget {
           onTap: () async {
             await DueDatePage.showModal(
               context,
-              onDateSelected: (date) =>
-                  context.read<AddTodoCubit>().dueDateChanged(date),
+              initialDate: state.dueDate,
+              initialHasTime: state.hasTime,
+              onDateSelected: (DateTime? date, bool hasTime) =>
+                  context.read<AddTodoCubit>().dueDateChanged(date, hasTime),
             );
           },
-          child: Icon(
-            Symbols.calendar_clock,
-            color: state.dueDate.isNotEmpty
-                ? colorScheme.primary
-                : colorScheme.onPrimaryFixedVariant,
-            weight: 600,
+          child: Row(
+            children: [
+              Icon(
+                Symbols.calendar_clock,
+                color: state.dueDate != null
+                    ? colorScheme.primary
+                    : colorScheme.onPrimaryFixedVariant,
+                weight: 600,
+              ),
+              const SizedBox(width: 4),
+              if (state.dueDate != null)
+                Text(
+                  DataFormatters.formatDateTime(state.dueDate!, state.hasTime),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+            ],
           ),
         ),
-        const SizedBox(width: 18),
+        const SizedBox(width: 12),
         GestureDetector(
           onTap: () async {
             final RenderBox button = context.findRenderObject() as RenderBox;
@@ -320,7 +337,7 @@ class EtcFields extends StatelessWidget {
             weight: 600,
           ),
         ),
-        const SizedBox(width: 18),
+        const SizedBox(width: 12),
         GestureDetector(
           onTap: () async {
             final RenderBox button = context.findRenderObject() as RenderBox;
@@ -369,7 +386,7 @@ class EtcFields extends StatelessWidget {
             weight: 600,
           ),
         ),
-        const SizedBox(width: 18),
+        const SizedBox(width: 12),
         Icon(
           Symbols.more_horiz,
           color: colorScheme.onPrimaryFixedVariant,

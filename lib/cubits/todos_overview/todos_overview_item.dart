@@ -5,6 +5,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:questvale/cubits/todos_overview/todos_overview_cubit.dart';
 import 'package:questvale/data/models/character_tag.dart';
 import 'package:questvale/data/models/tag.dart';
+import 'package:questvale/helpers/data_formatters.dart';
 import 'package:questvale/widgets/check_box.dart';
 import '../../data/models/todo.dart';
 
@@ -23,6 +24,10 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     final todoCubit = context.read<TodosOverviewCubit>();
+    final dueDate = widget.todo.dueDate.isNotEmpty
+        ? DateTime.parse(widget.todo.dueDate)
+        : null;
+    final isPastDue = dueDate != null && dueDate.isBefore(DateTime.now());
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -124,13 +129,29 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
                                     .map((tag) => TodoItemTagChip(tag: tag))
                                     .toList(),
                               ),
-                            if (widget.todo.difficulty !=
-                                DifficultyLevel.trivial)
-                              Icon(
-                                Symbols.trophy,
-                                color: widget.todo.difficulty.color,
-                                size: 16,
-                              ),
+                            Row(
+                              children: [
+                                if (widget.todo.difficulty !=
+                                    DifficultyLevel.trivial)
+                                  Icon(
+                                    Symbols.trophy,
+                                    color: widget.todo.difficulty.color,
+                                    size: 16,
+                                  ),
+                                const SizedBox(width: 4),
+                                if (widget.todo.dueDate.isNotEmpty)
+                                  Text(
+                                    DataFormatters.formatDateTime(
+                                        dueDate!, widget.todo.hasTime),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: isPastDue
+                                          ? colorScheme.error
+                                          : colorScheme.primary,
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ],
                         ),
                       ),
