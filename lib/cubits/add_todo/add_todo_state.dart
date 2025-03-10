@@ -10,7 +10,8 @@ class AddTodoState extends Equatable {
   final String id;
   final String name;
   final String description;
-  final String dueDate;
+  final DateTime? dueDate;
+  final bool hasTime;
   final DifficultyLevel difficulty;
   final PriorityLevel priority;
   final List<Tag> availableTags;
@@ -22,7 +23,8 @@ class AddTodoState extends Equatable {
     required this.id,
     this.name = '',
     this.description = '',
-    this.dueDate = '',
+    this.dueDate,
+    this.hasTime = false,
     this.difficulty = DifficultyLevel.trivial,
     this.priority = PriorityLevel.noPriority,
     this.availableTags = const [],
@@ -35,7 +37,8 @@ class AddTodoState extends Equatable {
     String? id,
     String? name,
     String? description,
-    String? dueDate,
+    DateTime? dueDate,
+    bool? hasTime,
     DifficultyLevel? difficulty,
     PriorityLevel? priority,
     List<Tag>? availableTags,
@@ -48,6 +51,7 @@ class AddTodoState extends Equatable {
       name: name ?? this.name,
       description: description ?? this.description,
       dueDate: dueDate ?? this.dueDate,
+      hasTime: hasTime ?? this.hasTime,
       difficulty: difficulty ?? this.difficulty,
       priority: priority ?? this.priority,
       availableTags: availableTags ?? this.availableTags,
@@ -56,12 +60,13 @@ class AddTodoState extends Equatable {
   }
 
   @override
-  List<Object> get props => [
+  List<Object?> get props => [
         status,
         characterId,
         id,
         name,
         description,
+        hasTime,
         dueDate,
         difficulty,
         priority,

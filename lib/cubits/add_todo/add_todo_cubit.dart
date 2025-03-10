@@ -44,8 +44,20 @@ class AddTodoCubit extends Cubit<AddTodoState> {
     emit(state.copyWith(description: value));
   }
 
-  void dueDateChanged(String value) {
-    emit(state.copyWith(dueDate: value));
+  void dueDateChanged(DateTime? date, bool hasTime) {
+    emit(AddTodoState(
+      id: state.id,
+      characterId: state.characterId,
+      name: state.name,
+      description: state.description,
+      dueDate: date,
+      hasTime: hasTime,
+      difficulty: state.difficulty,
+      priority: state.priority,
+      availableTags: state.availableTags,
+      selectedTags: state.selectedTags,
+      status: AddTodoStatus.initial,
+    ));
   }
 
   void difficultyChanged(DifficultyLevel value) {
@@ -74,20 +86,23 @@ class AddTodoCubit extends Cubit<AddTodoState> {
         characterId: characterId,
         name: state.name,
         description: state.description,
-        dueDate: state.dueDate,
+        dueDate: state.dueDate != null ? state.dueDate!.toIso8601String() : '',
         difficulty: state.difficulty,
         priority: state.priority,
         isCompleted: false,
         tags: state.selectedTags,
+        hasTime: state.hasTime,
       );
 
       await todoRepository.createTodo(todo);
-      emit(state.copyWith(
+      emit(AddTodoState(
         status: AddTodoStatus.initial,
         id: const Uuid().v4(),
+        characterId: characterId,
         name: '',
         description: '',
-        dueDate: '',
+        dueDate: null,
+        hasTime: false,
         difficulty: DifficultyLevel.trivial,
         priority: PriorityLevel.noPriority,
         selectedTags: [],
