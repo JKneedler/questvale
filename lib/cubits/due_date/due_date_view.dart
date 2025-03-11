@@ -6,6 +6,7 @@ import 'package:questvale/cubits/due_date/due_date_state.dart';
 import 'package:questvale/cubits/time_picker/time_picker_cubit.dart';
 import 'package:questvale/cubits/time_picker/time_picker_view.dart';
 import 'package:questvale/helpers/data_formatters.dart';
+import 'package:questvale/widgets/qv_popup_menu.dart';
 
 class DueDateView extends StatelessWidget {
   const DueDateView({super.key});
@@ -120,7 +121,6 @@ class DueDateView extends StatelessWidget {
                 const SizedBox(height: 16),
                 Container(
                   margin: const EdgeInsets.symmetric(horizontal: 8.0),
-                  padding: const EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
                     color: colorScheme.surfaceContainerHigh,
                     borderRadius: BorderRadius.circular(8),
@@ -195,55 +195,23 @@ class TimeRow extends StatelessWidget {
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     final state = context.watch<DueDateCubit>().state;
-
-    return MenuAnchor(
-      style: const MenuStyle(
-        alignment: AlignmentDirectional.bottomEnd,
-      ),
-      menuChildren: [
-        MenuItemButton(
-          child: BlocProvider(
-            create: (context) => TimePickerCubit(
-              initialTime: state.hasTime
-                  ? TimeOfDay(
-                      hour: state.selectedDate!.hour,
-                      minute: state.selectedDate!.minute,
-                    )
-                  : TimeOfDay.now(),
-              onTimeSelected: (time) {
-                final now = DateTime.now();
-                final dateTime = DateTime(
-                  now.year,
-                  now.month,
-                  now.day,
-                  time.hour,
-                  time.minute,
-                );
-                context.read<DueDateCubit>().updateSelectedTime(dateTime);
-              },
-            ),
-            child: const TimePickerView(),
-          ),
-        ),
-      ],
-      builder: (context, controller, child) {
-        return InkWell(
-          onTap: () {
-            if (controller.isOpen) {
-              controller.close();
-            } else {
-              controller.open();
-            }
-          },
-          child: Row(
-            children: [
-              Icon(Icons.access_time,
-                  color: state.hasTime
-                      ? colorScheme.primary
-                      : colorScheme.onSurface,
-                  size: 20),
-              SizedBox(width: 10),
-              Text(
+    final menuController = MenuController();
+    return QVPopupMenu(
+      menuController: menuController,
+      alignment: AlignmentDirectional.bottomEnd,
+      offset: const Offset(-240, -275),
+      button: Container(
+        color: Colors.transparent,
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            Icon(Icons.access_time,
+                color:
+                    state.hasTime ? colorScheme.primary : colorScheme.onSurface,
+                size: 20),
+            SizedBox(width: 10),
+            Expanded(
+              child: Text(
                 'Time',
                 style: TextStyle(
                   color: state.hasTime
@@ -253,34 +221,57 @@ class TimeRow extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              Spacer(),
-              Text(
-                state.hasTime
-                    ? DataFormatters.formatTime(state.selectedDate!)
-                    : 'None',
-                style: TextStyle(
-                  color: state.hasTime
-                      ? colorScheme.primary
-                      : colorScheme.onPrimaryFixedVariant,
-                  fontSize: 14,
-                ),
+            ),
+            Text(
+              state.hasTime
+                  ? DataFormatters.formatTime(state.selectedDate!)
+                  : 'None',
+              style: TextStyle(
+                color: state.hasTime
+                    ? colorScheme.primary
+                    : colorScheme.onPrimaryFixedVariant,
+                fontSize: 14,
               ),
-              const SizedBox(width: 10),
-              if (!state.hasTime)
-                Icon(Symbols.unfold_more,
-                    color: colorScheme.onPrimaryFixedVariant, size: 20),
-              if (state.hasTime)
-                GestureDetector(
-                  onTap: () {
-                    context.read<DueDateCubit>().clearSelectedTime();
-                  },
-                  child: Icon(Symbols.close,
-                      color: colorScheme.error, size: 20, weight: 900),
-                ),
-            ],
+            ),
+            const SizedBox(width: 10),
+            if (!state.hasTime)
+              Icon(Symbols.unfold_more,
+                  color: colorScheme.onPrimaryFixedVariant, size: 20),
+            if (state.hasTime)
+              GestureDetector(
+                onTap: () {
+                  context.read<DueDateCubit>().clearSelectedTime();
+                },
+                child: Icon(Symbols.close,
+                    color: colorScheme.error, size: 20, weight: 900),
+              ),
+          ],
+        ),
+      ),
+      menuContents: [
+        BlocProvider(
+          create: (context) => TimePickerCubit(
+            initialTime: state.hasTime
+                ? TimeOfDay(
+                    hour: state.selectedDate!.hour,
+                    minute: state.selectedDate!.minute,
+                  )
+                : TimeOfDay.now(),
+            onTimeSelected: (time) {
+              final now = DateTime.now();
+              final dateTime = DateTime(
+                now.year,
+                now.month,
+                now.day,
+                time.hour,
+                time.minute,
+              );
+              context.read<DueDateCubit>().updateSelectedTime(dateTime);
+            },
           ),
-        );
-      },
+          child: const TimePickerView(),
+        ),
+      ],
     );
   }
 }
