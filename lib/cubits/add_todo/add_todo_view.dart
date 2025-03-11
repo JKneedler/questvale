@@ -3,12 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:questvale/cubits/add_todo/add_todo_cubit.dart';
 import 'package:questvale/cubits/add_todo/add_todo_state.dart';
-import 'package:questvale/cubits/add_todo/difficulty_selector_view.dart';
 import 'package:questvale/cubits/character_tag/create_character_tag_page.dart';
 import 'package:questvale/cubits/due_date/due_date_page.dart';
 import 'package:questvale/data/models/character_tag.dart';
 import 'package:questvale/data/models/todo.dart';
 import 'package:questvale/helpers/data_formatters.dart';
+import 'package:questvale/widgets/qv_popup_menu.dart';
+import 'package:questvale/widgets/qv_popup_menu_item.dart';
 
 class AddTodoView extends StatelessWidget {
   final void Function() onTodoAdded;
@@ -289,103 +290,9 @@ class EtcFields extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 12),
-        GestureDetector(
-          onTap: () async {
-            final RenderBox button = context.findRenderObject() as RenderBox;
-            final RenderBox overlay = Navigator.of(context)
-                .overlay!
-                .context
-                .findRenderObject() as RenderBox;
-            final RelativeRect position = RelativeRect.fromRect(
-              Rect.fromPoints(
-                button.localToGlobal(Offset.zero, ancestor: overlay),
-                button.localToGlobal(button.size.bottomRight(Offset.zero),
-                    ancestor: overlay),
-              ),
-              Offset.zero & overlay.size,
-            );
-
-            final priority = await showMenu<PriorityLevel>(
-              context: context,
-              position: position,
-              items: PriorityLevel.values
-                  .map((level) => PopupMenuItem(
-                        value: level,
-                        child: Row(
-                          children: [
-                            Icon(
-                              Symbols.flag_2,
-                              color: level.color,
-                              weight: 600,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(level.name),
-                          ],
-                        ),
-                      ))
-                  .toList(),
-            );
-            if (priority != null) {
-              context.read<AddTodoCubit>().priorityChanged(priority);
-            }
-          },
-          child: Icon(
-            Symbols.flag_2,
-            color: state.priority != PriorityLevel.noPriority
-                ? state.priority.color
-                : colorScheme.onPrimaryFixedVariant,
-            weight: 600,
-          ),
-        ),
+        PriorityMenu(priority: state.priority),
         const SizedBox(width: 12),
-        GestureDetector(
-          onTap: () async {
-            final RenderBox button = context.findRenderObject() as RenderBox;
-            final RenderBox overlay = Navigator.of(context)
-                .overlay!
-                .context
-                .findRenderObject() as RenderBox;
-            final RelativeRect position = RelativeRect.fromRect(
-              Rect.fromPoints(
-                button.localToGlobal(Offset.zero, ancestor: overlay),
-                button.localToGlobal(button.size.bottomRight(Offset.zero),
-                    ancestor: overlay),
-              ),
-              Offset.zero & overlay.size,
-            );
-
-            final difficulty = await showMenu<DifficultyLevel>(
-              context: context,
-              position: position,
-              items: DifficultyLevel.values
-                  .map((level) => PopupMenuItem(
-                        value: level,
-                        child: Row(
-                          children: [
-                            Icon(
-                              Symbols.trophy,
-                              color: level.color,
-                              weight: 600,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(level.name),
-                          ],
-                        ),
-                      ))
-                  .toList(),
-            );
-            if (difficulty != null) {
-              context.read<AddTodoCubit>().difficultyChanged(difficulty);
-            }
-          },
-          child: Icon(
-            Symbols.trophy,
-            color: state.difficulty != DifficultyLevel.trivial
-                ? state.difficulty.color
-                : colorScheme.onPrimaryFixedVariant,
-            weight: 600,
-          ),
-        ),
+        DifficultyMenu(difficulty: state.difficulty),
         const SizedBox(width: 12),
         Icon(
           Symbols.more_horiz,
@@ -416,6 +323,82 @@ class EtcFields extends StatelessWidget {
             ),
           ),
         ),
+      ],
+    );
+  }
+}
+
+class PriorityMenu extends StatelessWidget {
+  final PriorityLevel priority;
+
+  final MenuController menuController = MenuController();
+
+  PriorityMenu({super.key, required this.priority});
+
+  @override
+  Widget build(BuildContext context) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+    return QVPopupMenu(
+      menuController: menuController,
+      offset: const Offset(0, -205),
+      button: Icon(
+        Symbols.flag_2,
+        color: priority != PriorityLevel.noPriority
+            ? priority.color
+            : colorScheme.onPrimaryFixedVariant,
+        weight: 600,
+      ),
+      menuContents: [
+        for (int i = PriorityLevel.values.length - 1; i >= 0; i--)
+          QvPopupMenuItem(
+            text: PriorityLevel.values[i].name,
+            icon: Symbols.flag_2,
+            iconColor: PriorityLevel.values[i].color,
+            onPressed: () {
+              menuController.close();
+              context
+                  .read<AddTodoCubit>()
+                  .priorityChanged(PriorityLevel.values[i]);
+            },
+          ),
+      ],
+    );
+  }
+}
+
+class DifficultyMenu extends StatelessWidget {
+  final DifficultyLevel difficulty;
+
+  final MenuController menuController = MenuController();
+
+  DifficultyMenu({super.key, required this.difficulty});
+
+  @override
+  Widget build(BuildContext context) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+    return QVPopupMenu(
+      menuController: menuController,
+      offset: const Offset(0, -205),
+      button: Icon(
+        Symbols.trophy,
+        color: difficulty != DifficultyLevel.trivial
+            ? difficulty.color
+            : colorScheme.onPrimaryFixedVariant,
+        weight: 600,
+      ),
+      menuContents: [
+        for (int i = DifficultyLevel.values.length - 1; i >= 0; i--)
+          QvPopupMenuItem(
+            text: DifficultyLevel.values[i].name,
+            icon: Symbols.trophy,
+            iconColor: DifficultyLevel.values[i].color,
+            onPressed: () {
+              menuController.close();
+              context
+                  .read<AddTodoCubit>()
+                  .difficultyChanged(DifficultyLevel.values[i]);
+            },
+          ),
       ],
     );
   }
