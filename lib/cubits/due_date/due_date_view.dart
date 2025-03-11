@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:questvale/cubits/add_todo/add_todo_state.dart';
 import 'package:questvale/cubits/due_date/due_date_cubit.dart';
 import 'package:questvale/cubits/due_date/due_date_state.dart';
 import 'package:questvale/cubits/time_picker/time_picker_cubit.dart';
 import 'package:questvale/cubits/time_picker/time_picker_view.dart';
 import 'package:questvale/helpers/data_formatters.dart';
 import 'package:questvale/widgets/qv_popup_menu.dart';
+import 'package:questvale/widgets/qv_popup_menu_check_item.dart';
 
 class DueDateView extends StatelessWidget {
   const DueDateView({super.key});
@@ -128,6 +130,14 @@ class DueDateView extends StatelessWidget {
                   child: Column(
                     children: [
                       TimeRow(),
+                      Divider(
+                        color: Color.lerp(colorScheme.onPrimaryFixedVariant,
+                            Colors.transparent, 0.5),
+                        height: 1,
+                        indent: 16,
+                        endIndent: 16,
+                      ),
+                      ReminderRow(),
                     ],
                   ),
                 ),
@@ -196,6 +206,7 @@ class TimeRow extends StatelessWidget {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     final state = context.watch<DueDateCubit>().state;
     final menuController = MenuController();
+
     return QVPopupMenu(
       menuController: menuController,
       alignment: AlignmentDirectional.bottomEnd,
@@ -271,6 +282,93 @@ class TimeRow extends StatelessWidget {
           ),
           child: const TimePickerView(),
         ),
+      ],
+    );
+  }
+}
+
+class ReminderRow extends StatelessWidget {
+  const ReminderRow({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final state = context.watch<DueDateCubit>().state;
+    final menuController = MenuController();
+
+    final reminders = state.hasTime
+        ? ReminderType.values.sublist(5, 10)
+        : ReminderType.values.sublist(0, 5);
+
+    return QVPopupMenu(
+      menuController: menuController,
+      alignment: AlignmentDirectional.bottomEnd,
+      offset: const Offset(-200, -295),
+      button: Container(
+        color: Colors.transparent,
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            Icon(Symbols.alarm,
+                color: state.reminders.isNotEmpty
+                    ? colorScheme.primary
+                    : colorScheme.onSurface,
+                size: 20),
+            SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Reminders',
+                style: TextStyle(
+                  color: state.reminders.isNotEmpty
+                      ? colorScheme.primary
+                      : colorScheme.onSurface,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            SizedBox(
+              width: 180,
+              child: Text(
+                state.reminders.isNotEmpty
+                    ? state.reminders.map((e) => e.name).join(', ')
+                    : 'None',
+                style: TextStyle(
+                  color: state.reminders.isNotEmpty
+                      ? colorScheme.primary
+                      : colorScheme.onPrimaryFixedVariant,
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.end,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 10),
+            if (!state.reminders.isNotEmpty)
+              Icon(Symbols.unfold_more,
+                  color: colorScheme.onPrimaryFixedVariant, size: 20),
+            if (state.reminders.isNotEmpty)
+              GestureDetector(
+                onTap: () {
+                  context.read<DueDateCubit>().clearReminders();
+                },
+                child: Icon(Symbols.close,
+                    color: colorScheme.error, size: 20, weight: 900),
+              ),
+          ],
+        ),
+      ),
+      menuContents: [
+        for (ReminderType reminderType in reminders)
+          QvPopupMenuCheckItem(
+            text: reminderType.name,
+            isChecked: state.reminders.contains(reminderType),
+            onPressed: () {
+              context.read<DueDateCubit>().toggleReminder(reminderType);
+            },
+          ),
       ],
     );
   }

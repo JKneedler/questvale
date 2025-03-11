@@ -24,10 +24,8 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     final todoCubit = context.read<TodosOverviewCubit>();
-    final dueDate = widget.todo.dueDate.isNotEmpty
-        ? DateTime.parse(widget.todo.dueDate)
-        : null;
-    final isPastDue = dueDate != null && dueDate.isBefore(DateTime.now());
+    final isPastDue = widget.todo.dueDate != null &&
+        widget.todo.dueDate!.isBefore(DateTime.now());
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -139,10 +137,11 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
                                     size: 16,
                                   ),
                                 const SizedBox(width: 4),
-                                if (widget.todo.dueDate.isNotEmpty)
+                                if (widget.todo.dueDate != null)
                                   Text(
                                     DataFormatters.formatDateTime(
-                                        dueDate!, widget.todo.hasTime),
+                                        widget.todo.dueDate!,
+                                        widget.todo.hasTime),
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: isPastDue

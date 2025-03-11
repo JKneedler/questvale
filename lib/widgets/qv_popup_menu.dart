@@ -53,9 +53,9 @@ class _QVPopupMenuState extends State<QVPopupMenu>
         setState(() => _isOpen = true);
         _animationController.forward();
       },
-      onClose: () {
+      onClose: () async {
         setState(() => _isOpen = false);
-        _animationController.reverse();
+        await _animationController.reverse();
       },
       style: MenuStyle(
         alignment: widget.alignment,

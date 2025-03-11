@@ -4,6 +4,44 @@ import 'package:questvale/data/models/todo.dart';
 
 enum AddTodoStatus { initial, loading, done }
 
+enum ReminderType {
+  atTimeWithoutTime,
+  oneDayBeforeWithoutTime,
+  twoDaysBeforeWithoutTime,
+  threeDeysBeforeWithoutTime,
+  oneWeekBeforeWithoutTime,
+  atTimeWithTime,
+  fiveMinutesBeforeWithTime,
+  thirtyMinutesBeforeWithTime,
+  oneHourBeforeWithTime,
+  oneDayBeforeWithTime;
+
+  String get name {
+    switch (this) {
+      case ReminderType.atTimeWithoutTime:
+        return 'On time';
+      case ReminderType.oneDayBeforeWithoutTime:
+        return '1 day before';
+      case ReminderType.twoDaysBeforeWithoutTime:
+        return '2 days before';
+      case ReminderType.threeDeysBeforeWithoutTime:
+        return '3 days before';
+      case ReminderType.oneWeekBeforeWithoutTime:
+        return '1 week before';
+      case ReminderType.atTimeWithTime:
+        return 'On time';
+      case ReminderType.fiveMinutesBeforeWithTime:
+        return '5 minutes before';
+      case ReminderType.thirtyMinutesBeforeWithTime:
+        return '30 minutes before';
+      case ReminderType.oneHourBeforeWithTime:
+        return '1 hour before';
+      case ReminderType.oneDayBeforeWithTime:
+        return '1 day before';
+    }
+  }
+}
+
 class AddTodoState extends Equatable {
   final AddTodoStatus status;
   final String characterId;
@@ -16,6 +54,7 @@ class AddTodoState extends Equatable {
   final PriorityLevel priority;
   final List<Tag> availableTags;
   final List<Tag> selectedTags;
+  final List<ReminderType> reminders;
 
   const AddTodoState({
     this.status = AddTodoStatus.initial,
@@ -29,6 +68,7 @@ class AddTodoState extends Equatable {
     this.priority = PriorityLevel.noPriority,
     this.availableTags = const [],
     this.selectedTags = const [],
+    this.reminders = const [],
   });
 
   AddTodoState copyWith({
@@ -43,6 +83,7 @@ class AddTodoState extends Equatable {
     PriorityLevel? priority,
     List<Tag>? availableTags,
     List<Tag>? selectedTags,
+    List<ReminderType>? reminders,
   }) {
     return AddTodoState(
       status: status ?? this.status,
@@ -56,6 +97,7 @@ class AddTodoState extends Equatable {
       priority: priority ?? this.priority,
       availableTags: availableTags ?? this.availableTags,
       selectedTags: selectedTags ?? this.selectedTags,
+      reminders: reminders ?? this.reminders,
     );
   }
 
@@ -72,5 +114,6 @@ class AddTodoState extends Equatable {
         priority,
         availableTags,
         selectedTags,
+        reminders,
       ];
 }
