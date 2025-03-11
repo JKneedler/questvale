@@ -263,8 +263,12 @@ class EtcFields extends StatelessWidget {
               context,
               initialDate: state.dueDate,
               initialHasTime: state.hasTime,
-              onDateSelected: (DateTime? date, bool hasTime) =>
-                  context.read<AddTodoCubit>().dueDateChanged(date, hasTime),
+              initialReminders: state.reminders,
+              onDateSelected: (DateTime? date, bool hasTime,
+                      List<ReminderType> reminders) =>
+                  context
+                      .read<AddTodoCubit>()
+                      .dueDateChanged(date, hasTime, reminders),
             );
           },
           child: Row(

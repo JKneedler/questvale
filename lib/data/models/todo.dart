@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:questvale/data/models/tag.dart';
+import 'package:questvale/data/models/todo_reminder.dart';
 
 enum DifficultyLevel {
   trivial,
@@ -89,7 +90,7 @@ class Todo {
 			${Todo.isCompletedColumnName} BOOLEAN,
 			${Todo.difficultyColumnName} INTEGER,
 			${Todo.priorityColumnName} INTEGER,
-			${Todo.dueDateColumnName} VARCHAR,
+			${Todo.dueDateColumnName} INTEGER,
 			${Todo.hasTimeColumnName} BOOLEAN
 		);
 	''';
@@ -101,9 +102,10 @@ class Todo {
   final bool isCompleted;
   final DifficultyLevel difficulty;
   final PriorityLevel priority;
-  final String dueDate;
+  final DateTime? dueDate;
   final bool hasTime;
   final List<Tag> tags;
+  final List<TodoReminder> reminders;
 
   const Todo({
     required this.id,
@@ -116,6 +118,7 @@ class Todo {
     required this.dueDate,
     required this.hasTime,
     required this.tags,
+    required this.reminders,
   });
 
   Map<String, Object?> toMap() {
@@ -127,7 +130,7 @@ class Todo {
       Todo.isCompletedColumnName: isCompleted ? 1 : 0,
       Todo.difficultyColumnName: difficulty.index,
       Todo.priorityColumnName: priority.index,
-      Todo.dueDateColumnName: dueDate,
+      Todo.dueDateColumnName: dueDate?.millisecondsSinceEpoch,
       Todo.hasTimeColumnName: hasTime ? 1 : 0,
     };
   }
@@ -143,6 +146,7 @@ class Todo {
 				dueDate: $dueDate
 				hasTime: $hasTime
 				tags: $tags
+				reminders: $reminders
 			}''';
   }
 
@@ -152,9 +156,10 @@ class Todo {
     bool? isCompleted,
     DifficultyLevel? difficulty,
     PriorityLevel? priority,
-    String? dueDate,
+    DateTime? dueDate,
     bool? hasTime,
     List<Tag>? tags,
+    List<TodoReminder>? reminders,
   }) {
     return Todo(
       id: id,
@@ -167,6 +172,7 @@ class Todo {
       dueDate: dueDate ?? this.dueDate,
       hasTime: hasTime ?? this.hasTime,
       tags: tags ?? this.tags,
+      reminders: reminders ?? this.reminders,
     );
   }
 }

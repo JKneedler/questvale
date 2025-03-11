@@ -10,6 +10,7 @@ import 'package:questvale/data/models/quest_room.dart';
 import 'package:questvale/data/models/character_skill.dart';
 import 'package:questvale/data/models/todo.dart';
 import 'package:questvale/data/models/todo_tag.dart';
+import 'package:questvale/data/models/todo_reminder.dart';
 import 'package:questvale/data/models/character_tag.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
 import 'package:sqflite/sqflite.dart';
@@ -21,6 +22,7 @@ class QuestvaleDB {
         onCreate: (db, version) async {
       await db.execute(Todo.createTableSQL);
       await db.execute(TodoTag.createTableSQL);
+      await db.execute(TodoReminder.createTableSQL);
       await db.execute(CharacterTag.createTableSQL);
       await db.execute(Character.createTableSQL);
       await db.execute(Quest.createTableSQL);

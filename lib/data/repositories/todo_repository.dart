@@ -1,6 +1,7 @@
 import 'package:questvale/data/models/character_tag.dart';
 import 'package:questvale/data/models/tag.dart';
 import 'package:questvale/data/models/todo.dart';
+import 'package:questvale/data/models/todo_reminder.dart';
 import 'package:questvale/data/models/todo_tag.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
@@ -8,9 +9,7 @@ import 'package:uuid/uuid.dart';
 class TodoRepository {
   final Database db;
 
-  TodoRepository({required this.db}) {
-    logTodos();
-  }
+  TodoRepository({required this.db});
 
   // GET all todos
   Future<List<Todo>> getTodosByCharacterId(String characterId) async {
@@ -30,11 +29,6 @@ class TodoRepository {
     return todo;
   }
 
-  // ADD todo
-  Future<void> addTodo(Todo addTodo) async {
-    await db.insert(Todo.todoTableName, addTodo.toMap());
-  }
-
   // UPDATE todo
   Future<void> updateTodo(Todo updateTodo) async {
     await db.update(Todo.todoTableName, updateTodo.toMap(),
@@ -50,14 +44,7 @@ class TodoRepository {
     );
   }
 
-  Future<void> logTodos() async {
-    final todoMaps = await db.query(Todo.todoTableName);
-    print('Todos:');
-    for (final todoMap in todoMaps) {
-      print(todoMap);
-    }
-  }
-
+  // INSERT todo
   Future<void> createTodo(Todo todo) async {
     await db.insert(
       Todo.todoTableName,
@@ -76,10 +63,21 @@ class TodoRepository {
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
     }
+
+    for (final reminder in todo.reminders) {
+      await db.insert(
+        TodoReminder.todoReminderTableName,
+        reminder.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
   }
 
+  // GET todo from map
   Future<Todo> _getTodoFromMap(Map<String, dynamic> map) async {
     final tags = await _getTagsForTodo(map[Todo.idColumnName] as String);
+    final reminders =
+        await _getRemindersForTodo(map[Todo.idColumnName] as String);
     return Todo(
       id: map[Todo.idColumnName] as String,
       characterId: map[Todo.characterIdColumnName] as String,
@@ -87,13 +85,18 @@ class TodoRepository {
       description: map[Todo.descriptionColumnName] as String,
       difficulty: DifficultyLevel.values[map[Todo.difficultyColumnName] as int],
       priority: PriorityLevel.values[map[Todo.priorityColumnName] as int],
-      dueDate: map[Todo.dueDateColumnName] as String? ?? '',
+      dueDate: map[Todo.dueDateColumnName] != null
+          ? DateTime.fromMillisecondsSinceEpoch(
+              map[Todo.dueDateColumnName] as int)
+          : null,
       hasTime: map[Todo.hasTimeColumnName] == 1,
       isCompleted: map[Todo.isCompletedColumnName] == 1,
       tags: tags,
+      reminders: reminders,
     );
   }
 
+  // GET tags for todo
   Future<List<Tag>> _getTagsForTodo(String id) async {
     // Get TodoTags
     final todoTagsMaps = await db.query(TodoTag.todoTagTableName,
@@ -120,5 +123,46 @@ class TodoRepository {
       ),
     );
     return tags.toList();
+  }
+
+  // GET reminders for todo
+  Future<List<TodoReminder>> getRemindersForTodo(String todoId) async {
+    final reminders = await db.query(TodoReminder.todoReminderTableName,
+        where: '${TodoReminder.todoIdColumnName} = ?', whereArgs: [todoId]);
+    return reminders.map((map) => _getReminderFromMap(map)).toList();
+  }
+
+  // UPDATE reminder
+  Future<void> updateReminder(TodoReminder reminder) async {
+    await db.update(TodoReminder.todoReminderTableName, reminder.toMap(),
+        where: '${TodoReminder.idColumnName} = ?', whereArgs: [reminder.id]);
+  }
+
+  // DELETE reminder
+  Future<void> deleteReminder(TodoReminder reminder) async {
+    await db.delete(TodoReminder.todoReminderTableName,
+        where: '${TodoReminder.idColumnName} = ?', whereArgs: [reminder.id]);
+  }
+
+  // INSERT reminder
+  Future<void> createReminder(TodoReminder reminder) async {
+    await db.insert(TodoReminder.todoReminderTableName, reminder.toMap());
+  }
+
+  // GET reminder from map
+  TodoReminder _getReminderFromMap(Map<String, dynamic> map) {
+    return TodoReminder(
+      id: map[TodoReminder.idColumnName] as String,
+      todoId: map[TodoReminder.todoIdColumnName] as String,
+      dateTime: DateTime.fromMillisecondsSinceEpoch(
+          map[TodoReminder.dateTimeColumnName] as int),
+    );
+  }
+
+  // GET reminders for todo
+  Future<List<TodoReminder>> _getRemindersForTodo(String todoId) async {
+    final reminders = await db.query(TodoReminder.todoReminderTableName,
+        where: '${TodoReminder.todoIdColumnName} = ?', whereArgs: [todoId]);
+    return reminders.map((map) => _getReminderFromMap(map)).toList();
   }
 }

@@ -17,6 +17,7 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
   Future<void> loadCharacter() async {
     final character = await characterRepository.getSingleCharacter();
     final todos = await todoRepository.getTodosByCharacterId(character.id);
+    print(todos);
     final availableTags =
         await characterRepository.getCharacterTags(character.id);
     emit(
