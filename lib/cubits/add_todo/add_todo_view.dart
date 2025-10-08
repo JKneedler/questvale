@@ -7,9 +7,11 @@ import 'package:questvale/cubits/character_tag/create_character_tag_page.dart';
 import 'package:questvale/cubits/due_date/due_date_page.dart';
 import 'package:questvale/data/models/character_tag.dart';
 import 'package:questvale/data/models/todo.dart';
+import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/data_formatters.dart';
 import 'package:questvale/widgets/qv_popup_menu.dart';
 import 'package:questvale/widgets/qv_popup_menu_item.dart';
+import 'package:questvale/widgets/qv_textfield.dart';
 
 class AddTodoView extends StatelessWidget {
   final void Function() onTodoAdded;
@@ -63,21 +65,10 @@ class NameField extends StatelessWidget {
 
     return SizedBox(
       height: 36,
-      child: TextField(
-        key: Key('addTodoView_name_${id}_textField'),
-        decoration: InputDecoration(
-          hintText: 'Todo Name',
-          hintStyle: TextStyle(color: colorScheme.onPrimaryFixedVariant),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.zero,
-          isDense: true,
-        ),
-        style: TextStyle(
-          fontSize: 16,
-          color: colorScheme.onPrimaryContainer,
-          fontWeight: FontWeight.w500,
-        ),
-        textInputAction: TextInputAction.done,
+      child: QvTextField(
+        inputKey: Key('addTodoView_name_${id}_textField'),
+        hint: 'Todo Name',
+        textSize: 16,
         onChanged: (value) => context.read<AddTodoCubit>().nameChanged(value),
         onSubmitted: (value) async {
           if (value.isNotEmpty) {
@@ -85,6 +76,7 @@ class NameField extends StatelessWidget {
             onTodoAdded();
           }
         },
+        textInputAction: TextInputAction.done,
       ),
     );
   }
@@ -108,25 +100,22 @@ class DescriptionField extends StatelessWidget {
         minHeight: 45.0,
         maxHeight: 150.0,
       ),
-      child: TextField(
-        key: Key('addTodoView_description_${id}_textField'),
-        decoration: InputDecoration(
-          hintText: 'Description',
-          hintStyle: TextStyle(color: colorScheme.onPrimaryFixedVariant),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.zero,
-          isDense: true,
-        ),
-        style: TextStyle(
-          fontSize: 14,
-          color: colorScheme.onPrimaryContainer,
-        ),
-        maxLines: null,
-        minLines: 2,
-        keyboardType: TextInputType.multiline,
-        textInputAction: TextInputAction.newline,
+      child: QvTextField(
+        inputKey: Key('addTodoView_description_${id}_textField'),
+        hint: 'Description',
+        textSize: 14,
         onChanged: (value) =>
             context.read<AddTodoCubit>().descriptionChanged(value),
+        onSubmitted: (value) async {
+          if (value.isNotEmpty) {
+            await context.read<AddTodoCubit>().submit();
+            onTodoAdded();
+          }
+        },
+        textInputAction: TextInputAction.newline,
+        keyboardType: TextInputType.multiline,
+        maxLines: null,
+        minLines: 2,
       ),
     );
   }
@@ -346,7 +335,7 @@ class PriorityMenu extends StatelessWidget {
       menuController: menuController,
       offset: const Offset(0, -205),
       button: Icon(
-        Symbols.flag_2,
+        PRIORITY_ICON,
         color: priority != PriorityLevel.noPriority
             ? priority.color
             : colorScheme.onPrimaryFixedVariant,
@@ -356,7 +345,7 @@ class PriorityMenu extends StatelessWidget {
         for (int i = PriorityLevel.values.length - 1; i >= 0; i--)
           QvPopupMenuItem(
             text: PriorityLevel.values[i].name,
-            icon: Symbols.flag_2,
+            icon: PRIORITY_ICON,
             iconColor: PriorityLevel.values[i].color,
             onPressed: () {
               menuController.close();
@@ -384,7 +373,7 @@ class DifficultyMenu extends StatelessWidget {
       menuController: menuController,
       offset: const Offset(0, -205),
       button: Icon(
-        Symbols.trophy,
+        DIFFICULTY_ICON,
         color: difficulty != DifficultyLevel.trivial
             ? difficulty.color
             : colorScheme.onPrimaryFixedVariant,
@@ -394,7 +383,7 @@ class DifficultyMenu extends StatelessWidget {
         for (int i = DifficultyLevel.values.length - 1; i >= 0; i--)
           QvPopupMenuItem(
             text: DifficultyLevel.values[i].name,
-            icon: Symbols.trophy,
+            icon: DIFFICULTY_ICON,
             iconColor: DifficultyLevel.values[i].color,
             onPressed: () {
               menuController.close();

@@ -21,7 +21,9 @@ class SkillsOverviewCubit extends Cubit<SkillsOverviewState> {
     final character = await characterRepository.getSingleCharacter();
 
     int skillPoints = character.level;
-    for (CharacterSkill skill in character.skills) skillPoints -= skill.level;
+    for (CharacterSkill skill in character.skills) {
+      skillPoints -= skill.level;
+    }
 
     emit(state.copyWith(
       character: character,

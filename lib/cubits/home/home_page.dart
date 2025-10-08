@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:material_symbols_icons/symbols.dart';
 import 'package:questvale/cubits/skills_overview/skills_overview_page.dart';
 import 'package:questvale/cubits/home/home_cubit.dart';
 import 'package:questvale/cubits/home/home_state.dart';
 import 'package:questvale/cubits/inventory_overview/inventory_overview_page.dart';
-import 'package:questvale/cubits/quest_overview/quest_overview_page.dart';
 import 'package:questvale/cubits/todos_overview/todos_overview_page.dart';
+import 'package:questvale/cubits/town/town_page.dart';
 import 'package:questvale/pages/settings_page.dart';
+import 'package:questvale/widgets/qv_nav_bar.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -26,63 +26,59 @@ class HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-
     return BlocBuilder<HomeCubit, HomeState>(builder: (context, homeState) {
       return Scaffold(
         body: [
           SkillsOverviewPage(),
-          QuestOverviewPage(),
+          TownPage(),
           TodosOverviewPage(),
           InventoryOverviewPage(),
           TodosOverviewPage(),
           SettingsPage(),
         ][homeState.tab],
-        bottomNavigationBar: BottomNavigationBar(
+        bottomNavigationBar: QVNavBar(
           items: [
-            BottomNavigationBarItem(
-              icon: Icon(
-                Symbols.book_2,
-                fill: 1,
+            QVNavBarItem(
+              icon: Image.asset(
+                'images/pixel-icons/helmet${homeState.tab != 0 ? '-colorless' : ''}.png',
+                filterQuality: FilterQuality.none,
               ),
               label: 'Character',
             ),
-            BottomNavigationBarItem(
-              icon: Icon(
-                Symbols.swords,
-                fill: 1,
+            QVNavBarItem(
+              icon: Image.asset(
+                'images/pixel-icons/sword${homeState.tab != 1 ? '-colorless' : ''}.png',
+                filterQuality: FilterQuality.none,
               ),
               label: 'Quest',
             ),
-            BottomNavigationBarItem(
-              icon: Icon(
-                Symbols.home,
-                fill: 1,
+            QVNavBarItem(
+              icon: Image.asset(
+                'images/pixel-icons/quill${homeState.tab != 2 ? '-colorless' : ''}.png',
+                filterQuality: FilterQuality.none,
               ),
               label: 'Home',
             ),
-            BottomNavigationBarItem(
-              icon: Icon(
-                Symbols.shield,
-                fill: 1,
+            QVNavBarItem(
+              icon: Image.asset(
+                'images/pixel-icons/book${homeState.tab != 3 ? '-colorless' : ''}.png',
+                filterQuality: FilterQuality.none,
               ),
               label: 'Inventory',
             ),
-            BottomNavigationBarItem(
-              icon: Icon(
-                Symbols.settings,
-                fill: 1,
+            QVNavBarItem(
+              icon: Image.asset(
+                'images/pixel-icons/settings-gear${homeState.tab != 4 ? '-colorless' : ''}.png',
+                filterQuality: FilterQuality.none,
               ),
               label: 'Settings',
             ),
           ],
-          showSelectedLabels: false,
-          showUnselectedLabels: false,
-          type: BottomNavigationBarType.fixed,
+          // showSelectedLabels: false,
+          // showUnselectedLabels: false,
+          // type: BottomNavigationBarType.fixed,
           currentIndex: homeState.tab,
-          selectedItemColor: colorScheme.primary,
-          unselectedItemColor: colorScheme.onSurfaceVariant,
-          backgroundColor: colorScheme.surface,
+          // backgroundColor: colorScheme.primary,
           onTap: (index) => context.read<HomeCubit>().changeTab(index),
         ),
       );

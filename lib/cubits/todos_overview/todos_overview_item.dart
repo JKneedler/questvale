@@ -6,7 +6,8 @@ import 'package:questvale/cubits/todos_overview/todos_overview_cubit.dart';
 import 'package:questvale/data/models/character_tag.dart';
 import 'package:questvale/data/models/tag.dart';
 import 'package:questvale/helpers/data_formatters.dart';
-import 'package:questvale/widgets/check_box.dart';
+import 'package:questvale/cubits/edit_todo/edit_todo_page.dart';
+import 'package:questvale/widgets/qv_check_box.dart';
 import '../../data/models/todo.dart';
 
 class TodosOverviewItem extends StatefulWidget {
@@ -29,6 +30,14 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
+      foregroundDecoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('images/ui/bronze-frame-border-9s-1x.png'),
+          centerSlice: Rect.fromLTWH(8, 8, 16, 16),
+          fit: BoxFit.fill,
+          filterQuality: FilterQuality.none,
+        ),
+      ),
       child: Slidable(
         endActionPane: ActionPane(
           motion: const BehindMotion(),
@@ -66,6 +75,7 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
                   setState(() {
                     isHighlighted = false;
                   });
+                  EditTodoPage.show(context, widget.todo);
                 }
               },
               child: Material(
@@ -79,7 +89,7 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
                         color: Colors.transparent,
                         child: Container(
                           padding: const EdgeInsets.all(14),
-                          child: CheckBox(
+                          child: QvCheckBox(
                             width: 20,
                             height: 20,
                             isChecked: widget.todo.isCompleted,

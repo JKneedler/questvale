@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
-class CheckBox extends StatelessWidget {
+class QvCheckBox extends StatelessWidget {
   final double width;
   final double height;
   final bool isChecked;
   final Color? outlineColor;
 
-  const CheckBox(
+  const QvCheckBox(
       {super.key,
       required this.width,
       required this.height,
@@ -22,7 +22,7 @@ class CheckBox extends StatelessWidget {
       height: height,
       decoration: BoxDecoration(
         color: isChecked ? colorScheme.onPrimaryFixedVariant : null,
-        borderRadius: BorderRadius.circular(4),
+        // borderRadius: BorderRadius.circular(4),
         border: Border.all(
           color: isChecked
               ? Colors.transparent
@@ -30,6 +30,14 @@ class CheckBox extends StatelessWidget {
           width: 1.5,
         ),
       ),
+      // foregroundDecoration: BoxDecoration(
+      //   image: DecorationImage(
+      //     image: AssetImage('images/ui/white-full-border-9s-1x.png'),
+      //     centerSlice: Rect.fromLTWH(8, 8, 16, 16),
+      //     fit: BoxFit.fill,
+      //     filterQuality: FilterQuality.none,
+      //   ),
+      // ),
       child: isChecked
           ? Center(
               child: Icon(

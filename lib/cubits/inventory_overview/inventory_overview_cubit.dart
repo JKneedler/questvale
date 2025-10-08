@@ -1,7 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/inventory_overview/inventory_overview_state.dart';
 import 'package:questvale/data/models/equipment.dart';
-import 'package:questvale/data/models/inventory.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
 import 'package:questvale/data/repositories/equipment_repository.dart';
 import 'package:questvale/services/equipment_service.dart';

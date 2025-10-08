@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/character_tag/create_character_tag_cubit.dart';
 import 'package:questvale/cubits/character_tag/create_character_tag_state.dart';
 import 'package:questvale/data/models/character_tag.dart';
-import 'package:uuid/uuid.dart';
 
 class CreateCharacterTagView extends StatelessWidget {
   final void Function() onTagCreated;

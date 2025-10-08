@@ -4,7 +4,6 @@ import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/data/models/quest.dart';
 import 'package:questvale/data/models/character_skill.dart';
 import 'package:questvale/data/models/character_tag.dart';
-import 'package:questvale/data/models/tag.dart';
 import 'package:questvale/data/repositories/character_skill_repository.dart';
 import 'package:questvale/data/repositories/equipment_repository.dart';
 import 'package:sqflite/sqflite.dart';

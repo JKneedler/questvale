@@ -43,6 +43,27 @@ class MyApp extends StatelessWidget {
       onPrimaryFixedVariant: Color(0xff8c8c8c),
     );
 
+    ColorScheme gameScheme = ColorScheme(
+      brightness: Brightness.dark,
+      primary: Color(0xff854c30),
+      onPrimary: Color(0xffeeeeee),
+      secondary: Color(0xff5c3332),
+      onSecondary: Color(0xfff67900),
+      error: Color(0xffd83030),
+      onError: Color(0xffeeeeee),
+      surface: Colors.grey[300]!,
+      onSurface: Color(0xfff6f6f6),
+      primaryContainer: Color(0xff222222),
+      surfaceContainerHigh: Color(0xff383838),
+      surfaceContainer: Colors.grey[800]!,
+      surfaceContainerLow: Color(0xff292929),
+      surfaceContainerLowest: Color(0xff181818),
+      onPrimaryContainer: Color(0xfff6f6f6),
+      onSecondaryContainer: Color(0xffa7a7a7),
+      onSurfaceVariant: Color(0xff313131),
+      onPrimaryFixedVariant: Colors.grey[300]!,
+    );
+
     return Provider(
       create: (_) => questvaleDB,
       child: MaterialApp(
@@ -57,7 +78,7 @@ class MyApp extends StatelessWidget {
           // or simply save your changes to "hot reload" in a Flutter IDE).
           // Notice that the counter didn't reset back to zero; the application
           // is not restarted.
-          colorScheme: darkScheme,
+          colorScheme: gameScheme,
           useMaterial3: true,
           splashColor: Colors.transparent,
         ),
