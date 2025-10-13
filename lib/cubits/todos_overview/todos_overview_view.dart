@@ -30,17 +30,14 @@ class TodosOverviewView extends StatelessWidget {
         child: Container(
           width: 60,
           height: 60,
-          foregroundDecoration: BoxDecoration(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
             image: DecorationImage(
-              image: AssetImage('images/ui/bronze-button-empty-9s-1x.png'),
-              centerSlice: Rect.fromLTWH(8, 8, 16, 16),
+              image: AssetImage('images/ui/buttons/primary-button-2x.png'),
+              centerSlice: Rect.fromLTWH(16, 16, 32, 32),
               fit: BoxFit.fill,
               filterQuality: FilterQuality.none,
             ),
-          ),
-          decoration: BoxDecoration(
-            color: Color(0xff854c30),
-            borderRadius: BorderRadius.circular(10),
           ),
           child: Center(
             child: Image.asset(
@@ -59,18 +56,23 @@ class TodosOverviewView extends StatelessWidget {
         children: [
           QVAppBar(),
           Expanded(
-            child: BlocBuilder<TodosOverviewCubit, TodosOverviewState>(
-                builder: (context, todosOverviewState) {
-              return ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: todosOverviewState.todos.length,
-                  padding: const EdgeInsets.only(
-                      left: 2, right: 2, top: 10, bottom: 10),
-                  itemBuilder: (context, index) {
-                    return TodosOverviewItem(
-                        todo: todosOverviewState.todos[index]);
-                  });
-            }),
+            child: Container(
+              decoration: BoxDecoration(
+                color: colorScheme.surface,
+              ),
+              child: BlocBuilder<TodosOverviewCubit, TodosOverviewState>(
+                  builder: (context, todosOverviewState) {
+                return ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: todosOverviewState.todos.length,
+                    padding: const EdgeInsets.only(
+                        left: 6, right: 6, top: 10, bottom: 10),
+                    itemBuilder: (context, index) {
+                      return TodosOverviewItem(
+                          todo: todosOverviewState.todos[index]);
+                    });
+              }),
+            ),
           ),
         ],
       ),

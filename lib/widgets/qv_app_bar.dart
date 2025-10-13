@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 
 class QVAppBar extends StatelessWidget {
-  const QVAppBar({super.key});
+  const QVAppBar({
+    super.key,
+    this.title = 'Questvale',
+    this.includeBackButton = false,
+  });
+
+  final String title;
+  final bool includeBackButton;
 
   @override
   Widget build(BuildContext context) {
@@ -11,26 +18,31 @@ class QVAppBar extends StatelessWidget {
     return Container(
       padding: EdgeInsets.only(top: topPadding, left: 16, right: 16),
       height: 60 + topPadding,
-      decoration: BoxDecoration(
-        color: colorScheme.primary,
-      ),
-      foregroundDecoration: BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('images/ui/bronze-button-rounded-bottom-9s-1x.png'),
-          centerSlice: Rect.fromLTWH(8, 8, 16, 16),
-          fit: BoxFit.fill,
-        ),
-      ),
+      color: colorScheme.surface,
       child: Row(
         children: [
+          SizedBox(
+            width: 40,
+            height: 40,
+            child: includeBackButton
+                ? GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: SizedBox(
+                        child: Text('<',
+                            style: TextStyle(
+                                fontSize: 26, color: colorScheme.onSurface))),
+                  )
+                : SizedBox.shrink(),
+          ),
           Expanded(
             child: Center(
               child: Text(
-                'Questvale',
-                style: TextStyle(color: colorScheme.onPrimary, fontSize: 20),
+                title,
+                style: TextStyle(color: colorScheme.onSurface, fontSize: 28),
               ),
             ),
           ),
+          SizedBox(width: 40, height: 40),
         ],
       ),
     );

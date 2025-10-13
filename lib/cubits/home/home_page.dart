@@ -40,35 +40,35 @@ class HomeView extends StatelessWidget {
           items: [
             QVNavBarItem(
               icon: Image.asset(
-                'images/pixel-icons/helmet${homeState.tab != 0 ? '-colorless' : ''}.png',
+                'images/pixel-icons/helmet.png',
                 filterQuality: FilterQuality.none,
               ),
               label: 'Character',
             ),
             QVNavBarItem(
               icon: Image.asset(
-                'images/pixel-icons/sword${homeState.tab != 1 ? '-colorless' : ''}.png',
+                'images/pixel-icons/sword.png',
                 filterQuality: FilterQuality.none,
               ),
               label: 'Quest',
             ),
             QVNavBarItem(
               icon: Image.asset(
-                'images/pixel-icons/quill${homeState.tab != 2 ? '-colorless' : ''}.png',
+                'images/pixel-icons/quill.png',
                 filterQuality: FilterQuality.none,
               ),
-              label: 'Home',
+              label: 'Tasks',
             ),
             QVNavBarItem(
               icon: Image.asset(
-                'images/pixel-icons/book${homeState.tab != 3 ? '-colorless' : ''}.png',
+                'images/pixel-icons/book.png',
                 filterQuality: FilterQuality.none,
               ),
-              label: 'Inventory',
+              label: 'Calendar',
             ),
             QVNavBarItem(
               icon: Image.asset(
-                'images/pixel-icons/settings-gear${homeState.tab != 4 ? '-colorless' : ''}.png',
+                'images/pixel-icons/settings-gear.png',
                 filterQuality: FilterQuality.none,
               ),
               label: 'Settings',
