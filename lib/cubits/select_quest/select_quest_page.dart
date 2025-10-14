@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/select_quest/select_quest_cubit.dart';
 import 'package:questvale/widgets/qv_app_bar.dart';
+import 'package:questvale/widgets/qv_enemy_info_modal.dart';
+import 'package:questvale/widgets/qv_gray_filter.dart';
+import 'package:questvale/widgets/qv_rarity_card_mini.dart';
 
 class SelectQuestPage extends StatelessWidget {
   const SelectQuestPage({super.key});
@@ -16,37 +19,37 @@ class SelectQuestPage extends StatelessWidget {
           ZoneEnemyData(
               name: 'Slime',
               iconLocation: 'images/enemies/slime.png',
-              rarity: EnemyRarity.common,
+              rarity: Rarity.common,
               isDiscovered: true),
           ZoneEnemyData(
               name: 'Slime',
               iconLocation: 'images/enemies/slime.png',
-              rarity: EnemyRarity.uncommon,
+              rarity: Rarity.uncommon,
               isDiscovered: true),
           ZoneEnemyData(
               name: 'Slime',
               iconLocation: 'images/enemies/slime.png',
-              rarity: EnemyRarity.rare,
+              rarity: Rarity.rare,
               isDiscovered: true),
           ZoneEnemyData(
               name: 'Slime',
               iconLocation: 'images/enemies/slime.png',
-              rarity: EnemyRarity.epic,
+              rarity: Rarity.epic,
               isDiscovered: true),
           ZoneEnemyData(
               name: 'Slime',
               iconLocation: 'images/enemies/slime.png',
-              rarity: EnemyRarity.legendary,
+              rarity: Rarity.legendary,
               isDiscovered: true),
           ZoneEnemyData(
               name: 'Slime',
               iconLocation: 'images/enemies/slime.png',
-              rarity: EnemyRarity.mythic,
+              rarity: Rarity.mythic,
               isDiscovered: true),
           ZoneEnemyData(
               name: 'Slime',
               iconLocation: 'images/enemies/slime.png',
-              rarity: EnemyRarity.mythic,
+              rarity: Rarity.mythic,
               isDiscovered: false),
         ]),
     QuestLocaleData(
@@ -166,19 +169,10 @@ class QuestLocaleData {
   });
 }
 
-enum EnemyRarity {
-  common,
-  uncommon,
-  rare,
-  epic,
-  legendary,
-  mythic,
-}
-
 class ZoneEnemyData {
   final String name;
   final String iconLocation;
-  final EnemyRarity rarity;
+  final Rarity rarity;
   final bool isDiscovered;
 
   const ZoneEnemyData({
@@ -408,82 +402,72 @@ class ZoneEnemyCard extends StatelessWidget {
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
-        return Center(
-          child: SizedBox(
-            width: 360,
-            height: 500,
-            child: Stack(
-              children: [
-                Center(
-                  child: FractionallySizedBox(
-                    widthFactor: .94,
-                    heightFactor: .94,
-                    child: Container(
-                      color: colorScheme.surface,
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              SizedBox(
-                                width: 100,
-                                height: 140,
-                                child: Stack(
-                                  children: [
-                                    Center(
-                                      child: FractionallySizedBox(
-                                        widthFactor: 94,
-                                        heightFactor: .94,
-                                        child: Container(
-                                          color: colorScheme.secondary,
-                                        ),
-                                      ),
-                                    ),
-                                    Positioned.fill(
-                                      child: Container(
-                                        foregroundDecoration: BoxDecoration(
-                                          image: DecorationImage(
-                                            image: AssetImage(
-                                                'images/ui/borders/${enemy.rarity.name.toLowerCase()}-border-mini-2x.png'),
-                                            centerSlice:
-                                                Rect.fromLTWH(16, 16, 32, 32),
-                                            filterQuality: FilterQuality.none,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned.fill(
-                  child: Container(
-                    foregroundDecoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage(
-                            'images/ui/borders/primary-metal-edge-border-2x.png'),
-                        centerSlice: Rect.fromLTWH(28, 28, 8, 8),
-                        fit: BoxFit.fill,
-                        filterQuality: FilterQuality.none,
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        Text(enemy.name),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+        return QvEnemyInfoModal(
+            enemyData: TempEnemyData(
+          name: enemy.name,
+          rarity: enemy.rarity,
+          iconLocation: enemy.iconLocation,
+          health: 12,
+          enemyType: EnemyType.monster,
+          experience: 5,
+          immunities: [
+            AttackType.fire,
+            AttackType.poison,
+            // AttackType.ice,
+            // AttackType.lightning,
+            // AttackType.earth,
+            // AttackType.dark,
+          ],
+          resistances: [],
+          weaknesses: [AttackType.earth],
+          attacks: [
+            AttackData(
+              name: 'Slam',
+              damageRating: AttackDamageRating.low,
+              speedRating: AttackSpeedRating.slow,
+              attackType: AttackType.physical,
             ),
-          ),
-        );
+            AttackData(
+              name: 'Slime Shot',
+              damageRating: AttackDamageRating.low,
+              speedRating: AttackSpeedRating.medium,
+              attackType: AttackType.poison,
+            ),
+          ],
+          drops: [
+            DropData(
+              itemName: 'Goo',
+              itemQuantityMin: 3,
+              itemQuantityMax: 5,
+              useCases: [
+                DropItemUseCase.alchemy,
+                DropItemUseCase.gemsmithing,
+                DropItemUseCase.material
+              ],
+              rarity: Rarity.common,
+              iconLocation: 'images/enemies/slime.png',
+              discovered: true,
+            ),
+            DropData(
+              itemName: 'Eye of the Slime',
+              itemQuantityMin: 1,
+              itemQuantityMax: 1,
+              useCases: [DropItemUseCase.alchemy],
+              rarity: Rarity.rare,
+              iconLocation: 'images/enemies/slime.png',
+              discovered: true,
+            ),
+            DropData(
+              itemName: 'Eye of the Slime',
+              itemQuantityMin: 1,
+              itemQuantityMax: 1,
+              useCases: [DropItemUseCase.alchemy],
+              rarity: Rarity.mythic,
+              iconLocation: 'images/enemies/slime.png',
+              discovered: false,
+            ),
+          ],
+        ));
       },
     );
   }
@@ -492,53 +476,21 @@ class ZoneEnemyCard extends StatelessWidget {
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
-      onTap: () => _enemyInfoDialog(context),
-      child: ColorFiltered(
-        colorFilter: enemy.isDiscovered
-            ? const ColorFilter.mode(Colors.transparent, BlendMode.color)
-            : const ColorFilter.matrix(<double>[
-                // R         G         B         A  Bias
-                0.2126, 0.7152, 0.0722, 0, 0, // R'
-                0.2126, 0.7152, 0.0722, 0, 0, // G'
-                0.2126, 0.7152, 0.0722, 0, 0, // B'
-                0, 0, 0, 1, 0, // A'
-              ]),
+      onTap: () => enemy.isDiscovered ? _enemyInfoDialog(context) : null,
+      child: QVGrayFilter(
+        isEnabled: !enemy.isDiscovered,
         child: Container(
-          margin: const EdgeInsets.only(right: 6),
-          height: 80,
-          width: 70,
-          child: Stack(
-            children: [
-              Center(
-                child: FractionallySizedBox(
-                  widthFactor: .9,
-                  heightFactor: .9,
-                  child: Container(
-                    color: colorScheme.surface,
-                  ),
-                ),
-              ),
-              Positioned.fill(
-                child: Container(
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage(
-                          'images/ui/borders/${enemy.rarity.name.toLowerCase()}-border-mini-2x.png'),
-                      centerSlice: Rect.fromLTWH(16, 16, 32, 32),
-                      fit: BoxFit.fill,
-                      filterQuality: FilterQuality.none,
-                    ),
-                  ),
-                  padding: const EdgeInsets.all(12),
-                  child: Image.asset(
-                    enemy.isDiscovered
-                        ? enemy.iconLocation
-                        : 'images/pixel-icons/question-mark.png',
-                    filterQuality: FilterQuality.none,
-                  ),
-                ),
-              ),
-            ],
+          margin: const EdgeInsets.only(right: 4),
+          child: QvRarityCardMini(
+            rarity: enemy.rarity,
+            bgColor: colorScheme.surface,
+            width: 70,
+            height: 80,
+            child: Image.asset(
+                enemy.isDiscovered
+                    ? enemy.iconLocation
+                    : 'images/pixel-icons/question-mark.png',
+                filterQuality: FilterQuality.none),
           ),
         ),
       ),
