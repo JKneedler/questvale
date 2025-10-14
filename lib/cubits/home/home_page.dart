@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:questvale/cubits/skills_overview/skills_overview_page.dart';
 import 'package:questvale/cubits/home/home_cubit.dart';
 import 'package:questvale/cubits/home/home_state.dart';
-import 'package:questvale/cubits/inventory_overview/inventory_overview_page.dart';
 import 'package:questvale/cubits/todos_overview/todos_overview_page.dart';
 import 'package:questvale/cubits/town/town_page.dart';
 import 'package:questvale/pages/settings_page.dart';
@@ -29,10 +27,10 @@ class HomeView extends StatelessWidget {
     return BlocBuilder<HomeCubit, HomeState>(builder: (context, homeState) {
       return Scaffold(
         body: [
-          SkillsOverviewPage(),
+          TodosOverviewPage(),
           TownPage(),
           TodosOverviewPage(),
-          InventoryOverviewPage(),
+          TodosOverviewPage(),
           TodosOverviewPage(),
           SettingsPage(),
         ][homeState.tab],
