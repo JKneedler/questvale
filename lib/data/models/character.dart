@@ -1,6 +1,4 @@
-import 'package:questvale/data/models/inventory.dart';
 import 'package:questvale/data/models/pair.dart';
-import 'package:questvale/data/models/character_skill.dart';
 
 enum CharacterClass {
   warrior,
@@ -88,11 +86,9 @@ class Character {
   final CharacterClass characterClass;
   final int level;
   final int currentExp;
-  final Inventory inventory;
   final int currentHealth;
   final int currentMana;
   final int attacksRemaining;
-  final List<CharacterSkill> skills;
 
   late Map<CombatStat, double> combatStats;
 
@@ -102,11 +98,9 @@ class Character {
     required this.characterClass,
     required this.level,
     required this.currentExp,
-    required this.inventory,
     required this.currentHealth,
     required this.currentMana,
     required this.attacksRemaining,
-    required this.skills,
   }) {
     calculateCombatStats();
   }
@@ -136,7 +130,6 @@ class Character {
       Character.characterClassColumnName: characterClass.index,
       Character.levelColumnName: level,
       Character.currentExpColumnName: currentExp,
-      Character.inventoryColumnName: inventory.id,
       Character.currentHealthColumnName: currentHealth,
       Character.currentManaColumnName: currentMana,
       Character.attacksRemainingColumnName: attacksRemaining,
@@ -153,10 +146,8 @@ class Character {
 				level: $level
 				currentExp: $currentExp
 				currentHealth: $currentHealth
-				inventory: ${inventory.id}
 				currentMana: $currentMana
 				attacksRemaining: $attacksRemaining
-				skills: ${skills.length}
 			}
 		''';
   }
@@ -166,11 +157,9 @@ class Character {
     CharacterClass? characterClass,
     int? level,
     int? currentExp,
-    Inventory? inventory,
     int? currentHealth,
     int? currentMana,
     int? attacksRemaining,
-    List<CharacterSkill>? skills,
   }) {
     return Character(
       id: id,
@@ -178,11 +167,9 @@ class Character {
       characterClass: characterClass ?? this.characterClass,
       level: level ?? this.level,
       currentExp: currentExp ?? this.currentExp,
-      inventory: inventory ?? this.inventory,
       currentHealth: currentHealth ?? this.currentHealth,
       currentMana: currentMana ?? this.currentMana,
       attacksRemaining: attacksRemaining ?? this.attacksRemaining,
-      skills: skills ?? this.skills,
     );
   }
 
@@ -198,12 +185,11 @@ class Character {
       CombatStat.enemyGoldMult: 1,
       CombatStat.questGoldMult: 1,
       CombatStat.taskEfficiency: 1,
-      CombatStat.baseDamage: inventory.baseDamage.toDouble(),
+      //CombatStat.baseDamage: inventory.baseDamage.toDouble(),
       CombatStat.damageMult: 1,
-      CombatStat.baseCritChance: inventory.baseCritChance, // class & gear
+      //CombatStat.baseCritChance: inventory.baseCritChance, // class & gear
       CombatStat.critChanceMult: 1,
-      CombatStat.baseCritDamageMult:
-          inventory.baseCritDamageMult, // class & gear
+      //CombatStat.baseCritDamageMult: inventory.baseCritDamageMult, // class & gear
       CombatStat.critDamageMult: 1,
       CombatStat.skillCooldownMult: 1,
       CombatStat.lifesteal: 0,
@@ -211,10 +197,10 @@ class Character {
       CombatStat.undeadDamageMult: 1,
       CombatStat.beastDamageMult: 1,
       CombatStat.bossDamageMult: 1,
-      CombatStat.baseBlockChance: inventory.baseBlockChance.toDouble(),
+      //CombatStat.baseBlockChance: inventory.baseBlockChance.toDouble(),
       CombatStat.blockChanceMult: 1,
       CombatStat.healthRegen: 0,
-      CombatStat.baseArmor: inventory.baseArmor.toDouble(),
+      //CombatStat.baseArmor: inventory.baseArmor.toDouble(),
       CombatStat.armorMult: 1,
       CombatStat.burnChance: 0,
       CombatStat.freezeChance: 0,
@@ -236,10 +222,10 @@ class Character {
       CombatStat.fakeNullCatch: 0,
     };
 
-    final equipmentModifiers = inventory.statModifiers;
-    for (Pair<CombatStat, double> modifier in equipmentModifiers) {
-      baseStats[modifier.key] = baseStats[modifier.key]! + modifier.value;
-    }
+    //final equipmentModifiers = inventory.statModifiers;
+    // for (Pair<CombatStat, double> modifier in equipmentModifiers) {
+    //   baseStats[modifier.key] = baseStats[modifier.key]! + modifier.value;
+    // }
     combatStats = baseStats;
   }
 }
