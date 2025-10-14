@@ -30,145 +30,112 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
-      foregroundDecoration: BoxDecoration(
+      decoration: BoxDecoration(
         image: DecorationImage(
-          image: AssetImage('images/ui/bronze-frame-border-9s-1x.png'),
-          centerSlice: Rect.fromLTWH(8, 8, 16, 16),
+          image: AssetImage('images/ui/buttons/white-button-filled-2x.png'),
+          centerSlice: Rect.fromLTWH(16, 16, 32, 32),
           fit: BoxFit.fill,
           filterQuality: FilterQuality.none,
         ),
       ),
-      child: Slidable(
-        endActionPane: ActionPane(
-          motion: const BehindMotion(),
-          extentRatio: 0.3,
-          children: [
-            SlidableAction(
-              onPressed: (context) => todoCubit.deleteTodo(widget.todo),
-              backgroundColor: colorScheme.error,
-              foregroundColor: colorScheme.onError,
-              icon: Icons.delete,
-              label: 'Delete',
-              borderRadius: const BorderRadius.only(
-                topRight: Radius.circular(10),
-                bottomRight: Radius.circular(10),
-              ),
-            ),
-          ],
-        ),
-        child: AnimatedContainer(
-            duration: const Duration(milliseconds: 100),
-            curve: Curves.easeInOut,
-            decoration: BoxDecoration(
-                color: isHighlighted
-                    ? colorScheme.secondary
-                    : colorScheme.surfaceContainer,
-                borderRadius: const BorderRadius.all(Radius.circular(6))),
-            child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onTap: () async {
-                setState(() {
-                  isHighlighted = true;
-                });
-                await Future.delayed(const Duration(milliseconds: 150));
-                if (mounted) {
-                  setState(() {
-                    isHighlighted = false;
-                  });
-                  EditTodoPage.show(context, widget.todo);
-                }
-              },
-              child: Material(
-                color: Colors.transparent,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    GestureDetector(
-                      onTapUp: (_) => todoCubit.toggleCompletion(widget.todo),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: Container(
-                          padding: const EdgeInsets.all(14),
-                          child: QvCheckBox(
-                            width: 20,
-                            height: 20,
-                            isChecked: widget.todo.isCompleted,
-                            outlineColor:
-                                widget.todo.priority == PriorityLevel.noPriority
-                                    ? colorScheme.onPrimaryFixedVariant
-                                    : widget.todo.priority.color,
-                          ),
-                        ),
-                      ),
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () async {
+          setState(() {
+            isHighlighted = true;
+          });
+          await Future.delayed(const Duration(milliseconds: 150));
+          if (mounted) {
+            setState(() {
+              isHighlighted = false;
+            });
+            EditTodoPage.show(context, widget.todo);
+          }
+        },
+        child: Material(
+          color: Colors.transparent,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              GestureDetector(
+                onTapUp: (_) => todoCubit.toggleCompletion(widget.todo),
+                child: Material(
+                  color: Colors.transparent,
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    child: QvCheckBox(
+                      width: 20,
+                      height: 20,
+                      isChecked: widget.todo.isCompleted,
                     ),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 14, bottom: 14),
-                        child: Column(
-                          spacing: 4,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.todo.name,
-                              softWrap: true,
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: widget.todo.isCompleted
-                                    ? colorScheme.onPrimaryFixedVariant
-                                    : colorScheme.onPrimaryContainer,
-                              ),
-                            ),
-                            if (widget.todo.description.isNotEmpty)
-                              Text(
-                                widget.todo.description,
-                                softWrap: true,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: colorScheme.onPrimaryFixedVariant,
-                                ),
-                              ),
-                            if (widget.todo.tags.isNotEmpty)
-                              Wrap(
-                                spacing: 4,
-                                children: widget.todo.tags
-                                    .map((tag) => TodoItemTagChip(tag: tag))
-                                    .toList(),
-                              ),
-                            Row(
-                              children: [
-                                if (widget.todo.difficulty !=
-                                    DifficultyLevel.trivial)
-                                  Icon(
-                                    Symbols.trophy,
-                                    color: widget.todo.difficulty.color,
-                                    size: 16,
-                                  ),
-                                const SizedBox(width: 4),
-                                if (widget.todo.dueDate != null)
-                                  Text(
-                                    DataFormatters.formatDateTime(
-                                        widget.todo.dueDate!,
-                                        widget.todo.hasTime),
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: isPastDue
-                                          ? colorScheme.error
-                                          : colorScheme.primary,
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            )),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 14, bottom: 14),
+                  child: Column(
+                    spacing: 4,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.todo.name,
+                        softWrap: true,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: widget.todo.isCompleted
+                              ? colorScheme.onPrimaryFixedVariant
+                              : colorScheme.onPrimaryContainer,
+                        ),
+                      ),
+                      if (widget.todo.description.isNotEmpty)
+                        Text(
+                          widget.todo.description,
+                          softWrap: true,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: colorScheme.onPrimaryFixedVariant,
+                          ),
+                        ),
+                      if (widget.todo.tags.isNotEmpty)
+                        Wrap(
+                          spacing: 4,
+                          children: widget.todo.tags
+                              .map((tag) => TodoItemTagChip(tag: tag))
+                              .toList(),
+                        ),
+                      Row(
+                        children: [
+                          if (widget.todo.difficulty != DifficultyLevel.trivial)
+                            Icon(
+                              Symbols.trophy,
+                              color: widget.todo.difficulty.color,
+                              size: 16,
+                            ),
+                          const SizedBox(width: 4),
+                          if (widget.todo.dueDate != null)
+                            Text(
+                              DataFormatters.formatDateTime(
+                                  widget.todo.dueDate!, widget.todo.hasTime),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isPastDue
+                                    ? colorScheme.error
+                                    : colorScheme.primary,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

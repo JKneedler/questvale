@@ -43,6 +43,7 @@ dependencies:
   equatable: ^2.0.7
   intl: ^0.20.2
   material_symbols_icons: ^4.2805.1
+  google_fonts: ^6.3.0
 
 dev_dependencies:
   flutter_test:
@@ -70,6 +71,11 @@ flutter:
     - images/
     - images/pixel-icons/
     - images/ui/
+    - images/ui/borders/
+    - images/ui/buttons/
+    - images/enemies/
+    - images/backgrounds/
+    - fonts/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
@@ -96,3 +102,17 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+
+  fonts:
+    - family: Pixel1
+      fonts:
+        - asset: fonts/Jersey10-Regular.ttf
+    - family: Pixel2
+      fonts:
+        - asset: fonts/Jersey15-Regular.ttf
+    - family: Pixel3
+      fonts:
+        - asset: fonts/Jersey20-Regular.ttf
+    - family: Pixel4
+      fonts:
+        - asset: fonts/Jersey25-Regular.ttf

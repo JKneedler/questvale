@@ -12,6 +12,26 @@ class QVNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
+  AssetImage getImage(int index) {
+    if (index == currentIndex) {
+      if (index == 0) {
+        return AssetImage('images/ui/borders/primary-nav-selected-left-2x.png');
+      } else if (index == 4) {
+        return AssetImage(
+            'images/ui/borders/primary-nav-selected-right-2x.png');
+      } else {
+        return AssetImage(
+            'images/ui/borders/primary-nav-selected-wider-2x.png');
+      }
+    } else if (index == currentIndex - 1) {
+      return AssetImage('images/ui/borders/primary-nav-top-left-2x.png');
+    } else if (index == currentIndex + 1) {
+      return AssetImage('images/ui/borders/primary-nav-top-right-2x.png');
+    } else {
+      return AssetImage('images/ui/borders/primary-nav-top-2x.png');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
@@ -22,52 +42,50 @@ class QVNavBar extends StatelessWidget {
       color: colorScheme.primary,
       child: SafeArea(
         top: false,
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 20),
+        child: SizedBox(
           width: MediaQuery.of(context).size.width + 20,
           height: 48 + bottomPadding,
-          foregroundDecoration: BoxDecoration(
-            image: DecorationImage(
-              image:
-                  AssetImage('images/ui/bronze-button-rounded-top-9s-1x.png'),
-              centerSlice: Rect.fromLTWH(8, 8, 16, 16),
-              fit: BoxFit.fill,
-              filterQuality: FilterQuality.none,
-            ),
-          ),
-          decoration: BoxDecoration(
-            color: colorScheme.primary,
-          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.max,
             children: List.generate(items.length, (i) {
-              return GestureDetector(
-                onTap: () => onTap(i),
-                child: Container(
-                  width: 60,
-                  height: 60,
-                  alignment: Alignment.center,
-                  foregroundDecoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: i == currentIndex
-                          ? AssetImage('images/ui/orange-slot-border-9s-1x.png')
-                          : AssetImage(
-                              'images/ui/orange-slot-border-in-9s-1x.png'),
-                      centerSlice: Rect.fromLTWH(8, 8, 16, 16),
-                      fit: BoxFit.fill,
-                      filterQuality: FilterQuality.none,
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () => onTap(i),
+                  behavior: HitTestBehavior.translucent,
+                  child: Container(
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: colorScheme.surface,
+                      image: DecorationImage(
+                        image: getImage(i),
+                        centerSlice: Rect.fromLTWH(16, 16, 32, 32),
+                        fit: BoxFit.fill,
+                        filterQuality: FilterQuality.none,
+                      ),
                     ),
-                  ),
-                  decoration: BoxDecoration(
-                    color: i == currentIndex
-                        ? colorScheme.primary
-                        : Color(0xff503c3b),
-                  ),
-                  child: SizedBox(
-                    width: 35,
-                    height: 35,
-                    child: items[i].icon,
+                    child: Column(
+                      spacing: 4,
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: 35,
+                          height: 35,
+                          child: items[i].icon,
+                        ),
+                        Text(
+                          items[i].label,
+                          style: TextStyle(
+                            color: currentIndex == i
+                                ? colorScheme.onSurface
+                                : colorScheme.onPrimary,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               );
