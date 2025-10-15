@@ -1,113 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/select_quest/select_quest_cubit.dart';
+import 'package:questvale/cubits/select_quest/select_quest_state.dart';
+import 'package:questvale/data/models/enemy_data.dart';
+import 'package:questvale/data/models/enemy_drop_data.dart';
+import 'package:questvale/data/models/quest_zone.dart';
+import 'package:questvale/data/repositories/character_repository.dart';
+import 'package:questvale/data/repositories/enemy_data_repository.dart';
+import 'package:questvale/data/repositories/quest_zone_repository.dart';
+import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_app_bar.dart';
 import 'package:questvale/widgets/qv_enemy_info_modal.dart';
 import 'package:questvale/widgets/qv_gray_filter.dart';
 import 'package:questvale/widgets/qv_rarity_card_mini.dart';
+import 'package:sqflite/sqflite.dart';
 
 class SelectQuestPage extends StatelessWidget {
   const SelectQuestPage({super.key});
-
-  final List<QuestLocaleData> questLocales = const [
-    QuestLocaleData(
-        name: 'Fieldlands',
-        backgroundImage: 'images/backgrounds/fieldlands.png',
-        areaLevel: 1,
-        isUnlocked: true,
-        enemies: [
-          ZoneEnemyData(
-              name: 'Slime',
-              iconLocation: 'images/enemies/slime.png',
-              rarity: Rarity.common,
-              isDiscovered: true),
-          ZoneEnemyData(
-              name: 'Slime',
-              iconLocation: 'images/enemies/slime.png',
-              rarity: Rarity.uncommon,
-              isDiscovered: true),
-          ZoneEnemyData(
-              name: 'Slime',
-              iconLocation: 'images/enemies/slime.png',
-              rarity: Rarity.rare,
-              isDiscovered: true),
-          ZoneEnemyData(
-              name: 'Slime',
-              iconLocation: 'images/enemies/slime.png',
-              rarity: Rarity.epic,
-              isDiscovered: true),
-          ZoneEnemyData(
-              name: 'Slime',
-              iconLocation: 'images/enemies/slime.png',
-              rarity: Rarity.legendary,
-              isDiscovered: true),
-          ZoneEnemyData(
-              name: 'Slime',
-              iconLocation: 'images/enemies/slime.png',
-              rarity: Rarity.mythic,
-              isDiscovered: true),
-          ZoneEnemyData(
-              name: 'Slime',
-              iconLocation: 'images/enemies/slime.png',
-              rarity: Rarity.mythic,
-              isDiscovered: false),
-        ]),
-    QuestLocaleData(
-        name: 'Verdant Hollow',
-        backgroundImage: 'images/backgrounds/verdant-hollow.png',
-        areaLevel: 10,
-        isUnlocked: true),
-    QuestLocaleData(
-        name: 'Ashfen Marsh',
-        backgroundImage: 'images/backgrounds/ashfen-marsh.png',
-        areaLevel: 20,
-        isUnlocked: true),
-    QuestLocaleData(
-        name: 'Cragspire Foothills',
-        backgroundImage: 'images/backgrounds/cragspire-foothills.png',
-        areaLevel: 30,
-        isUnlocked: true),
-    QuestLocaleData(
-        name: 'Ember Caverns',
-        backgroundImage: 'images/backgrounds/ember-caverns.png',
-        areaLevel: 40,
-        isUnlocked: true),
-    QuestLocaleData(
-        name: 'Howling Steppe',
-        backgroundImage: 'images/backgrounds/howling-steppe.png',
-        areaLevel: 50,
-        isUnlocked: true),
-    QuestLocaleData(
-        name: 'Shattered Coast',
-        backgroundImage: 'images/backgrounds/shattered-coast.png',
-        areaLevel: 60,
-        isUnlocked: true),
-    QuestLocaleData(
-        name: 'Obsidian Depths',
-        backgroundImage: 'images/backgrounds/obsidian-depths.png',
-        areaLevel: 70,
-        isUnlocked: true),
-    QuestLocaleData(
-        name: 'Frostbound Expanse',
-        backgroundImage: 'images/backgrounds/frostbound-expanse.png',
-        areaLevel: 80,
-        isUnlocked: true),
-    QuestLocaleData(
-        name: 'Tomb of Whispers',
-        backgroundImage: 'images/backgrounds/tomb-of-whispers.png',
-        areaLevel: 90,
-        isUnlocked: true),
-    QuestLocaleData(
-        name: 'Eclipsed Citadel',
-        backgroundImage: 'images/backgrounds/eclipsed-citadel.png',
-        areaLevel: 100,
-        isUnlocked: true),
-    QuestLocaleData(
-        name: 'Heart of the Abyss',
-        backgroundImage: 'images/backgrounds/heart-of-the-abyss.png',
-        areaLevel: 110,
-        isUnlocked: true),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -121,29 +30,36 @@ class SelectQuestPage extends StatelessWidget {
             child: Container(
               color: colorScheme.surface,
               child: BlocProvider(
-                create: (context) => SelectQuestCubit(),
-                child: ListView.builder(
-                  padding: const EdgeInsets.only(
-                    left: 20,
-                    right: 20,
-                    top: 10,
-                    bottom: 10,
-                  ),
-                  itemCount: questLocales.length,
-                  itemBuilder: (context, index) {
-                    final isOpen =
-                        context.watch<SelectQuestCubit>().state == index;
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: SelectQuestZoneCard(
-                        questLocale: questLocales[index],
-                        isOpen: isOpen,
-                        onTap: () =>
-                            context.read<SelectQuestCubit>().toggle(index),
-                      ),
-                    );
-                  },
-                ),
+                create: (context) => SelectQuestCubit(
+                    CharacterRepository(db: context.read<Database>()),
+                    QuestZoneRepository(db: context.read<Database>()),
+                    EnemyDataRepository(db: context.read<Database>())),
+                child: BlocBuilder<SelectQuestCubit, SelectQuestState>(
+                    builder: (context, selectQuestState) {
+                  return ListView.builder(
+                    padding: const EdgeInsets.only(
+                      left: 20,
+                      right: 20,
+                      top: 10,
+                      bottom: 10,
+                    ),
+                    itemCount: selectQuestState.questZones.length,
+                    itemBuilder: (context, index) {
+                      final isOpen =
+                          selectQuestState.selectedQuestZoneIndex == index;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: SelectQuestZoneCard(
+                          questZone: selectQuestState.questZones[index],
+                          isOpen: isOpen,
+                          onTap: () => context
+                              .read<SelectQuestCubit>()
+                              .toggleQuestZone(index),
+                        ),
+                      );
+                    },
+                  );
+                }),
               ),
             ),
           )
@@ -153,43 +69,13 @@ class SelectQuestPage extends StatelessWidget {
   }
 }
 
-class QuestLocaleData {
-  final String name;
-  final String backgroundImage;
-  final int areaLevel;
-  final bool isUnlocked;
-  final List<ZoneEnemyData> enemies;
-
-  const QuestLocaleData({
-    required this.name,
-    required this.backgroundImage,
-    required this.areaLevel,
-    required this.isUnlocked,
-    this.enemies = const [],
-  });
-}
-
-class ZoneEnemyData {
-  final String name;
-  final String iconLocation;
-  final Rarity rarity;
-  final bool isDiscovered;
-
-  const ZoneEnemyData({
-    required this.name,
-    required this.iconLocation,
-    required this.rarity,
-    required this.isDiscovered,
-  });
-}
-
 class SelectQuestZoneCard extends StatelessWidget {
   const SelectQuestZoneCard(
       {super.key,
-      required this.questLocale,
+      required this.questZone,
       required this.isOpen,
       required this.onTap});
-  final QuestLocaleData questLocale;
+  final QuestZone questZone;
   final bool isOpen;
   final Function() onTap;
 
@@ -221,14 +107,12 @@ class SelectQuestZoneCard extends StatelessWidget {
                           bottom: 20,
                         ),
                         decoration: BoxDecoration(
-                          image: questLocale.backgroundImage.isNotEmpty
-                              ? DecorationImage(
-                                  image:
-                                      AssetImage(questLocale.backgroundImage),
-                                  fit: BoxFit.cover,
-                                  filterQuality: FilterQuality.none,
-                                )
-                              : null,
+                          image: DecorationImage(
+                            image: AssetImage(
+                                'images/backgrounds/${questZone.id}.png'),
+                            fit: BoxFit.cover,
+                            filterQuality: FilterQuality.none,
+                          ),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.start,
@@ -240,13 +124,13 @@ class SelectQuestZoneCard extends StatelessWidget {
                                 children: [
                                   SizedBox(
                                     height: 30,
-                                    child: Text(questLocale.name,
+                                    child: Text(questZone.name,
                                         style: TextStyle(
                                           fontSize: 28,
                                           color: colorScheme.secondary,
                                         )),
                                   ),
-                                  Text('Level ${questLocale.areaLevel}',
+                                  Text('Level ${questZone.requiredLevel}',
                                       style: TextStyle(
                                         fontSize: 20,
                                         color: colorScheme.secondary,
@@ -300,10 +184,10 @@ class SelectQuestZoneCard extends StatelessWidget {
                                       Expanded(
                                         child: ListView.builder(
                                           scrollDirection: Axis.horizontal,
-                                          itemCount: questLocale.enemies.length,
+                                          itemCount: questZone.enemies.length,
                                           itemBuilder: (context, index) {
                                             return ZoneEnemyCard(
-                                              enemy: questLocale.enemies[index],
+                                              enemy: questZone.enemies[index],
                                             );
                                           },
                                         ),
@@ -395,7 +279,7 @@ class ZoneEnemyCard extends StatelessWidget {
     required this.enemy,
   });
 
-  final ZoneEnemyData enemy;
+  final EnemyData enemy;
 
   Future<void> _enemyInfoDialog(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
@@ -403,71 +287,8 @@ class ZoneEnemyCard extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return QvEnemyInfoModal(
-            enemyData: TempEnemyData(
-          name: enemy.name,
-          rarity: enemy.rarity,
-          iconLocation: enemy.iconLocation,
-          health: 12,
-          enemyType: EnemyType.monster,
-          experience: 5,
-          immunities: [
-            AttackType.fire,
-            AttackType.poison,
-            // AttackType.ice,
-            // AttackType.lightning,
-            // AttackType.earth,
-            // AttackType.dark,
-          ],
-          resistances: [],
-          weaknesses: [AttackType.earth],
-          attacks: [
-            AttackData(
-              name: 'Slam',
-              damageRating: AttackDamageRating.low,
-              speedRating: AttackSpeedRating.slow,
-              attackType: AttackType.physical,
-            ),
-            AttackData(
-              name: 'Slime Shot',
-              damageRating: AttackDamageRating.low,
-              speedRating: AttackSpeedRating.medium,
-              attackType: AttackType.poison,
-            ),
-          ],
-          drops: [
-            DropData(
-              itemName: 'Goo',
-              itemQuantityMin: 3,
-              itemQuantityMax: 5,
-              useCases: [
-                DropItemUseCase.alchemy,
-                DropItemUseCase.gemsmithing,
-                DropItemUseCase.material
-              ],
-              rarity: Rarity.common,
-              iconLocation: 'images/enemies/slime.png',
-              discovered: true,
-            ),
-            DropData(
-              itemName: 'Eye of the Slime',
-              itemQuantityMin: 1,
-              itemQuantityMax: 1,
-              useCases: [DropItemUseCase.alchemy],
-              rarity: Rarity.rare,
-              iconLocation: 'images/enemies/slime.png',
-              discovered: true,
-            ),
-            DropData(
-              itemName: 'Eye of the Slime',
-              itemQuantityMin: 1,
-              itemQuantityMax: 1,
-              useCases: [DropItemUseCase.alchemy],
-              rarity: Rarity.mythic,
-              iconLocation: 'images/enemies/slime.png',
-              discovered: false,
-            ),
-          ],
-        ));
+          enemyData: enemy,
+        );
       },
     );
   }
@@ -475,10 +296,13 @@ class ZoneEnemyCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
+
+    // TODO: Add discovered logic
+    bool discovered = true;
     return GestureDetector(
-      onTap: () => enemy.isDiscovered ? _enemyInfoDialog(context) : null,
+      onTap: () => discovered ? _enemyInfoDialog(context) : null,
       child: QVGrayFilter(
-        isEnabled: !enemy.isDiscovered,
+        isEnabled: !discovered,
         child: Container(
           margin: const EdgeInsets.only(right: 4),
           child: QvRarityCardMini(
@@ -487,8 +311,8 @@ class ZoneEnemyCard extends StatelessWidget {
             width: 70,
             height: 80,
             child: Image.asset(
-                enemy.isDiscovered
-                    ? enemy.iconLocation
+                discovered
+                    ? 'images/enemies/${enemy.id.toLowerCase()}.png'
                     : 'images/pixel-icons/question-mark.png',
                 filterQuality: FilterQuality.none),
           ),
