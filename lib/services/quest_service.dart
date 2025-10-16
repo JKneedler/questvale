@@ -53,6 +53,9 @@ class QuestService {
   Future<Encounter> generateEncounter(Quest quest, QuestZone questZone) async {
     final String encounterId = Uuid().v4();
     final List<EnemyData> enemyData = questZone.enemies;
+    final enemyData1 = enemyData[Random().nextInt(enemyData.length)];
+    final enemyData2 = enemyData[Random().nextInt(enemyData.length)];
+    final enemyData3 = enemyData[Random().nextInt(enemyData.length)];
     final encounter = Encounter(
       id: encounterId,
       encounterType: EncounterType.genericCombat,
@@ -62,9 +65,23 @@ class QuestService {
         Enemy(
           id: Uuid().v4(),
           encounterId: encounterId,
-          enemyData: enemyData[0],
-          currentHealth: enemyData[0].health,
+          enemyData: enemyData1,
+          currentHealth: enemyData1.health,
           position: 0,
+        ),
+        Enemy(
+          id: Uuid().v4(),
+          encounterId: encounterId,
+          enemyData: enemyData2,
+          currentHealth: enemyData2.health,
+          position: 1,
+        ),
+        Enemy(
+          id: Uuid().v4(),
+          encounterId: encounterId,
+          enemyData: enemyData3,
+          currentHealth: enemyData3.health,
+          position: 2,
         ),
       ],
     );

@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/character_data_cubit.dart';
 import 'package:questvale/cubits/home/character_data_state.dart';
+import 'package:questvale/cubits/quest_encounter/combat_encounter_view.dart';
 import 'package:questvale/cubits/quest_encounter/quest_encounter_cubit.dart';
 import 'package:questvale/cubits/quest_encounter/quest_encounter_state.dart';
+import 'package:questvale/data/models/enemy.dart';
+import 'package:questvale/data/models/quest_zone.dart';
+import 'package:questvale/widgets/qv_silver_button.dart';
 import 'package:sqflite/sqflite.dart';
 
 class QuestEncounterPage extends StatelessWidget {
@@ -13,13 +17,18 @@ class QuestEncounterPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<CharacterDataCubit, CharacterDataState>(
         builder: (context, characterDataState) {
-      return BlocProvider<QuestEncounterCubit>(
-        create: (context) => QuestEncounterCubit(
-          quest: characterDataState.quest!,
-          db: context.read<Database>(),
-        ),
-        child: QuestEncounterView(),
-      );
+      final quest = characterDataState.quest;
+      if (quest == null) {
+        return const SizedBox.shrink();
+      } else {
+        return BlocProvider<QuestEncounterCubit>(
+          create: (context) => QuestEncounterCubit(
+            quest: characterDataState.quest!,
+            db: context.read<Database>(),
+          ),
+          child: QuestEncounterView(),
+        );
+      }
     });
   }
 }
@@ -29,6 +38,7 @@ class QuestEncounterView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
     return BlocBuilder<QuestEncounterCubit, QuestEncounterState>(
       builder: (context, state) {
         return BlocListener<QuestEncounterCubit, QuestEncounterState>(
@@ -39,6 +49,7 @@ class QuestEncounterView extends StatelessWidget {
             context.read<CharacterDataCubit>().updateQuest();
           },
           child: Container(
+            padding: EdgeInsets.only(top: 60),
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.height,
             decoration: BoxDecoration(
@@ -53,8 +64,30 @@ class QuestEncounterView extends StatelessWidget {
             ),
             child: Column(
               children: [
-                Text(
-                    'Encounter ${state.quest.curEncounterNum} / ${state.quest.numEncountersCurFloor}'),
+                SizedBox(
+                  height: 40,
+                  child: QvSilverButton(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Encounter ${state.quest.curEncounterNum} / ${state.quest.numEncountersCurFloor}',
+                          style: TextStyle(
+                              color: colorScheme.secondary, fontSize: 26),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                if (state.encounter != null)
+                  Expanded(
+                    child: CombatEncounterView(
+                      encounter: state.encounter!,
+                      zone: state.quest.zone,
+                    ),
+                  ),
               ],
             ),
           ),
