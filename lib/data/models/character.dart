@@ -1,5 +1,3 @@
-import 'package:questvale/data/models/pair.dart';
-
 enum CharacterClass {
   warrior,
   rogue,
@@ -136,18 +134,7 @@ class Character {
 
   @override
   String toString() {
-    return '''
-			Character {
-				id: $id
-				name: $name
-				class: $characterClass
-				level: $level
-				currentExp: $currentExp
-				currentHealth: $currentHealth
-				currentMana: $currentMana
-				attacksRemaining: $attacksRemaining
-			}
-		''';
+    return 'Character {id: $id, name: $name, characterClass: $characterClass, level: $level, currentExp: $currentExp, currentHealth: $currentHealth, currentMana: $currentMana, attacksRemaining: $attacksRemaining}';
   }
 
   Character copyWith({

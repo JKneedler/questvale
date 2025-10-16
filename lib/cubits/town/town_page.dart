@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:questvale/cubits/quest/quest_cubit.dart';
 import 'package:questvale/cubits/select_quest/select_quest_page.dart';
 import 'package:questvale/widgets/qv_app_bar.dart';
 import 'package:questvale/widgets/qv_white_card.dart';
 
 class TownPage extends StatelessWidget {
-  const TownPage({super.key});
+  const TownPage({super.key, required this.onQuestCreated});
+  final Function() onQuestCreated;
 
   @override
   Widget build(BuildContext context) {
@@ -35,9 +38,13 @@ class TownPage extends StatelessWidget {
                       child: QVWhiteCard(
                         onTap: () => {
                           Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => SelectQuestPage()))
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SelectQuestPage(
+                                onQuestCreated: onQuestCreated,
+                              ),
+                            ),
+                          )
                         },
                         padding: EdgeInsets.only(
                             left: 52, right: 52, top: 30, bottom: 30),

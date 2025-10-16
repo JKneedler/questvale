@@ -1,15 +1,80 @@
+import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/models/enemy_attack_data.dart';
 import 'package:questvale/data/models/enemy_data.dart';
 import 'package:questvale/data/models/enemy_drop_data.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:sqflite/sqflite.dart';
 
-class EnemyDataRepository {
+class EnemyRepository {
   final Database db;
 
-  EnemyDataRepository({required this.db});
+  EnemyRepository({required this.db});
 
-  Future<List<EnemyData>> getEnemiesByQuestZoneId(
+  /*
+
+    --------------------------- Enemy ---------------------------------
+
+  */
+
+  // GET ENEMIES BY ENCOUNTER ID
+  Future<List<Enemy>> getEnemiesByEncounterId(String encounterId) async {
+    final List<Map<String, dynamic>> maps = await db.query(Enemy.enemyTableName,
+        where: 'encounterId = ?', whereArgs: [encounterId]);
+    List<Enemy> enemies = [];
+    for (var map in maps) {
+      enemies.add(await _getEnemyFromMap(map));
+    }
+    return enemies;
+  }
+
+  // GET ENEMY BY ID
+  Future<Enemy> getEnemyById(String enemyId) async {
+    final result = await db.query(Enemy.enemyTableName,
+        where: '${Enemy.idColumnName} = ?', whereArgs: [enemyId]);
+    if (result.isEmpty) {
+      throw Exception('Enemy $enemyId not found');
+    }
+    return _getEnemyFromMap(result[0]);
+  }
+
+  // GET NUMBER OF TOTAL ENEMIES
+  Future<int> getEnemiesNum() async {
+    final result = await db.query(Enemy.enemyTableName);
+    print(result);
+    return result.length;
+  }
+
+  // INSERT ENEMY
+  Future<void> insertEnemy(Enemy enemy) async {
+    await db.insert(Enemy.enemyTableName, enemy.toMap());
+  }
+
+  // DELETE ENEMIES
+  Future<void> deleteEnemies() async {
+    await db.delete(Enemy.enemyTableName);
+  }
+
+  // map to enemy
+  Future<Enemy> _getEnemyFromMap(Map<String, Object?> map) async {
+    final enemyDataId = map[Enemy.enemyDataIdColumnName] as String;
+    final enemyData = await getEnemyDataById(enemyDataId, true);
+    return Enemy(
+      id: map[Enemy.idColumnName] as String,
+      encounterId: map[Enemy.encounterIdColumnName] as String,
+      enemyData: enemyData,
+      currentHealth: map[Enemy.currentHealthColumnName] as int,
+      position: map[Enemy.positionColumnName] as int,
+    );
+  }
+
+  /*
+
+    --------------------------- EnemyData ---------------------------------
+
+  */
+
+  // GET ENEMY DATA BY QUEST ZONE ID
+  Future<List<EnemyData>> getEnemyDatasByQuestZoneId(
       String questZoneId, bool includeAttacksAndDrops) async {
     final List<Map<String, dynamic>> maps = await db.query(
         EnemyData.enemyDataTableName,
@@ -17,12 +82,23 @@ class EnemyDataRepository {
         whereArgs: [questZoneId]);
     List<EnemyData> enemies = [];
     for (var map in maps) {
-      enemies.add(await _getEnemyFromMap(map, includeAttacksAndDrops));
+      enemies.add(await _getEnemyDataFromMap(map, includeAttacksAndDrops));
     }
     return enemies;
   }
 
-  Future<EnemyData> _getEnemyFromMap(
+  // GET ENEMY DATA BY ID
+  Future<EnemyData> getEnemyDataById(
+      String enemyDataId, bool includeAttacksAndDrops) async {
+    final result = await db.query(EnemyData.enemyDataTableName,
+        where: '${EnemyData.idColumnName} = ?', whereArgs: [enemyDataId]);
+    if (result.isEmpty) {
+      throw Exception('Enemy data $enemyDataId not found');
+    }
+    return _getEnemyDataFromMap(result[0], includeAttacksAndDrops);
+  }
+
+  Future<EnemyData> _getEnemyDataFromMap(
       Map<String, Object?> map, bool includeAttacksAndDrops) async {
     final enemyId = map[EnemyData.idColumnName] as String;
     List<EnemyAttackData> attacks = [];

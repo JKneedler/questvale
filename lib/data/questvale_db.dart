@@ -4,6 +4,7 @@ import 'package:questvale/data/models/encounter.dart';
 import 'package:questvale/data/models/enemy_attack_data.dart';
 import 'package:questvale/data/models/enemy_data.dart';
 import 'package:questvale/data/models/enemy_drop_data.dart';
+import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/models/quest.dart';
 import 'package:questvale/data/models/quest_zone.dart';
 import 'package:questvale/data/models/todo.dart';
@@ -48,6 +49,7 @@ class QuestvaleDB {
       await db.execute(EnemyAttackData.createTableSQL);
       await db.execute(EnemyDropData.createTableSQL);
       await seedEnemyData(db);
+      await db.execute(Enemy.createTableSQL);
     }, version: 1);
   }
 }

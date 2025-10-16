@@ -1,62 +1,53 @@
 import 'package:questvale/data/models/enemy_data.dart';
 import 'package:questvale/data/models/quest_zone.dart';
-import 'package:questvale/data/repositories/enemy_data_repository.dart';
+import 'package:questvale/data/repositories/enemy_repository.dart';
 import 'package:sqflite/sqflite.dart';
 
 class QuestZoneRepository {
   final Database db;
 
-  late EnemyDataRepository enemyDataRepository;
+  late EnemyRepository enemyDataRepository;
 
   QuestZoneRepository({required this.db}) {
-    enemyDataRepository = EnemyDataRepository(db: db);
+    enemyDataRepository = EnemyRepository(db: db);
   }
 
-  Future<List<QuestZone>> getSimpleQuestZones() async {
+  Future<QuestZone> getQuestZone(
+      String id, bool includeEnemies, bool includeVerboseEnemies) async {
     final List<Map<String, dynamic>> maps = await db.query(
       QuestZone.questZoneTableName,
-      orderBy: '${QuestZone.requiredLevelColumnName} ASC',
+      where: '${QuestZone.idColumnName} = ?',
+      whereArgs: [id],
     );
-    List<QuestZone> questZones = [];
-    for (var map in maps) {
-      questZones.add(await _getQuestZoneFromMap(map, false, false));
+    if (maps.length > 1) {
+      throw Exception('Multiple quest zones found');
     }
-    return questZones;
+    return _getQuestZoneFromMap(maps[0], includeEnemies, includeVerboseEnemies);
   }
 
-  Future<List<QuestZone>> getSimpleEnemiesQuestZones() async {
+  Future<List<QuestZone>> getAllQuestZones(
+      bool includeEnemies, bool includeVerboseEnemies) async {
     final List<Map<String, dynamic>> maps = await db.query(
       QuestZone.questZoneTableName,
       orderBy: '${QuestZone.requiredLevelColumnName} ASC',
     );
     List<QuestZone> questZones = [];
     for (var map in maps) {
-      questZones.add(await _getQuestZoneFromMap(map, true, false));
-    }
-    return questZones;
-  }
-
-  Future<List<QuestZone>> getVerboseEnemiesQuestZones() async {
-    final List<Map<String, dynamic>> maps = await db.query(
-      QuestZone.questZoneTableName,
-      orderBy: '${QuestZone.requiredLevelColumnName} ASC',
-    );
-    List<QuestZone> questZones = [];
-    for (var map in maps) {
-      questZones.add(await _getQuestZoneFromMap(map, true, true));
+      questZones.add(await _getQuestZoneFromMap(
+          map, includeEnemies, includeVerboseEnemies));
     }
     return questZones;
   }
 
   Future<QuestZone> _getQuestZoneFromMap(Map<String, Object?> map,
-      bool includeSimpleEnemies, bool includeVerboseEnemies) async {
+      bool includeEnemies, bool includeVerboseEnemies) async {
     List<EnemyData> enemies = [];
-    if (includeSimpleEnemies) {
-      enemies = await enemyDataRepository.getEnemiesByQuestZoneId(
+    if (includeEnemies) {
+      enemies = await enemyDataRepository.getEnemyDatasByQuestZoneId(
           map[QuestZone.idColumnName] as String, false);
     }
     if (includeVerboseEnemies) {
-      enemies = await enemyDataRepository.getEnemiesByQuestZoneId(
+      enemies = await enemyDataRepository.getEnemyDatasByQuestZoneId(
           map[QuestZone.idColumnName] as String, true);
     }
 

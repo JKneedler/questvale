@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:questvale/cubits/quest_floor_begin/quest_floor_begin_page.dart';
 import 'package:questvale/cubits/select_quest/select_quest_cubit.dart';
 import 'package:questvale/cubits/select_quest/select_quest_state.dart';
 import 'package:questvale/data/models/enemy_data.dart';
-import 'package:questvale/data/models/enemy_drop_data.dart';
 import 'package:questvale/data/models/quest_zone.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
-import 'package:questvale/data/repositories/enemy_data_repository.dart';
+import 'package:questvale/data/repositories/enemy_repository.dart';
 import 'package:questvale/data/repositories/quest_zone_repository.dart';
-import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_app_bar.dart';
 import 'package:questvale/widgets/qv_enemy_info_modal.dart';
 import 'package:questvale/widgets/qv_gray_filter.dart';
@@ -16,7 +15,11 @@ import 'package:questvale/widgets/qv_rarity_card_mini.dart';
 import 'package:sqflite/sqflite.dart';
 
 class SelectQuestPage extends StatelessWidget {
-  const SelectQuestPage({super.key});
+  const SelectQuestPage({
+    super.key,
+    required this.onQuestCreated,
+  });
+  final Function() onQuestCreated;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +36,7 @@ class SelectQuestPage extends StatelessWidget {
                 create: (context) => SelectQuestCubit(
                     CharacterRepository(db: context.read<Database>()),
                     QuestZoneRepository(db: context.read<Database>()),
-                    EnemyDataRepository(db: context.read<Database>())),
+                    EnemyRepository(db: context.read<Database>())),
                 child: BlocBuilder<SelectQuestCubit, SelectQuestState>(
                     builder: (context, selectQuestState) {
                   return ListView.builder(
@@ -55,6 +58,7 @@ class SelectQuestPage extends StatelessWidget {
                           onTap: () => context
                               .read<SelectQuestCubit>()
                               .toggleQuestZone(index),
+                          onQuestCreated: onQuestCreated,
                         ),
                       );
                     },
@@ -74,10 +78,13 @@ class SelectQuestZoneCard extends StatelessWidget {
       {super.key,
       required this.questZone,
       required this.isOpen,
-      required this.onTap});
+      required this.onTap,
+      required this.onQuestCreated});
+
   final QuestZone questZone;
   final bool isOpen;
   final Function() onTap;
+  final Function() onQuestCreated;
 
   @override
   Widget build(BuildContext context) {
@@ -207,29 +214,68 @@ class SelectQuestZoneCard extends StatelessWidget {
                                 )
                               : const SizedBox(height: 80),
                           SizedBox(height: 16),
-                          Container(
-                            padding: const EdgeInsets.only(left: 20, right: 20),
-                            child: GestureDetector(
-                              onTap: () => print('embark'),
-                              child: Container(
-                                width: double.infinity,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                    centerSlice: Rect.fromLTWH(16, 16, 32, 32),
-                                    image: AssetImage(
-                                      'images/ui/buttons/white-button-filled-2x.png',
+                          BlocListener<SelectQuestCubit, SelectQuestState>(
+                            listenWhen: (prev, next) =>
+                                next.questCreateState ==
+                                QuestCreateStates.createdSuccess,
+                            listener: (context, state) {
+                              if (state.questCreateState ==
+                                  QuestCreateStates.createdSuccess) {
+                                onQuestCreated();
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            QuestFloorBeginPage()));
+                              } else if (state.questCreateState ==
+                                  QuestCreateStates.createdFailed) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content:
+                                            Text('Failed to create quest')));
+                              }
+                            },
+                            child: Container(
+                              padding:
+                                  const EdgeInsets.only(left: 20, right: 20),
+                              child: GestureDetector(
+                                onTap: () => {
+                                  context
+                                      .read<SelectQuestCubit>()
+                                      .beginQuest(context.read<Database>()),
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              QuestFloorBeginPage()))
+                                },
+                                child: Container(
+                                  width: double.infinity,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    image: DecorationImage(
+                                      centerSlice:
+                                          Rect.fromLTWH(16, 16, 32, 32),
+                                      image: AssetImage(
+                                        'images/ui/buttons/primary-button-2x.png',
+                                      ),
                                     ),
                                   ),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    'Embark',
-                                    style: TextStyle(
-                                      fontSize: 24,
-                                      color: colorScheme.onPrimaryContainer,
+                                  child: Center(
+                                    child: Text(
+                                      context
+                                                  .read<SelectQuestCubit>()
+                                                  .state
+                                                  .questCreateState ==
+                                              QuestCreateStates.creating
+                                          ? 'Embarking...'
+                                          : 'Embark',
+                                      style: TextStyle(
+                                        fontSize: 24,
+                                        color: colorScheme.secondary,
+                                      ),
+                                      textAlign: TextAlign.center,
                                     ),
-                                    textAlign: TextAlign.center,
                                   ),
                                 ),
                               ),

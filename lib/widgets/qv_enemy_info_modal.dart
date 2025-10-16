@@ -309,16 +309,7 @@ class QvEnemyInfoModal extends StatelessWidget {
                                       textAlign: TextAlign.start,
                                     )),
                                     SizedBox(
-                                        width: 64,
-                                        child: Text(
-                                          'QTY',
-                                          style: TextStyle(
-                                              fontSize: 14,
-                                              color: colorScheme.onSecondary),
-                                          textAlign: TextAlign.center,
-                                        )),
-                                    SizedBox(
-                                        width: 55,
+                                        width: 80,
                                         child: Text(
                                           'USES',
                                           style: TextStyle(
@@ -458,7 +449,7 @@ class ElementsView extends StatelessWidget {
                             _capitalize(elements[index].name),
                             style: TextStyle(
                               fontSize: 16,
-                              color: colorScheme.onSecondary,
+                              color: elements[index].color,
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -523,7 +514,9 @@ class EnemyAttackView extends StatelessWidget {
               ),
               AttackAttributeSlice(value: attack.damage.toString()),
               AttackAttributeSlice(value: _getAttackCooldown(attack.cooldown)),
-              AttackAttributeSlice(value: _capitalize(attack.damageType.name)),
+              AttackAttributeSlice(
+                  value: _capitalize(attack.damageType.name),
+                  color: attack.damageType.color),
             ],
           ),
         ),
@@ -540,7 +533,8 @@ class EnemyAttackView extends StatelessWidget {
 
 class AttackAttributeSlice extends StatelessWidget {
   final String value;
-  const AttackAttributeSlice({super.key, required this.value});
+  final Color? color;
+  const AttackAttributeSlice({super.key, required this.value, this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -551,7 +545,7 @@ class AttackAttributeSlice extends StatelessWidget {
         value,
         style: TextStyle(
           fontSize: 16,
-          color: colorScheme.onSecondary,
+          color: color ?? colorScheme.onSecondary,
         ),
         textAlign: TextAlign.center,
       ),
@@ -565,6 +559,12 @@ class EnemyDropView extends StatelessWidget {
 
   String _capitalize(String string) {
     return string.substring(0, 1).toUpperCase() + string.substring(1);
+  }
+
+  String _getDropString() {
+    return drop.itemQuantityMin == drop.itemQuantityMax
+        ? '${(drop.dropChance * 100).toStringAsFixed(0)}%  :  ${drop.itemQuantityMin.toString()}'
+        : '${(drop.dropChance * 100).toStringAsFixed(0)}%  :  ${drop.itemQuantityMin.toString()}-${drop.itemQuantityMax.toString()}';
   }
 
   @override
@@ -611,26 +611,34 @@ class EnemyDropView extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: Text(discovered ? drop.itemName : '',
-                  style: TextStyle(
-                      fontSize: 26,
-                      color: colorScheme.onSecondary,
-                      height: .8)),
-            ),
-            SizedBox(
-              width: 40,
-              child: Text(
-                discovered
-                    ? drop.itemQuantityMin == drop.itemQuantityMax
-                        ? drop.itemQuantityMin.toString()
-                        : '${drop.itemQuantityMin}-${drop.itemQuantityMax}'
-                    : '',
-                style: TextStyle(fontSize: 20, color: colorScheme.onSecondary),
-                textAlign: TextAlign.center,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    height: 16,
+                    child: Text(
+                      discovered ? drop.itemName : '',
+                      style: TextStyle(
+                          fontSize: 20,
+                          color: colorScheme.onSecondary,
+                          height: .8),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 16,
+                    child: Text(
+                      discovered ? _getDropString() : '',
+                      style: TextStyle(
+                          fontSize: 16, color: colorScheme.onSecondary),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
               ),
             ),
             SizedBox(
-              width: 60,
+              width: 80,
               child: Text(
                 discovered
                     ? drop.useCases.map((e) => _capitalize(e.name)).join('\n')

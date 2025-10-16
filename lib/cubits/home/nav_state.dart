@@ -1,14 +1,14 @@
 import 'package:equatable/equatable.dart';
 
-class HomeState extends Equatable {
+class NavState extends Equatable {
   final int tab;
 
-  const HomeState({required this.tab});
+  const NavState({required this.tab});
 
-  HomeState copyWith({
+  NavState copyWith({
     int? tab,
   }) {
-    return HomeState(
+    return NavState(
       tab: tab ?? this.tab,
     );
   }

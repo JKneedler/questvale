@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:questvale/cubits/home/character_data_cubit.dart';
+import 'package:questvale/cubits/home/character_data_state.dart';
 
 class QVNavBar extends StatelessWidget {
   const QVNavBar({
@@ -42,55 +45,97 @@ class QVNavBar extends StatelessWidget {
       color: colorScheme.primary,
       child: SafeArea(
         top: false,
-        child: SizedBox(
-          width: MediaQuery.of(context).size.width + 20,
-          height: 48 + bottomPadding,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisSize: MainAxisSize.max,
-            children: List.generate(items.length, (i) {
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () => onTap(i),
-                  behavior: HitTestBehavior.translucent,
-                  child: Container(
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: colorScheme.surface,
-                      image: DecorationImage(
-                        image: getImage(i),
-                        centerSlice: Rect.fromLTWH(16, 16, 32, 32),
-                        fit: BoxFit.fill,
-                        filterQuality: FilterQuality.none,
-                      ),
-                    ),
-                    child: Column(
-                      spacing: 4,
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          width: 35,
-                          height: 35,
-                          child: items[i].icon,
-                        ),
-                        Text(
-                          items[i].label,
-                          style: TextStyle(
-                            color: currentIndex == i
-                                ? colorScheme.onSurface
-                                : colorScheme.onPrimary,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(height: 2, color: colorScheme.secondary),
+            BlocBuilder<CharacterDataCubit, CharacterDataState>(
+                builder: (context, characterDataState) {
+              return Container(
+                height: 20,
+                color: colorScheme.secondary,
+                child: Row(
+                  children: [
+                    CharacterResourceBar(
+                        maxValue: characterDataState.character?.maxHealth ?? 0,
+                        currentValue:
+                            characterDataState.character?.currentHealth ?? 0,
+                        color: Color(0xffFF4646),
+                        startAlignment: Alignment.centerLeft),
+                    Expanded(child: Container(height: 20, color: Colors.white)),
+                    CharacterResourceBar(
+                        maxValue: characterDataState.character?.maxMana ?? 0,
+                        currentValue:
+                            characterDataState.character?.currentMana ?? 0,
+                        color: Color(0xff5B9CFF),
+                        startAlignment: Alignment.centerRight),
+                    // CharacterResourceBar(
+                    //     maxValue: characterDataState.character?.maxMana ?? 0,
+                    //     currentValue:
+                    //         characterDataState.character?.currentMana ?? 0,
+                    //     color: Color(0xffFF6231),
+                    //     startAlignment: Alignment.centerRight),
+                    // CharacterResourceBar(
+                    //     maxValue: characterDataState.character?.maxMana ?? 0,
+                    //     currentValue:
+                    //         characterDataState.character?.currentMana ?? 0,
+                    //     color: Color(0xff5CE1A6),
+                    //     startAlignment: Alignment.centerRight),
+                  ],
                 ),
               );
             }),
-          ),
+            SizedBox(
+              width: MediaQuery.of(context).size.width + 20,
+              height: 48 + bottomPadding,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisSize: MainAxisSize.max,
+                children: List.generate(items.length, (i) {
+                  return Expanded(
+                    child: GestureDetector(
+                      onTap: () => onTap(i),
+                      behavior: HitTestBehavior.translucent,
+                      child: Container(
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: colorScheme.surface,
+                          image: DecorationImage(
+                            image: getImage(i),
+                            centerSlice: Rect.fromLTWH(16, 16, 32, 32),
+                            fit: BoxFit.fill,
+                            filterQuality: FilterQuality.none,
+                          ),
+                        ),
+                        child: Column(
+                          spacing: 4,
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: 35,
+                              height: 35,
+                              child: items[i].icon,
+                            ),
+                            Text(
+                              items[i].label,
+                              style: TextStyle(
+                                color: currentIndex == i
+                                    ? colorScheme.onSurface
+                                    : colorScheme.onPrimary,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -109,4 +154,44 @@ class QVNavBarItem {
   final String label;
   final Color activeColor;
   final Color inactiveColor;
+}
+
+class CharacterResourceBar extends StatelessWidget {
+  const CharacterResourceBar(
+      {super.key,
+      required this.maxValue,
+      required this.currentValue,
+      required this.color,
+      required this.startAlignment});
+
+  final int maxValue;
+  final int currentValue;
+  final Color color;
+  final Alignment startAlignment;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+        width: MediaQuery.of(context).size.width / 2 - 1.5,
+        height: 25,
+        child: Stack(
+          alignment: startAlignment,
+          children: [
+            Container(
+              color: color,
+              height: double.infinity,
+              width: (MediaQuery.of(context).size.width - 1.5) /
+                  2 *
+                  (currentValue / maxValue),
+            ),
+            Container(
+              padding: EdgeInsets.only(left: 10, right: 10),
+              child: Text(
+                '${currentValue.toStringAsFixed(0)} / ${maxValue.toStringAsFixed(0)}',
+                style: TextStyle(color: Colors.white, fontSize: 20, height: 1),
+              ),
+            ),
+          ],
+        ));
+  }
 }
