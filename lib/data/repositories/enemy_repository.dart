@@ -24,7 +24,8 @@ class EnemyRepository {
     for (var map in maps) {
       enemies.add(await _getEnemyFromMap(map));
     }
-    return enemies;
+    enemies.sort((a, b) => a.position.compareTo(b.position));
+    return enemies.toList();
   }
 
   // GET ENEMY BY ID
@@ -40,8 +41,13 @@ class EnemyRepository {
   // GET NUMBER OF TOTAL ENEMIES
   Future<int> getEnemiesNum() async {
     final result = await db.query(Enemy.enemyTableName);
-    print(result);
     return result.length;
+  }
+
+  // UPDATE ENEMY
+  Future<void> updateEnemy(Enemy enemy) async {
+    await db.update(Enemy.enemyTableName, enemy.toMap(),
+        where: '${Enemy.idColumnName} = ?', whereArgs: [enemy.id]);
   }
 
   // INSERT ENEMY
@@ -52,6 +58,12 @@ class EnemyRepository {
   // DELETE ENEMIES
   Future<void> deleteEnemies() async {
     await db.delete(Enemy.enemyTableName);
+  }
+
+  // DELETE ENEMIES BY ENCOUNTER ID
+  Future<void> deleteEnemiesByEncounterId(String encounterId) async {
+    await db.delete(Enemy.enemyTableName,
+        where: '${Enemy.encounterIdColumnName} = ?', whereArgs: [encounterId]);
   }
 
   // map to enemy

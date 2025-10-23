@@ -1,50 +1,80 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/settings/settings_state.dart';
 import 'package:questvale/data/models/character.dart';
-import 'package:questvale/data/repositories/quest_repository.dart';
-import 'package:questvale/data/repositories/encounter_repository.dart';
-import 'package:questvale/data/repositories/enemy_repository.dart';
 import 'package:sqflite/sqflite.dart';
 
 class SettingsCubit extends Cubit<SettingsState> {
-  late QuestRepository questRepository;
-  late EncounterRepository encounterRepository;
-  late EnemyRepository enemyRepository;
+  final Database db;
 
-  SettingsCubit({required Database db, required Character character})
+  SettingsCubit({required this.db, required Character character})
       : super(SettingsState(
             character: character,
             questsNum: 0,
             encountersNum: 0,
-            enemiesNum: 0)) {
-    questRepository = QuestRepository(db: db);
-    encounterRepository = EncounterRepository(db: db);
-    enemyRepository = EnemyRepository(db: db);
+            enemiesNum: 0,
+            tableInfos: [])) {
     loadSettings();
   }
 
   Future<void> loadSettings() async {
-    final questsNum = await questRepository.getQuestsNum();
-    final encountersNum = await encounterRepository.getEncountersNum();
-    final enemiesNum = await enemyRepository.getEnemiesNum();
-    emit(state.copyWith(
-        questsNum: questsNum,
-        encountersNum: encountersNum,
-        enemiesNum: enemiesNum));
+    final tableInfos = [
+      TableInfo(
+          tableType: TableType.quests,
+          numRows: await getTableLength(TableType.quests)),
+      TableInfo(
+          tableType: TableType.encounters,
+          numRows: await getTableLength(TableType.encounters)),
+      TableInfo(
+          tableType: TableType.enemies,
+          numRows: await getTableLength(TableType.enemies)),
+      TableInfo(
+          tableType: TableType.enemyData,
+          numRows: await getTableLength(TableType.enemyData)),
+      TableInfo(
+          tableType: TableType.enemyAttackData,
+          numRows: await getTableLength(TableType.enemyAttackData)),
+      TableInfo(
+          tableType: TableType.enemyDropData,
+          numRows: await getTableLength(TableType.enemyDropData)),
+      TableInfo(
+          tableType: TableType.encounterRewards,
+          numRows: await getTableLength(TableType.encounterRewards)),
+      TableInfo(
+          tableType: TableType.questZones,
+          numRows: await getTableLength(TableType.questZones)),
+      TableInfo(
+          tableType: TableType.questSummaries,
+          numRows: await getTableLength(TableType.questSummaries)),
+      TableInfo(
+          tableType: TableType.characterTags,
+          numRows: await getTableLength(TableType.characterTags)),
+      TableInfo(
+          tableType: TableType.todos,
+          numRows: await getTableLength(TableType.todos)),
+      TableInfo(
+          tableType: TableType.todoTags,
+          numRows: await getTableLength(TableType.todoTags)),
+      TableInfo(
+          tableType: TableType.todoReminders,
+          numRows: await getTableLength(TableType.todoReminders)),
+      TableInfo(
+          tableType: TableType.characters,
+          numRows: await getTableLength(TableType.characters)),
+    ];
+    emit(state.copyWith(tableInfos: tableInfos));
   }
 
-  Future<void> deleteQuests() async {
-    await questRepository.deleteQuests();
-    await loadSettings();
+  Future<int> getTableLength(TableType tableType) async {
+    final tableLength = await db.query(tableType.tableName);
+    return tableLength.length;
   }
 
-  Future<void> deleteEncounters() async {
-    await encounterRepository.deleteEncounters();
-    await loadSettings();
-  }
+  Future<void> deleteTableContents(TableType tableType) async {}
 
-  Future<void> deleteEnemies() async {
-    await enemyRepository.deleteEnemies();
-    await loadSettings();
+  Future<void> logTableContents(TableType tableType) async {
+    final tableContents = await db.query(tableType.tableName);
+    for (var content in tableContents) {
+      print(content);
+    }
   }
 }

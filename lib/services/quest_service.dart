@@ -2,11 +2,14 @@ import 'dart:math';
 
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/encounter.dart';
+import 'package:questvale/data/models/encounter_reward.dart';
 import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/models/enemy_data.dart';
 import 'package:questvale/data/models/quest.dart';
+import 'package:questvale/data/models/quest_summary.dart';
 import 'package:questvale/data/models/quest_zone.dart';
 import 'package:questvale/data/repositories/quest_repository.dart';
+import 'package:questvale/helpers/shared_enums.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 
@@ -24,6 +27,8 @@ class QuestService {
     final quest = generateQuest(character, questZone);
     try {
       await questRepository.insertQuest(quest);
+      await questRepository.insertQuestSummary(
+          QuestSummary(id: Uuid().v4(), questId: quest.id, xp: 0, gold: 0));
     } catch (e) {
       return false;
     }
@@ -44,9 +49,10 @@ class QuestService {
       zone: questZone,
       characterId: character.id,
       numFloors: numFloors,
-      numEncountersCurFloor: numEncountersCurFloor,
+      numEncountersCurFloor: 2,
       curFloor: 1,
       curEncounterNum: 1,
+      createdAt: DateTime.now(),
     );
   }
 
@@ -59,7 +65,6 @@ class QuestService {
     final encounter = Encounter(
       id: encounterId,
       encounterType: EncounterType.genericCombat,
-      encounterCompleted: false,
       questId: quest.id,
       enemies: [
         Enemy(
@@ -84,7 +89,24 @@ class QuestService {
           position: 2,
         ),
       ],
+      createdAt: DateTime.now(),
+      // chestRarity: Rarity.common,
     );
     return encounter;
+  }
+
+  Future<EncounterReward> generateEncounterReward(Encounter encounter) async {
+    final xp = encounter.encounterType.isCombatEncounter()
+        ? Random().nextInt(100) + 1
+        : 0;
+    final gold = Random().nextInt(100) + 1;
+    return EncounterReward(
+      id: Uuid().v4(),
+      encounterId: encounter.id,
+      questId: encounter.questId,
+      xp: xp,
+      gold: gold,
+      createdAt: DateTime.now(),
+    );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/character_data_cubit.dart';
 import 'package:questvale/cubits/home/character_data_state.dart';
+import 'package:questvale/helpers/constants.dart';
 
 class QVNavBar extends StatelessWidget {
   const QVNavBar({
@@ -9,11 +10,15 @@ class QVNavBar extends StatelessWidget {
     required this.items,
     required this.currentIndex,
     required this.onTap,
+    this.showCharacterResources = true,
+    this.showCharacterAP = true,
   });
 
   final List<QVNavBarItem> items;
   final int currentIndex;
   final ValueChanged<int> onTap;
+  final bool showCharacterResources;
+  final bool showCharacterAP;
 
   AssetImage getImage(int index) {
     if (index == currentIndex) {
@@ -48,43 +53,65 @@ class QVNavBar extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(height: 2, color: colorScheme.secondary),
-            BlocBuilder<CharacterDataCubit, CharacterDataState>(
-                builder: (context, characterDataState) {
-              return Container(
-                height: 20,
-                color: colorScheme.secondary,
-                child: Row(
-                  children: [
-                    CharacterResourceBar(
+            if (showCharacterResources)
+              Container(height: 2, color: colorScheme.secondary),
+            if (showCharacterResources)
+              BlocBuilder<CharacterDataCubit, CharacterDataState>(
+                  builder: (context, characterDataState) {
+                return Container(
+                  height: 26,
+                  color: colorScheme.secondary,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      CharacterResourceBar(
                         maxValue: characterDataState.character?.maxHealth ?? 0,
                         currentValue:
                             characterDataState.character?.currentHealth ?? 0,
-                        color: Color(0xffFF4646),
-                        startAlignment: Alignment.centerLeft),
-                    Expanded(child: Container(height: 20, color: Colors.white)),
-                    CharacterResourceBar(
+                        color: HEALTH_COLOR,
+                        startAlignment: Alignment.centerLeft,
+                        showCharacterAP: showCharacterAP,
+                      ),
+                      Expanded(
+                        child: showCharacterAP
+                            ? Container(
+                                alignment: Alignment.center,
+                                color: Colors.grey[200],
+                                child: Text(
+                                  '${characterDataState.character?.attacksRemaining ?? 0}',
+                                  style: TextStyle(
+                                    color: colorScheme.secondary,
+                                    fontSize: 30,
+                                    height: .9,
+                                  ),
+                                ),
+                              )
+                            : Container(color: Colors.grey[200]),
+                      ),
+                      CharacterResourceBar(
                         maxValue: characterDataState.character?.maxMana ?? 0,
                         currentValue:
                             characterDataState.character?.currentMana ?? 0,
-                        color: Color(0xff5B9CFF),
-                        startAlignment: Alignment.centerRight),
-                    // CharacterResourceBar(
-                    //     maxValue: characterDataState.character?.maxMana ?? 0,
-                    //     currentValue:
-                    //         characterDataState.character?.currentMana ?? 0,
-                    //     color: Color(0xffFF6231),
-                    //     startAlignment: Alignment.centerRight),
-                    // CharacterResourceBar(
-                    //     maxValue: characterDataState.character?.maxMana ?? 0,
-                    //     currentValue:
-                    //         characterDataState.character?.currentMana ?? 0,
-                    //     color: Color(0xff5CE1A6),
-                    //     startAlignment: Alignment.centerRight),
-                  ],
-                ),
-              );
-            }),
+                        color: MANA_COLOR,
+                        startAlignment: Alignment.centerRight,
+                        showCharacterAP: showCharacterAP,
+                      ),
+                      // CharacterResourceBar(
+                      //     maxValue: characterDataState.character?.maxMana ?? 0,
+                      //     currentValue:
+                      //         characterDataState.character?.currentMana ?? 0,
+                      //     color: RAGE_COLOR,
+                      //     startAlignment: Alignment.centerRight),
+                      // CharacterResourceBar(
+                      //     maxValue: characterDataState.character?.maxMana ?? 0,
+                      //     currentValue:
+                      //         characterDataState.character?.currentMana ?? 0,
+                      //     color: FOCUS_COLOR,
+                      //     startAlignment: Alignment.centerRight),
+                    ],
+                  ),
+                );
+              }),
             SizedBox(
               width: MediaQuery.of(context).size.width + 20,
               height: 48 + bottomPadding,
@@ -157,38 +184,41 @@ class QVNavBarItem {
 }
 
 class CharacterResourceBar extends StatelessWidget {
-  const CharacterResourceBar(
-      {super.key,
-      required this.maxValue,
-      required this.currentValue,
-      required this.color,
-      required this.startAlignment});
+  const CharacterResourceBar({
+    super.key,
+    required this.maxValue,
+    required this.currentValue,
+    required this.color,
+    required this.startAlignment,
+    required this.showCharacterAP,
+  });
 
   final int maxValue;
   final int currentValue;
   final Color color;
   final Alignment startAlignment;
+  final bool showCharacterAP;
 
   @override
   Widget build(BuildContext context) {
+    final width =
+        MediaQuery.of(context).size.width - (showCharacterAP ? 60 : 1.5);
     return SizedBox(
-        width: MediaQuery.of(context).size.width / 2 - 1.5,
-        height: 25,
+        width: width / 2,
+        height: double.infinity,
         child: Stack(
           alignment: startAlignment,
           children: [
             Container(
               color: color,
               height: double.infinity,
-              width: (MediaQuery.of(context).size.width - 1.5) /
-                  2 *
-                  (currentValue / maxValue),
+              width: width / 2 * (currentValue / maxValue),
             ),
             Container(
               padding: EdgeInsets.only(left: 10, right: 10),
               child: Text(
                 '${currentValue.toStringAsFixed(0)} / ${maxValue.toStringAsFixed(0)}',
-                style: TextStyle(color: Colors.white, fontSize: 20, height: 1),
+                style: TextStyle(color: Colors.white, fontSize: 24, height: 1),
               ),
             ),
           ],

@@ -10,15 +10,15 @@ import 'package:questvale/services/quest_service.dart';
 import 'package:sqflite/sqflite.dart';
 
 class QuestEncounterCubit extends Cubit<QuestEncounterState> {
+  final Quest quest;
   late QuestRepository questRepository;
   late QuestService questService;
   late EncounterRepository encounterRepository;
   late QuestZoneRepository questZoneRepository;
   late EnemyRepository enemyRepository;
 
-  QuestEncounterCubit({required Quest quest, required Database db})
-      : super(QuestEncounterState(
-            quest: quest, status: QuestEncounterStatus.initial)) {
+  QuestEncounterCubit({required this.quest, required Database db})
+      : super(QuestEncounterState(status: QuestEncounterStatus.initial)) {
     questRepository = QuestRepository(db: db);
     encounterRepository = EncounterRepository(db: db);
     questZoneRepository = QuestZoneRepository(db: db);
@@ -28,18 +28,22 @@ class QuestEncounterCubit extends Cubit<QuestEncounterState> {
   }
 
   Future<void> init() async {
-    final encounter =
-        await encounterRepository.getEncounterByQuestId(state.quest.id);
+    reloadEncounter(quest);
+  }
+
+  Future<void> reloadEncounter(Quest quest) async {
+    print('Reloading encounter');
+    final encounter = await encounterRepository.getEncounterByQuestId(quest.id);
     if (encounter != null) {
       emit(state.copyWith(
           encounter: encounter, status: _determineEncounterStatus(encounter)));
     } else {
       emit(state.copyWith(status: QuestEncounterStatus.generating));
 
-      final verboseQuestZone = await questZoneRepository.getQuestZone(
-          state.quest.zone.id, true, true);
+      final verboseQuestZone =
+          await questZoneRepository.getQuestZone(quest.zone.id, true, true);
       final newEncounter =
-          await questService.generateEncounter(state.quest, verboseQuestZone);
+          await questService.generateEncounter(quest, verboseQuestZone);
       await encounterRepository.insertEncounter(newEncounter);
       for (var enemy in newEncounter.enemies) {
         await enemyRepository.insertEnemy(enemy);
@@ -52,13 +56,34 @@ class QuestEncounterCubit extends Cubit<QuestEncounterState> {
   }
 
   QuestEncounterStatus _determineEncounterStatus(Encounter encounter) {
-    if (encounter.encounterCompleted) {
+    if (encounter.completedAt != null) {
       return QuestEncounterStatus.completed;
     } else if (encounter.enemies.isNotEmpty &&
         encounter.enemies.every((enemy) => enemy.currentHealth <= 0)) {
       return QuestEncounterStatus.completed;
     } else {
       return QuestEncounterStatus.inProgress;
+    }
+  }
+
+  void toggleDarkened(bool darkened) {
+    emit(state.copyWith(darkened: darkened));
+  }
+
+  Future<void> completeEncounter() async {
+    if (state.encounter != null) {
+      if (state.encounter!.encounterType == EncounterType.chest) {
+        final encounterReward =
+            await questService.generateEncounterReward(state.encounter!);
+        await encounterRepository.insertEncounterReward(encounterReward);
+      } else {
+        final encounterReward =
+            await questService.generateEncounterReward(state.encounter!);
+        await encounterRepository.insertEncounterReward(encounterReward);
+      }
+      await encounterRepository.updateEncounter(
+          state.encounter!.copyWith(completedAt: DateTime.now()));
+      reloadEncounter(quest);
     }
   }
 }

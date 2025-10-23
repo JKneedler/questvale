@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 import 'package:questvale/data/models/encounter.dart';
-import 'package:questvale/data/models/quest.dart';
 
 enum QuestEncounterStatus {
   initial,
@@ -10,25 +9,28 @@ enum QuestEncounterStatus {
 }
 
 class QuestEncounterState extends Equatable {
-  final Quest quest;
   final QuestEncounterStatus status;
   final Encounter? encounter;
+  final bool darkened;
 
-  const QuestEncounterState(
-      {required this.quest, required this.status, this.encounter});
+  const QuestEncounterState({
+    required this.status,
+    this.encounter,
+    this.darkened = false,
+  });
 
   QuestEncounterState copyWith({
-    Quest? quest,
     QuestEncounterStatus? status,
     Encounter? encounter,
+    bool? darkened,
   }) {
     return QuestEncounterState(
-      quest: quest ?? this.quest,
       status: status ?? this.status,
       encounter: encounter ?? this.encounter,
+      darkened: darkened ?? this.darkened,
     );
   }
 
   @override
-  List<Object?> get props => [quest, status, encounter];
+  List<Object?> get props => [status, encounter, darkened];
 }

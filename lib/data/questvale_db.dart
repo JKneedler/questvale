@@ -1,11 +1,13 @@
 import 'package:path/path.dart';
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/encounter.dart';
+import 'package:questvale/data/models/encounter_reward.dart';
 import 'package:questvale/data/models/enemy_attack_data.dart';
 import 'package:questvale/data/models/enemy_data.dart';
 import 'package:questvale/data/models/enemy_drop_data.dart';
 import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/models/quest.dart';
+import 'package:questvale/data/models/quest_summary.dart';
 import 'package:questvale/data/models/quest_zone.dart';
 import 'package:questvale/data/models/todo.dart';
 import 'package:questvale/data/models/todo_tag.dart';
@@ -43,7 +45,9 @@ class QuestvaleDB {
       await db.execute(QuestZone.createTableSQL);
       await seedQuestZones(db);
       await db.execute(Quest.createTableSQL);
+      await db.execute(QuestSummary.createTableSQL);
       await db.execute(Encounter.createTableSQL);
+      await db.execute(EncounterReward.createTableSQL);
 
       await db.execute(EnemyData.createTableSQL);
       await db.execute(EnemyAttackData.createTableSQL);

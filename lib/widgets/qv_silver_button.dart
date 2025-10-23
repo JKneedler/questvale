@@ -26,7 +26,7 @@ class QvSilverButton extends StatelessWidget {
         padding: padding,
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('images/ui/buttons/white-button-filled-2x.png'),
+            image: AssetImage('images/ui/buttons/silver-button-2x.png'),
             centerSlice: Rect.fromLTWH(16, 16, 32, 32),
             fit: BoxFit.fill,
             filterQuality: FilterQuality.none,

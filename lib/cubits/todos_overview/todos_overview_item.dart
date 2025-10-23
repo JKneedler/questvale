@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:questvale/cubits/todos_overview/todos_overview_cubit.dart';
 import 'package:questvale/data/models/character_tag.dart';

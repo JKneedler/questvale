@@ -10,6 +10,17 @@ class QvEnemyInfoModal extends StatelessWidget {
   final EnemyData enemyData;
   const QvEnemyInfoModal({super.key, required this.enemyData});
 
+  static Future<void> showModal(BuildContext context, EnemyData enemyData) {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return QvEnemyInfoModal(
+          enemyData: enemyData,
+        );
+      },
+    );
+  }
+
   double _calculateMaxElementsHeight() {
     double maxHeight = 24;
     if (enemyData.immunities.isNotEmpty) {

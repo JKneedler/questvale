@@ -327,18 +327,6 @@ class ZoneEnemyCard extends StatelessWidget {
 
   final EnemyData enemy;
 
-  Future<void> _enemyInfoDialog(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-    return showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return QvEnemyInfoModal(
-          enemyData: enemy,
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
@@ -346,7 +334,8 @@ class ZoneEnemyCard extends StatelessWidget {
     // TODO: Add discovered logic
     bool discovered = true;
     return GestureDetector(
-      onTap: () => discovered ? _enemyInfoDialog(context) : null,
+      onTap: () =>
+          discovered ? QvEnemyInfoModal.showModal(context, enemy) : null,
       child: QVGrayFilter(
         isEnabled: !discovered,
         child: Container(

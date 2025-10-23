@@ -1,35 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:questvale/cubits/home/character_data_cubit.dart';
-import 'package:questvale/cubits/home/character_data_state.dart';
-import 'package:questvale/cubits/quest_encounter/combat_encounter_view.dart';
+import 'package:questvale/cubits/chest_loot/chest_loot_page.dart';
+import 'package:questvale/cubits/combat_encounter/combat_encounter_page.dart';
+import 'package:questvale/cubits/combat_loot/combat_loot_page.dart';
+import 'package:questvale/cubits/quest/background_page.dart';
+import 'package:questvale/cubits/quest/quest_cubit.dart';
+import 'package:questvale/cubits/quest/quest_state.dart';
+import 'package:questvale/cubits/quest_encounter/chest_encounter_page.dart';
 import 'package:questvale/cubits/quest_encounter/quest_encounter_cubit.dart';
 import 'package:questvale/cubits/quest_encounter/quest_encounter_state.dart';
-import 'package:questvale/data/models/enemy.dart';
-import 'package:questvale/data/models/quest_zone.dart';
-import 'package:questvale/widgets/qv_silver_button.dart';
+import 'package:questvale/data/models/quest.dart';
+import 'package:questvale/helpers/constants.dart';
+import 'package:questvale/helpers/shared_enums.dart';
+import 'package:questvale/widgets/qv_button.dart';
 import 'package:sqflite/sqflite.dart';
 
 class QuestEncounterPage extends StatelessWidget {
-  const QuestEncounterPage({super.key});
+  const QuestEncounterPage({super.key, required this.quest});
+  final Quest quest;
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<CharacterDataCubit, CharacterDataState>(
-        builder: (context, characterDataState) {
-      final quest = characterDataState.quest;
-      if (quest == null) {
-        return const SizedBox.shrink();
-      } else {
-        return BlocProvider<QuestEncounterCubit>(
-          create: (context) => QuestEncounterCubit(
-            quest: characterDataState.quest!,
-            db: context.read<Database>(),
-          ),
-          child: QuestEncounterView(),
-        );
-      }
-    });
+    return BlocProvider<QuestEncounterCubit>(
+      create: (context) => QuestEncounterCubit(
+        quest: quest,
+        db: context.read<Database>(),
+      ),
+      child: QuestEncounterView(),
+    );
   }
 }
 
@@ -41,38 +39,31 @@ class QuestEncounterView extends StatelessWidget {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     return BlocBuilder<QuestEncounterCubit, QuestEncounterState>(
       builder: (context, state) {
-        return BlocListener<QuestEncounterCubit, QuestEncounterState>(
+        return BlocListener<QuestCubit, QuestState>(
           listenWhen: (prev, next) =>
-              prev.status == QuestEncounterStatus.generating &&
-              next.status != QuestEncounterStatus.generating,
-          listener: (context, questEncounterState) {
-            context.read<CharacterDataCubit>().updateQuest();
+              prev.quest?.curEncounterNum != next.quest?.curEncounterNum,
+          listener: (context, questCubitState) {
+            if (questCubitState.quest != null) {
+              context
+                  .read<QuestEncounterCubit>()
+                  .reloadEncounter(questCubitState.quest!);
+            }
           },
-          child: Container(
-            padding: EdgeInsets.only(top: 60),
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage(
-                    'images/backgrounds/${state.quest.zone.name.toLowerCase()}-encounter.png'),
-                colorFilter: ColorFilter.mode(
-                    Colors.black.withValues(alpha: 0.2), BlendMode.darken),
-                fit: BoxFit.fill,
-                filterQuality: FilterQuality.low,
-              ),
-            ),
+          child: BackgroundPage(
+            zoneName: context.watch<QuestCubit>().state.quest!.zone.name,
+            darkened: state.darkened,
             child: Column(
               children: [
                 SizedBox(
                   height: 40,
-                  child: QvSilverButton(
+                  child: QvButton(
+                    darkened: state.darkened,
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Encounter ${state.quest.curEncounterNum} / ${state.quest.numEncountersCurFloor}',
+                          'Encounter ${context.watch<QuestCubit>().state.quest!.curEncounterNum} / ${context.watch<QuestCubit>().state.quest!.numEncountersCurFloor}',
                           style: TextStyle(
                               color: colorScheme.secondary, fontSize: 26),
                           textAlign: TextAlign.center,
@@ -81,13 +72,25 @@ class QuestEncounterView extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (state.encounter != null)
-                  Expanded(
-                    child: CombatEncounterView(
-                      encounter: state.encounter!,
-                      zone: state.quest.zone,
-                    ),
-                  ),
+                state.encounter?.encounterType.isCombatEncounter() ?? false
+                    ? state.encounter!.completedAt != null
+                        ? CombatLootPage()
+                        : Expanded(
+                            child: CombatEncounterPage(),
+                          )
+                    : const SizedBox(),
+                state.encounter?.encounterType.isChestEncounter() ?? false
+                    ? state.encounter!.completedAt != null
+                        ? ChestLootPage()
+                        : ChestEncounterPage(
+                            rarity:
+                                state.encounter!.chestRarity ?? Rarity.common,
+                            firstPlay: state.encounter!.createdAt
+                                    .millisecondsSinceEpoch >
+                                DateTime.now().millisecondsSinceEpoch -
+                                    ENCOUNTER_FIRST_PLAY_DELAY,
+                          )
+                    : const SizedBox(),
               ],
             ),
           ),

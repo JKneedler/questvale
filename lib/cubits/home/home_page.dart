@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:questvale/cubits/character/character_page.dart';
 import 'package:questvale/cubits/home/character_data_cubit.dart';
 import 'package:questvale/cubits/home/character_data_state.dart';
 import 'package:questvale/cubits/home/nav_cubit.dart';
@@ -44,7 +45,7 @@ class HomeView extends StatelessWidget {
       return BlocBuilder<NavCubit, NavState>(builder: (context, navState) {
         return Scaffold(
           body: [
-            TodosOverviewPage(),
+            CharacterPage(),
             QuestPage(),
             TodosOverviewPage(),
             TodosOverviewPage(),
@@ -88,6 +89,8 @@ class HomeView extends StatelessWidget {
                 label: 'Settings',
               ),
             ],
+            showCharacterAP: navState.tab == 1 ? false : true,
+            showCharacterResources: navState.tab == 0 ? false : true,
             // showSelectedLabels: false,
             // showUnselectedLabels: false,
             // type: BottomNavigationBarType.fixed,

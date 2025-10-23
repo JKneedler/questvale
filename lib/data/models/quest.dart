@@ -10,6 +10,8 @@ class Quest {
   static const numEncountersCurFloorColumnName = 'numEncountersCurFloor';
   static const curFloorColumnName = 'curFloor';
   static const curEncounterNumColumnName = 'curEncounterNum';
+  static const createdAtColumnName = 'createdAt';
+  static const completedAtColumnName = 'completedAt';
 
   static const createTableSQL = '''
     CREATE TABLE ${Quest.questTableName}(
@@ -19,7 +21,9 @@ class Quest {
       ${Quest.numFloorsColumnName} INTEGER NOT NULL,
       ${Quest.numEncountersCurFloorColumnName} INTEGER NOT NULL,
       ${Quest.curFloorColumnName} INTEGER NOT NULL,
-      ${Quest.curEncounterNumColumnName} INTEGER NOT NULL
+      ${Quest.curEncounterNumColumnName} INTEGER NOT NULL,
+      ${Quest.createdAtColumnName} INTEGER NOT NULL,
+      ${Quest.completedAtColumnName} INTEGER
     );
   ''';
 
@@ -30,6 +34,8 @@ class Quest {
   final int numEncountersCurFloor;
   final int curFloor;
   final int curEncounterNum;
+  final DateTime createdAt;
+  final DateTime? completedAt;
 
   Quest({
     required this.id,
@@ -39,6 +45,8 @@ class Quest {
     required this.numEncountersCurFloor,
     required this.curFloor,
     required this.curEncounterNum,
+    required this.createdAt,
+    this.completedAt,
   });
 
   Map<String, Object?> toMap() {
@@ -50,12 +58,14 @@ class Quest {
       Quest.numEncountersCurFloorColumnName: numEncountersCurFloor,
       Quest.curFloorColumnName: curFloor,
       Quest.curEncounterNumColumnName: curEncounterNum,
+      Quest.createdAtColumnName: createdAt.millisecondsSinceEpoch,
+      Quest.completedAtColumnName: completedAt?.millisecondsSinceEpoch,
     };
   }
 
   @override
   String toString() {
-    return 'Quest(id: $id, zone: $zone, characterId: $characterId, numFloors: $numFloors, numEncountersCurFloor: $numEncountersCurFloor, curFloor: $curFloor, curEncounterNum: $curEncounterNum)';
+    return 'Quest(id: $id, zone: $zone, characterId: $characterId, numFloors: $numFloors, numEncountersCurFloor: $numEncountersCurFloor, curFloor: $curFloor, curEncounterNum: $curEncounterNum, createdAt: $createdAt, completedAt: $completedAt)';
   }
 
   Quest copyWith({
@@ -65,6 +75,8 @@ class Quest {
     int? numEncountersCurFloor,
     int? curFloor,
     int? curEncounterNum,
+    DateTime? createdAt,
+    DateTime? completedAt,
   }) {
     return Quest(
       id: id,
@@ -75,6 +87,8 @@ class Quest {
           numEncountersCurFloor ?? this.numEncountersCurFloor,
       curFloor: curFloor ?? this.curFloor,
       curEncounterNum: curEncounterNum ?? this.curEncounterNum,
+      createdAt: createdAt ?? this.createdAt,
+      completedAt: completedAt ?? this.completedAt,
     );
   }
 }

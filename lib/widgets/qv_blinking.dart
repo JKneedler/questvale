@@ -7,13 +7,14 @@ class QvBlinking extends StatefulWidget {
     this.duration = const Duration(milliseconds: 1200),
     this.minOpacity = 0.2,
     this.curve = Curves.easeInOut,
+    this.isBlinking = false,
   });
 
   final Widget child;
   final Duration duration;
   final double minOpacity; // 0–1
   final Curve curve;
-
+  final bool isBlinking;
   @override
   State<QvBlinking> createState() => _QvBlinkingState();
 }

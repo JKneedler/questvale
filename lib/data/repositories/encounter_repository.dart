@@ -1,5 +1,7 @@
 import 'package:questvale/data/models/encounter.dart';
+import 'package:questvale/data/models/encounter_reward.dart';
 import 'package:questvale/data/repositories/enemy_repository.dart';
+import 'package:questvale/helpers/shared_enums.dart';
 import 'package:sqflite/sqflite.dart';
 
 class EncounterRepository {
@@ -80,10 +82,76 @@ class EncounterRepository {
       id: encounterId,
       encounterType:
           EncounterType.values[map[Encounter.encounterTypeColumnName] as int],
-      encounterCompleted:
-          map[Encounter.encounterCompletedColumnName] as int == 1,
       questId: map[Encounter.questIdColumnName] as String,
+      createdAt: DateTime.fromMillisecondsSinceEpoch(
+          map[Encounter.createdAtColumnName] as int),
+      completedAt: map[Encounter.completedAtColumnName] != null
+          ? DateTime.fromMillisecondsSinceEpoch(
+              map[Encounter.completedAtColumnName] as int)
+          : null,
+      chestRarity: map[Encounter.chestRarityColumnName] != null
+          ? Rarity.values[map[Encounter.chestRarityColumnName] as int]
+          : null,
       enemies: enemies,
+    );
+  }
+
+  /*
+
+  --------------------------- Encounter Reward ---------------------------------
+
+  */
+
+  // GET ENCOUNTER REWARD BY ENCOUNTER ID
+  Future<EncounterReward?> getEncounterRewardByEncounterId(
+      String encounterId) async {
+    final result = await db.query(EncounterReward.encounterRewardTableName,
+        where: '${EncounterReward.encounterIdColumnName} = ?',
+        whereArgs: [encounterId]);
+    if (result.isEmpty) {
+      return null;
+    }
+    return _getEncounterRewardFromMap(result[0]);
+  }
+
+  // INSERT ENCOUNTER REWARD
+  Future<void> insertEncounterReward(EncounterReward encounterReward) async {
+    await db.insert(
+        EncounterReward.encounterRewardTableName, encounterReward.toMap());
+  }
+
+  // UPDATE ENCOUNTER REWARD
+  Future<void> updateEncounterReward(EncounterReward encounterReward) async {
+    await db.update(
+        EncounterReward.encounterRewardTableName, encounterReward.toMap(),
+        where: '${EncounterReward.idColumnName} = ?',
+        whereArgs: [encounterReward.id]);
+  }
+
+  // DELETE ENCOUNTER REWARD
+  Future<void> deleteEncounterReward(EncounterReward encounterReward) async {
+    await db.delete(EncounterReward.encounterRewardTableName,
+        where: '${EncounterReward.idColumnName} = ?',
+        whereArgs: [encounterReward.id]);
+  }
+
+  // DELETE ENCOUNTER REWARD BY ENCOUNTER ID
+  Future<void> deleteEncounterRewardByEncounterId(String encounterId) async {
+    await db.delete(EncounterReward.encounterRewardTableName,
+        where: '${EncounterReward.encounterIdColumnName} = ?',
+        whereArgs: [encounterId]);
+  }
+
+  // map method for encounter reward
+  EncounterReward _getEncounterRewardFromMap(Map<String, Object?> map) {
+    return EncounterReward(
+      id: map[EncounterReward.idColumnName] as String,
+      encounterId: map[EncounterReward.encounterIdColumnName] as String,
+      questId: map[EncounterReward.questIdColumnName] as String,
+      xp: map[EncounterReward.xpColumnName] as int,
+      gold: map[EncounterReward.goldColumnName] as int,
+      createdAt: DateTime.fromMillisecondsSinceEpoch(
+          map[EncounterReward.createdAtColumnName] as int),
     );
   }
 }
