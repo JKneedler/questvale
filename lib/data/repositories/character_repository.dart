@@ -96,7 +96,6 @@ class CharacterRepository {
 
   Future<void> printCharacters() async {
     final characterMaps = await db.query(Character.characterTableName);
-    print(characterMaps);
   }
 
   Future<Character> _getCharacterFromMap(Map<String, Object?> map) async {

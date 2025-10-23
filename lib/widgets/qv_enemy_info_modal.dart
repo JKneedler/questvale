@@ -1,118 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:questvale/data/models/enemy_attack_data.dart';
+import 'package:questvale/data/models/enemy_data.dart';
+import 'package:questvale/data/models/enemy_drop_data.dart';
+import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_gray_filter.dart';
 import 'package:questvale/widgets/qv_rarity_card_mini.dart';
 
-enum EnemyType {
-  humanoid,
-  monster,
-  undead,
-  demon,
-  celestial,
-  beast,
-  spirit,
-  elemental,
-  mechanical,
-  plant,
-}
-
-enum AttackType {
-  physical,
-  fire,
-  ice,
-  lightning,
-  poison,
-  holy,
-  dark,
-  earth,
-}
-
-enum AttackDamageRating {
-  low,
-  medium,
-  high,
-}
-
-enum AttackSpeedRating {
-  slow,
-  medium,
-  fast,
-}
-
-enum DropItemUseCase {
-  material,
-  alchemy,
-  blacksmithing,
-  gemsmithing,
-}
-
-class AttackData {
-  final String name;
-  final AttackDamageRating damageRating;
-  final AttackSpeedRating speedRating;
-  final AttackType attackType;
-
-  const AttackData({
-    required this.name,
-    required this.damageRating,
-    required this.speedRating,
-    required this.attackType,
-  });
-}
-
-class DropData {
-  final String itemName;
-  final Rarity rarity;
-  final String iconLocation;
-  final int itemQuantityMin;
-  final int itemQuantityMax;
-  final List<DropItemUseCase> useCases;
-  final bool discovered;
-
-  const DropData({
-    required this.itemName,
-    required this.rarity,
-    required this.iconLocation,
-    required this.itemQuantityMin,
-    required this.itemQuantityMax,
-    required this.useCases,
-    required this.discovered,
-  });
-}
-
-class TempEnemyData {
-  final String name;
-  final Rarity rarity;
-  final String iconLocation;
-  final EnemyType enemyType;
-  final int experience;
-  final int health;
-  final List<AttackType> immunities;
-  final List<AttackType> resistances;
-  final List<AttackType> weaknesses;
-  final List<AttackData> attacks;
-  final List<DropData> drops;
-
-  const TempEnemyData({
-    required this.name,
-    required this.rarity,
-    required this.iconLocation,
-    required this.enemyType,
-    required this.experience,
-    required this.health,
-    required this.immunities,
-    required this.resistances,
-    required this.weaknesses,
-    required this.attacks,
-    required this.drops,
-  });
-}
-
 class QvEnemyInfoModal extends StatelessWidget {
-  final TempEnemyData enemyData;
+  final EnemyData enemyData;
   const QvEnemyInfoModal({super.key, required this.enemyData});
 
+  static Future<void> showModal(BuildContext context, EnemyData enemyData) {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return QvEnemyInfoModal(
+          enemyData: enemyData,
+        );
+      },
+    );
+  }
+
   double _calculateMaxElementsHeight() {
-    double maxHeight = 18;
+    double maxHeight = 24;
     if (enemyData.immunities.isNotEmpty) {
       double immunitiesHeight = enemyData.immunities.length * 18;
       if (immunitiesHeight > maxHeight) {
@@ -217,7 +127,7 @@ class QvEnemyInfoModal extends StatelessWidget {
                               height: 140,
                               bgColor: colorScheme.secondary,
                               child: Image.asset(
-                                enemyData.iconLocation,
+                                'images/enemies/${enemyData.id.toLowerCase()}.png',
                                 filterQuality: FilterQuality.none,
                               ),
                             ),
@@ -410,16 +320,7 @@ class QvEnemyInfoModal extends StatelessWidget {
                                       textAlign: TextAlign.start,
                                     )),
                                     SizedBox(
-                                        width: 64,
-                                        child: Text(
-                                          'QTY',
-                                          style: TextStyle(
-                                              fontSize: 14,
-                                              color: colorScheme.onSecondary),
-                                          textAlign: TextAlign.center,
-                                        )),
-                                    SizedBox(
-                                        width: 55,
+                                        width: 80,
                                         child: Text(
                                           'USES',
                                           style: TextStyle(
@@ -510,7 +411,7 @@ class EnemyInfoLine extends StatelessWidget {
 
 class ElementsView extends StatelessWidget {
   final String title;
-  final List<AttackType> elements;
+  final List<DamageType> elements;
   final double height;
 
   const ElementsView(
@@ -559,7 +460,7 @@ class ElementsView extends StatelessWidget {
                             _capitalize(elements[index].name),
                             style: TextStyle(
                               fontSize: 16,
-                              color: colorScheme.onSecondary,
+                              color: elements[index].color,
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -586,10 +487,20 @@ class ElementsView extends StatelessWidget {
 }
 
 class EnemyAttackView extends StatelessWidget {
-  final AttackData attack;
+  final EnemyAttackData attack;
   final bool includeSeparator;
   const EnemyAttackView(
       {super.key, required this.attack, this.includeSeparator = true});
+
+  String _capitalize(String string) {
+    return string.substring(0, 1).toUpperCase() + string.substring(1);
+  }
+
+  String _getAttackCooldown(double cooldown) {
+    int hours = cooldown.floor();
+    int minutes = ((cooldown % 1) * 60).round();
+    return '$hours:${minutes.toString().padLeft(2, '0')}';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -612,9 +523,11 @@ class EnemyAttackView extends StatelessWidget {
                   textAlign: TextAlign.start,
                 ),
               ),
-              AttackAttributeSlice(value: attack.damageRating.name),
-              AttackAttributeSlice(value: attack.speedRating.name),
-              AttackAttributeSlice(value: attack.attackType.name),
+              AttackAttributeSlice(value: attack.damage.toString()),
+              AttackAttributeSlice(value: _getAttackCooldown(attack.cooldown)),
+              AttackAttributeSlice(
+                  value: _capitalize(attack.damageType.name),
+                  color: attack.damageType.color),
             ],
           ),
         ),
@@ -631,7 +544,8 @@ class EnemyAttackView extends StatelessWidget {
 
 class AttackAttributeSlice extends StatelessWidget {
   final String value;
-  const AttackAttributeSlice({super.key, required this.value});
+  final Color? color;
+  const AttackAttributeSlice({super.key, required this.value, this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -642,7 +556,7 @@ class AttackAttributeSlice extends StatelessWidget {
         value,
         style: TextStyle(
           fontSize: 16,
-          color: colorScheme.onSecondary,
+          color: color ?? colorScheme.onSecondary,
         ),
         textAlign: TextAlign.center,
       ),
@@ -651,16 +565,25 @@ class AttackAttributeSlice extends StatelessWidget {
 }
 
 class EnemyDropView extends StatelessWidget {
-  final DropData drop;
+  final EnemyDropData drop;
   const EnemyDropView({super.key, required this.drop});
 
   String _capitalize(String string) {
     return string.substring(0, 1).toUpperCase() + string.substring(1);
   }
 
+  String _getDropString() {
+    return drop.itemQuantityMin == drop.itemQuantityMax
+        ? '${(drop.dropChance * 100).toStringAsFixed(0)}%  :  ${drop.itemQuantityMin.toString()}'
+        : '${(drop.dropChance * 100).toStringAsFixed(0)}%  :  ${drop.itemQuantityMin.toString()}-${drop.itemQuantityMax.toString()}';
+  }
+
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
+
+    // TODO: Add discovered logic
+    bool discovered = true;
     return Container(
       margin: const EdgeInsets.only(bottom: 2),
       child: QvRarityCardMini(
@@ -685,8 +608,11 @@ class EnemyDropView extends StatelessWidget {
                     filterQuality: FilterQuality.none,
                   ),
                 ),
-                child: drop.discovered
-                    ? Image.asset(drop.iconLocation)
+                child: discovered
+                    ? Image.asset(
+                        'images/enemies/drops/${drop.id.toLowerCase()}.png',
+                        filterQuality: FilterQuality.none,
+                      )
                     : QVGrayFilter(
                         child: Image.asset(
                           'images/pixel-icons/question-mark.png',
@@ -696,28 +622,36 @@ class EnemyDropView extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: Text(drop.discovered ? drop.itemName : '',
-                  style: TextStyle(
-                      fontSize: 26,
-                      color: colorScheme.onSecondary,
-                      height: .8)),
-            ),
-            SizedBox(
-              width: 40,
-              child: Text(
-                drop.discovered
-                    ? drop.itemQuantityMin == drop.itemQuantityMax
-                        ? drop.itemQuantityMin.toString()
-                        : '${drop.itemQuantityMin}-${drop.itemQuantityMax}'
-                    : '',
-                style: TextStyle(fontSize: 20, color: colorScheme.onSecondary),
-                textAlign: TextAlign.center,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    height: 16,
+                    child: Text(
+                      discovered ? drop.itemName : '',
+                      style: TextStyle(
+                          fontSize: 20,
+                          color: colorScheme.onSecondary,
+                          height: .8),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 16,
+                    child: Text(
+                      discovered ? _getDropString() : '',
+                      style: TextStyle(
+                          fontSize: 16, color: colorScheme.onSecondary),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
               ),
             ),
             SizedBox(
-              width: 60,
+              width: 80,
               child: Text(
-                drop.discovered
+                discovered
                     ? drop.useCases.map((e) => _capitalize(e.name)).join('\n')
                     : '',
                 style: TextStyle(

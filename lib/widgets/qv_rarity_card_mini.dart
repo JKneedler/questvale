@@ -1,13 +1,5 @@
 import 'package:flutter/material.dart';
-
-enum Rarity {
-  common,
-  uncommon,
-  rare,
-  epic,
-  legendary,
-  mythic,
-}
+import 'package:questvale/helpers/shared_enums.dart';
 
 class QvRarityCardMini extends StatelessWidget {
   final Rarity rarity;

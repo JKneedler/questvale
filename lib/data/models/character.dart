@@ -1,5 +1,3 @@
-import 'package:questvale/data/models/pair.dart';
-
 enum CharacterClass {
   warrior,
   rogue,
@@ -62,7 +60,6 @@ class Character {
   static const characterClassColumnName = 'characterClass';
   static const levelColumnName = 'level';
   static const currentExpColumnName = 'currentExp';
-  static const inventoryColumnName = 'inventory';
   static const currentHealthColumnName = 'currentHealth';
   static const currentManaColumnName = 'currentMana';
   static const attacksRemainingColumnName = 'attacksRemainingColumnName';
@@ -74,7 +71,6 @@ class Character {
 			${Character.characterClassColumnName} INTEGER NOT NULL,
 			${Character.levelColumnName} INTEGER NOT NULL,
 			${Character.currentExpColumnName} INTEGER NOT NULL,
-			${Character.inventoryColumnName} VARCHAR NOT NULL,
 			${Character.currentHealthColumnName} INTEGER NOT NULL,
 			${Character.currentManaColumnName} INTEGER NOT NULL,
 			${Character.attacksRemainingColumnName} INTEGER NOT NULL
@@ -138,18 +134,7 @@ class Character {
 
   @override
   String toString() {
-    return '''
-			Character {
-				id: $id
-				name: $name
-				class: $characterClass
-				level: $level
-				currentExp: $currentExp
-				currentHealth: $currentHealth
-				currentMana: $currentMana
-				attacksRemaining: $attacksRemaining
-			}
-		''';
+    return 'Character {id: $id, name: $name, characterClass: $characterClass, level: $level, currentExp: $currentExp, currentHealth: $currentHealth, currentMana: $currentMana, attacksRemaining: $attacksRemaining}';
   }
 
   Character copyWith({
