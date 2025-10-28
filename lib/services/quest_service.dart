@@ -6,10 +6,9 @@ import 'package:questvale/data/models/encounter_reward.dart';
 import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/models/enemy_data.dart';
 import 'package:questvale/data/models/quest.dart';
-import 'package:questvale/data/models/quest_summary.dart';
 import 'package:questvale/data/models/quest_zone.dart';
 import 'package:questvale/data/repositories/quest_repository.dart';
-import 'package:questvale/helpers/shared_enums.dart';
+import 'package:questvale/services/equipment_service.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 
@@ -18,17 +17,17 @@ class QuestService {
 
   QuestService({required this.db}) {
     questRepository = QuestRepository(db: db);
+    equipmentService = EquipmentService(db: db);
   }
 
   late QuestRepository questRepository;
+  late EquipmentService equipmentService;
 
   Future<bool> beginQuestGeneration(
       Character character, QuestZone questZone) async {
     final quest = generateQuest(character, questZone);
     try {
       await questRepository.insertQuest(quest);
-      await questRepository.insertQuestSummary(
-          QuestSummary(id: Uuid().v4(), questId: quest.id, xp: 0, gold: 0));
     } catch (e) {
       return false;
     }
@@ -62,51 +61,58 @@ class QuestService {
     final enemyData1 = enemyData[Random().nextInt(enemyData.length)];
     final enemyData2 = enemyData[Random().nextInt(enemyData.length)];
     final enemyData3 = enemyData[Random().nextInt(enemyData.length)];
+    final enemies = [
+      Enemy(
+        id: Uuid().v4(),
+        encounterId: encounterId,
+        enemyData: enemyData1,
+        currentHealth: enemyData1.health,
+        position: 0,
+      ),
+      Enemy(
+        id: Uuid().v4(),
+        encounterId: encounterId,
+        enemyData: enemyData2,
+        currentHealth: enemyData2.health,
+        position: 1,
+      ),
+      Enemy(
+        id: Uuid().v4(),
+        encounterId: encounterId,
+        enemyData: enemyData3,
+        currentHealth: enemyData3.health,
+        position: 2,
+      ),
+    ];
+    final encounterNum = quest.curEncounterNum;
     final encounter = Encounter(
       id: encounterId,
-      encounterType: EncounterType.genericCombat,
+      encounterType: encounterNum % 2 == 0
+          ? EncounterType.genericCombat
+          : EncounterType.chest,
       questId: quest.id,
-      enemies: [
-        Enemy(
-          id: Uuid().v4(),
-          encounterId: encounterId,
-          enemyData: enemyData1,
-          currentHealth: enemyData1.health,
-          position: 0,
-        ),
-        Enemy(
-          id: Uuid().v4(),
-          encounterId: encounterId,
-          enemyData: enemyData2,
-          currentHealth: enemyData2.health,
-          position: 1,
-        ),
-        Enemy(
-          id: Uuid().v4(),
-          encounterId: encounterId,
-          enemyData: enemyData3,
-          currentHealth: enemyData3.health,
-          position: 2,
-        ),
-      ],
+      enemies: encounterNum % 2 == 0 ? enemies : [],
       createdAt: DateTime.now(),
       // chestRarity: Rarity.common,
     );
     return encounter;
   }
 
-  Future<EncounterReward> generateEncounterReward(Encounter encounter) async {
+  Future<EncounterReward> generateEncounterReward(Character character,
+      Encounter encounter, Quest quest, QuestZone questZone) async {
     final xp = encounter.encounterType.isCombatEncounter()
         ? Random().nextInt(100) + 1
         : 0;
     final gold = Random().nextInt(100) + 1;
+    final equipmentReward = equipmentService.generateRandomTestEquipment(
+        character, questZone, encounter.encounterType);
     return EncounterReward(
       id: Uuid().v4(),
       encounterId: encounter.id,
       questId: encounter.questId,
       xp: xp,
       gold: gold,
-      createdAt: DateTime.now(),
+      equipmentRewards: [equipmentReward],
     );
   }
 }

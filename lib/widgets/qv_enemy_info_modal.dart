@@ -4,7 +4,7 @@ import 'package:questvale/data/models/enemy_data.dart';
 import 'package:questvale/data/models/enemy_drop_data.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_gray_filter.dart';
-import 'package:questvale/widgets/qv_rarity_card_mini.dart';
+import 'package:questvale/widgets/qv_card_border.dart';
 
 class QvEnemyInfoModal extends StatelessWidget {
   final EnemyData enemyData;
@@ -121,7 +121,7 @@ class QvEnemyInfoModal extends StatelessWidget {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            QvRarityCardMini(
+                            QvCardBorder(
                               rarity: enemyData.rarity,
                               width: 100,
                               height: 140,
@@ -586,7 +586,7 @@ class EnemyDropView extends StatelessWidget {
     bool discovered = true;
     return Container(
       margin: const EdgeInsets.only(bottom: 2),
-      child: QvRarityCardMini(
+      child: QvCardBorder(
         rarity: drop.rarity,
         height: 80,
         widthFactor: .96,

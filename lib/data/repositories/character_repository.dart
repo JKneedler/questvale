@@ -1,5 +1,6 @@
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/character_tag.dart';
+import 'package:questvale/helpers/shared_enums.dart';
 import 'package:sqflite/sqflite.dart';
 
 class CharacterRepository {
@@ -105,6 +106,7 @@ class CharacterRepository {
       characterClass:
           CharacterClass.values[map[Character.characterClassColumnName] as int],
       level: map[Character.levelColumnName] as int,
+      gold: map[Character.goldColumnName] as int,
       currentExp: map[Character.currentExpColumnName] as int,
       currentHealth: map[Character.currentHealthColumnName] as int,
       currentMana: map[Character.currentManaColumnName] as int,

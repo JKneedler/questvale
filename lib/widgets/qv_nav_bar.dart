@@ -58,6 +58,10 @@ class QVNavBar extends StatelessWidget {
             if (showCharacterResources)
               BlocBuilder<CharacterDataCubit, CharacterDataState>(
                   builder: (context, characterDataState) {
+                final combatStats =
+                    context.watch<CharacterDataCubit>().state.combatStats;
+                final maxHealth = combatStats?.maxHealth ?? 0;
+                final maxMana = combatStats?.maxResource ?? 0;
                 return Container(
                   height: 26,
                   color: colorScheme.secondary,
@@ -65,36 +69,19 @@ class QVNavBar extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       CharacterResourceBar(
-                        maxValue: characterDataState.character?.maxHealth ?? 0,
+                        maxValue: maxHealth,
                         currentValue:
                             characterDataState.character?.currentHealth ?? 0,
                         color: HEALTH_COLOR,
                         startAlignment: Alignment.centerLeft,
-                        showCharacterAP: showCharacterAP,
                       ),
-                      Expanded(
-                        child: showCharacterAP
-                            ? Container(
-                                alignment: Alignment.center,
-                                color: Colors.grey[200],
-                                child: Text(
-                                  '${characterDataState.character?.attacksRemaining ?? 0}',
-                                  style: TextStyle(
-                                    color: colorScheme.secondary,
-                                    fontSize: 30,
-                                    height: .9,
-                                  ),
-                                ),
-                              )
-                            : Container(color: Colors.grey[200]),
-                      ),
+                      Expanded(child: Container(color: Colors.grey[200])),
                       CharacterResourceBar(
-                        maxValue: characterDataState.character?.maxMana ?? 0,
+                        maxValue: maxMana,
                         currentValue:
                             characterDataState.character?.currentMana ?? 0,
                         color: MANA_COLOR,
                         startAlignment: Alignment.centerRight,
-                        showCharacterAP: showCharacterAP,
                       ),
                       // CharacterResourceBar(
                       //     maxValue: characterDataState.character?.maxMana ?? 0,
@@ -190,19 +177,16 @@ class CharacterResourceBar extends StatelessWidget {
     required this.currentValue,
     required this.color,
     required this.startAlignment,
-    required this.showCharacterAP,
   });
 
   final int maxValue;
   final int currentValue;
   final Color color;
   final Alignment startAlignment;
-  final bool showCharacterAP;
 
   @override
   Widget build(BuildContext context) {
-    final width =
-        MediaQuery.of(context).size.width - (showCharacterAP ? 60 : 1.5);
+    final width = MediaQuery.of(context).size.width - 1.5;
     return SizedBox(
         width: width / 2,
         height: double.infinity,

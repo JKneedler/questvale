@@ -1,6 +1,7 @@
+import 'package:equatable/equatable.dart';
 import 'package:questvale/data/models/quest_zone.dart';
 
-class Quest {
+class Quest extends Equatable {
   static const questTableName = 'Quests';
 
   static const idColumnName = 'id';
@@ -37,7 +38,7 @@ class Quest {
   final DateTime createdAt;
   final DateTime? completedAt;
 
-  Quest({
+  const Quest({
     required this.id,
     required this.zone,
     required this.characterId,
@@ -91,4 +92,17 @@ class Quest {
       completedAt: completedAt ?? this.completedAt,
     );
   }
+
+  @override
+  List<Object?> get props => [
+        id,
+        zone,
+        characterId,
+        numFloors,
+        numEncountersCurFloor,
+        curFloor,
+        curEncounterNum,
+        createdAt,
+        completedAt
+      ];
 }

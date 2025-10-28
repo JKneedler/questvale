@@ -5,6 +5,7 @@ class QvMetalCornerBorder extends StatelessWidget {
   final double widthFactor;
   final double heightFactor;
   final EdgeInsets padding;
+  final Color? color;
 
   const QvMetalCornerBorder({
     super.key,
@@ -12,6 +13,7 @@ class QvMetalCornerBorder extends StatelessWidget {
     this.widthFactor = .95,
     this.heightFactor = .95,
     this.padding = const EdgeInsets.all(6),
+    this.color,
   });
 
   @override
@@ -25,7 +27,7 @@ class QvMetalCornerBorder extends StatelessWidget {
             widthFactor: widthFactor,
             heightFactor: heightFactor,
             child: Container(
-              color: colorScheme.surface,
+              color: color ?? colorScheme.surface,
               padding: padding,
               child: child,
             ),

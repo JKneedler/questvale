@@ -1,14 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:questvale/cubits/home/character_data_cubit.dart';
+import 'package:questvale/widgets/qv_inset_background.dart';
 
-class QVAppBar extends StatelessWidget {
-  const QVAppBar({
+class QvAppBar extends StatelessWidget {
+  const QvAppBar({
     super.key,
     this.title = 'Questvale',
+    this.color,
+    this.insetColor,
     this.includeBackButton = false,
+    this.onBackButtonPressed,
+    this.showAP = true,
   });
 
   final String title;
+  final Color? color;
+  final QvInsetBackgroundType? insetColor;
   final bool includeBackButton;
+  final VoidCallback? onBackButtonPressed;
+  final bool showAP;
 
   @override
   Widget build(BuildContext context) {
@@ -18,21 +29,27 @@ class QVAppBar extends StatelessWidget {
     return Container(
       padding: EdgeInsets.only(top: topPadding, left: 16, right: 16),
       height: 60 + topPadding,
-      color: colorScheme.surface,
+      color: color ?? colorScheme.surface,
       child: Row(
         children: [
-          SizedBox(
-            width: 40,
-            height: 40,
-            child: includeBackButton
-                ? GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: SizedBox(
-                        child: Text('<',
-                            style: TextStyle(
-                                fontSize: 26, color: colorScheme.onSurface))),
-                  )
-                : SizedBox.shrink(),
+          GestureDetector(
+            onTap: onBackButtonPressed ?? () => Navigator.pop(context),
+            child: SizedBox(
+              width: 60,
+              height: 40,
+              child: onBackButtonPressed == null
+                  ? SizedBox.shrink()
+                  : SizedBox(
+                      child: Text(
+                        '<',
+                        style: TextStyle(
+                          fontSize: 26,
+                          color: colorScheme.onSurface,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+            ),
           ),
           Expanded(
             child: Center(
@@ -42,7 +59,24 @@ class QVAppBar extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(width: 40, height: 40),
+          SizedBox(
+            width: 60,
+            height: 40,
+            child: showAP
+                ? QvInsetBackground(
+                    type: insetColor ?? QvInsetBackgroundType.secondary,
+                    child: Center(
+                      child: Text(
+                        '${context.read<CharacterDataCubit>().state.character?.attacksRemaining ?? 0}',
+                        style: TextStyle(
+                            color: colorScheme.onSurface,
+                            fontSize: 28,
+                            height: 1),
+                      ),
+                    ),
+                  )
+                : SizedBox.shrink(),
+          ),
         ],
       ),
     );

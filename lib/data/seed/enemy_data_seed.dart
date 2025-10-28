@@ -125,7 +125,7 @@ List<EnemyData> enemyData = [
     maxGold: 4,
     spawnRate: 0.1,
     immunities: [],
-    resistances: [DamageType.air],
+    resistances: [],
     weaknesses: [],
     attacks: [
       EnemyAttackData(
@@ -198,15 +198,6 @@ List<EnemyData> enemyData = [
         itemQuantityMax: 1,
         useCases: [DropItemUseCase.alchemy],
         rarity: Rarity.rare,
-        dropChance: 0.4,
-      ),
-      EnemyDropData(
-        id: 'grass-viper-venom-gland-2',
-        itemName: 'Venom Gland',
-        itemQuantityMin: 1,
-        itemQuantityMax: 1,
-        useCases: [DropItemUseCase.alchemy],
-        rarity: Rarity.mythic,
         dropChance: 0.4,
       ),
     ],
