@@ -4,9 +4,9 @@ import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/encounter.dart';
 import 'package:questvale/data/models/encounter_reward.dart';
 import 'package:questvale/data/models/enemy.dart';
-import 'package:questvale/data/models/enemy_data.dart';
+import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
 import 'package:questvale/data/models/quest.dart';
-import 'package:questvale/data/models/quest_zone.dart';
+import 'package:questvale/data/providers/game_data_models/quest_zone.dart';
 import 'package:questvale/data/repositories/quest_repository.dart';
 import 'package:questvale/services/equipment_service.dart';
 import 'package:sqflite/sqflite.dart';
@@ -45,7 +45,7 @@ class QuestService {
         questZone.minEncountersPerFloor;
     return Quest(
       id: Uuid().v4(),
-      zone: questZone,
+      zoneId: questZone.id,
       characterId: character.id,
       numFloors: numFloors,
       numEncountersCurFloor: 2,
@@ -65,21 +65,21 @@ class QuestService {
       Enemy(
         id: Uuid().v4(),
         encounterId: encounterId,
-        enemyData: enemyData1,
+        enemyDataId: enemyData1.id,
         currentHealth: enemyData1.health,
         position: 0,
       ),
       Enemy(
         id: Uuid().v4(),
         encounterId: encounterId,
-        enemyData: enemyData2,
+        enemyDataId: enemyData2.id,
         currentHealth: enemyData2.health,
         position: 1,
       ),
       Enemy(
         id: Uuid().v4(),
         encounterId: encounterId,
-        enemyData: enemyData3,
+        enemyDataId: enemyData3.id,
         currentHealth: enemyData3.health,
         position: 2,
       ),

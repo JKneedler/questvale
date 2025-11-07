@@ -2,12 +2,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/town_tab/questing/quest_encounter/quest_encounter_state.dart';
 import 'package:questvale/data/models/encounter.dart';
 import 'package:questvale/data/models/quest.dart';
-import 'package:questvale/data/models/quest_zone.dart';
+import 'package:questvale/data/providers/game_data_models/quest_zone.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
 import 'package:questvale/data/repositories/encounter_repository.dart';
 import 'package:questvale/data/repositories/enemy_repository.dart';
 import 'package:questvale/data/repositories/quest_repository.dart';
-import 'package:questvale/data/repositories/quest_zone_repository.dart';
 import 'package:questvale/services/quest_service.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -15,21 +14,20 @@ class QuestEncounterCubit extends Cubit<QuestEncounterState> {
   late QuestRepository questRepository;
   late QuestService questService;
   late EncounterRepository encounterRepository;
-  late QuestZoneRepository questZoneRepository;
   late EnemyRepository enemyRepository;
   late CharacterRepository characterRepository;
 
-  late QuestZone questZone;
+  final QuestZone questZone;
 
   QuestEncounterCubit(
       {required Quest quest,
       required QuestStatus initialQuestStatus,
-      required Database db})
+      required Database db,
+      required this.questZone})
       : super(QuestEncounterState(
             quest: quest, questStatus: initialQuestStatus)) {
     questRepository = QuestRepository(db: db);
     encounterRepository = EncounterRepository(db: db);
-    questZoneRepository = QuestZoneRepository(db: db);
     enemyRepository = EnemyRepository(db: db);
     characterRepository = CharacterRepository(db: db);
     questService = QuestService(db: db);
@@ -37,8 +35,6 @@ class QuestEncounterCubit extends Cubit<QuestEncounterState> {
   }
 
   Future<void> init() async {
-    questZone =
-        await questZoneRepository.getQuestZone(state.quest.zone.id, true, true);
     loadQuest();
   }
 
@@ -99,8 +95,6 @@ class QuestEncounterCubit extends Cubit<QuestEncounterState> {
     final quest = state.quest;
     final character =
         await characterRepository.getCharacterById(quest.characterId);
-    final questZone =
-        await questZoneRepository.getQuestZone(quest.zone.id, false, false);
     if (state.encounter != null) {
       if (state.encounter!.encounterType == EncounterType.chest) {
         final encounterReward = await questService.generateEncounterReward(

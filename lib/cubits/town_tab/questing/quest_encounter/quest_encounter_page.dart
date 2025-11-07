@@ -11,6 +11,7 @@ import 'package:questvale/cubits/town_tab/questing/quest_encounter/quest_encount
 import 'package:questvale/cubits/town_tab/questing/quest_loot/quest_loot_page.dart';
 import 'package:questvale/cubits/town_tab/town/town_cubit.dart';
 import 'package:questvale/data/models/quest.dart';
+import 'package:questvale/data/providers/game_data.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_animated_transition.dart';
 import 'package:questvale/widgets/qv_quest_encounter_header.dart';
@@ -22,11 +23,14 @@ class QuestEncounterPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final questZones = context.read<GameData>().questZones;
+    final questZone = questZones.firstWhere((zone) => zone.id == quest.zoneId);
     return BlocProvider<QuestEncounterCubit>(
       create: (context) => QuestEncounterCubit(
         quest: quest,
         initialQuestStatus: QuestStatus.questBegin,
         db: context.read<Database>(),
+        questZone: questZone,
       ),
       child: QuestEncounterView(),
     );
@@ -125,7 +129,7 @@ class QuestEncounterView extends StatelessWidget {
             ),
           ],
           child: BackgroundPage(
-            zoneName: questState.quest.zone.name,
+            zoneName: context.read<QuestEncounterCubit>().questZone.name,
             darkened: questState.darkened,
             child: SizedBox(
               height: MediaQuery.of(context).size.height,

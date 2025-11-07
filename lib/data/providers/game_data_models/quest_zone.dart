@@ -1,4 +1,4 @@
-import 'package:questvale/data/models/enemy_data.dart';
+import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
 
 class QuestZone {
   static const questZoneTableName = 'QuestZones';

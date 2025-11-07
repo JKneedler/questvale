@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:questvale/data/models/enemy_attack_data.dart';
-import 'package:questvale/data/models/enemy_data.dart';
-import 'package:questvale/data/models/enemy_drop_data.dart';
+import 'package:questvale/data/providers/game_data_models/enemy_attack_data.dart';
+import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
+import 'package:questvale/data/providers/game_data_models/enemy_drop_data.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_gray_filter.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
@@ -610,7 +610,7 @@ class EnemyDropView extends StatelessWidget {
                 ),
                 child: discovered
                     ? Image.asset(
-                        'images/enemies/drops/${drop.id.toLowerCase()}.png',
+                        'images/enemies/drops/${drop.itemName.toLowerCase().replaceAll(' ', '-')}.png',
                         filterQuality: FilterQuality.none,
                       )
                     : QVGrayFilter(

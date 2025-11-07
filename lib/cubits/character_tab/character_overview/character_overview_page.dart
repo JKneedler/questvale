@@ -7,6 +7,7 @@ import 'package:questvale/cubits/home/character_data_cubit.dart';
 import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/widgets/qv_app_bar.dart';
+import 'package:questvale/widgets/qv_skill_button.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
@@ -367,30 +368,52 @@ class CharacterOverviewView extends StatelessWidget {
                                               Expanded(
                                                 child: Row(
                                                   spacing: gridSpacing,
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment
-                                                          .stretch,
                                                   mainAxisAlignment:
                                                       MainAxisAlignment
                                                           .spaceEvenly,
                                                   children: [
-                                                    SkillItem(),
-                                                    SkillItem(),
+                                                    QvSkillButton(
+                                                        width: 60,
+                                                        height: 60,
+                                                        skillIconPath:
+                                                            'images/skills/firebolt.png',
+                                                        skillButtonColor:
+                                                            SkillButtonColor
+                                                                .fireRed),
+                                                    QvSkillButton(
+                                                        width: 60,
+                                                        height: 60,
+                                                        skillIconPath:
+                                                            'images/skills/ice_spike.png',
+                                                        skillButtonColor:
+                                                            SkillButtonColor
+                                                                .iceBlue),
                                                   ],
                                                 ),
                                               ),
                                               Expanded(
                                                 child: Row(
                                                   spacing: gridSpacing,
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment
-                                                          .stretch,
                                                   mainAxisAlignment:
                                                       MainAxisAlignment
                                                           .spaceEvenly,
                                                   children: [
-                                                    SkillItem(),
-                                                    SkillItem(),
+                                                    QvSkillButton(
+                                                        width: 60,
+                                                        height: 60,
+                                                        skillIconPath:
+                                                            'images/skills/frostfire_nova.png',
+                                                        skillButtonColor:
+                                                            SkillButtonColor
+                                                                .arcanePurple),
+                                                    QvSkillButton(
+                                                        width: 60,
+                                                        height: 60,
+                                                        skillIconPath:
+                                                            'images/skills/frostfire_infusion.png',
+                                                        skillButtonColor:
+                                                            SkillButtonColor
+                                                                .arcanePurple),
                                                   ],
                                                 ),
                                               ),
@@ -434,7 +457,7 @@ class CharacterOverviewView extends StatelessWidget {
                                                       MainAxisAlignment
                                                           .spaceEvenly,
                                                   children: [
-                                                    SkillItem(),
+                                                    PotionItem(),
                                                     PotionItem(),
                                                   ],
                                                 ),
@@ -551,7 +574,7 @@ class ResourceBar extends StatelessWidget {
       width: width,
       height: 20,
       child: Stack(
-        alignment: Alignment.centerRight,
+        alignment: startAlignment,
         children: [
           FractionallySizedBox(
             widthFactor: currentValue / maxValue,
@@ -654,26 +677,6 @@ class EquipmentItem extends StatelessWidget {
                     fit: BoxFit.fitHeight,
                   ),
                 ),
-        ),
-      ),
-    );
-  }
-}
-
-class SkillItem extends StatelessWidget {
-  const SkillItem({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: QvButton(
-        padding: EdgeInsets.all(16),
-        buttonColor: ButtonColor.getColor(Rarity.legendary),
-        child: Center(
-          child: Image.asset(
-            'images/pixel-icons/leaf.png',
-            fit: BoxFit.fitWidth,
-          ),
         ),
       ),
     );

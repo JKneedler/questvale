@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/encounter.dart';
 import 'package:questvale/data/models/equipment.dart';
-import 'package:questvale/data/models/quest_zone.dart';
+import 'package:questvale/data/providers/game_data_models/quest_zone.dart';
 import 'package:questvale/data/models/stat_modifier.dart';
 import 'package:questvale/data/repositories/equipment_repository.dart';
 import 'package:questvale/data/repositories/stat_modifiers_repository.dart';

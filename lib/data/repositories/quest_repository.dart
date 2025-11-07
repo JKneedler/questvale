@@ -1,15 +1,10 @@
 import 'package:questvale/data/models/quest.dart';
-import 'package:questvale/data/repositories/quest_zone_repository.dart';
 import 'package:sqflite/sqflite.dart';
 
 class QuestRepository {
   final Database db;
 
-  late QuestZoneRepository questZoneRepository;
-
-  QuestRepository({required this.db}) {
-    questZoneRepository = QuestZoneRepository(db: db);
-  }
+  QuestRepository({required this.db});
 
   /*
 
@@ -70,11 +65,9 @@ class QuestRepository {
 
   // map method for quest
   Future<Quest> _getQuestFromMap(Map<String, dynamic> map) async {
-    final zoneId = map[Quest.zoneColumnName] as String;
-    final zone = await questZoneRepository.getQuestZone(zoneId, false, false);
     return Quest(
       id: map[Quest.idColumnName] as String,
-      zone: zone,
+      zoneId: map[Quest.zoneColumnName] as String,
       characterId: map[Quest.characterIdColumnName] as String,
       numFloors: map[Quest.numFloorsColumnName] as int,
       numEncountersCurFloor: map[Quest.numEncountersCurFloorColumnName] as int,

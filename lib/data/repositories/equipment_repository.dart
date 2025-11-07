@@ -1,5 +1,4 @@
 import 'package:questvale/data/models/equipment.dart';
-import 'package:questvale/data/models/stat_modifier.dart';
 import 'package:questvale/data/repositories/stat_modifiers_repository.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:sqflite/sqflite.dart';

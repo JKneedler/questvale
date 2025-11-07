@@ -5,8 +5,9 @@ import 'package:questvale/cubits/town_tab/select_quest/select_quest_cubit.dart';
 import 'package:questvale/cubits/town_tab/select_quest/select_quest_state.dart';
 import 'package:questvale/cubits/town_tab/town/town_cubit.dart';
 import 'package:questvale/cubits/town_tab/town/town_state.dart';
-import 'package:questvale/data/models/enemy_data.dart';
-import 'package:questvale/data/models/quest_zone.dart';
+import 'package:questvale/data/providers/game_data.dart';
+import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
+import 'package:questvale/data/providers/game_data_models/quest_zone.dart';
 import 'package:questvale/widgets/qv_app_bar.dart';
 import 'package:questvale/widgets/qv_enemy_info_modal.dart';
 import 'package:questvale/widgets/qv_gray_filter.dart';
@@ -22,6 +23,13 @@ class SelectQuestPage extends StatelessWidget {
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
 
+    final questZones = context.read<GameData>().questZones;
+    final character = context.read<CharacterDataCubit>().state.character;
+
+    if (character == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return Scaffold(
       body: Column(
         children: [
@@ -35,8 +43,10 @@ class SelectQuestPage extends StatelessWidget {
             child: Container(
               color: colorScheme.surface,
               child: BlocProvider(
-                create: (context) =>
-                    SelectQuestCubit(db: context.read<Database>()),
+                create: (context) => SelectQuestCubit(
+                    db: context.read<Database>(),
+                    questZones: questZones,
+                    character: character),
                 child: BlocBuilder<SelectQuestCubit, SelectQuestState>(
                     builder: (context, selectQuestState) {
                   return ListView.builder(
@@ -46,14 +56,14 @@ class SelectQuestPage extends StatelessWidget {
                       top: 10,
                       bottom: 10,
                     ),
-                    itemCount: selectQuestState.questZones.length,
+                    itemCount: questZones.length,
                     itemBuilder: (context, index) {
                       final isOpen =
                           selectQuestState.selectedQuestZoneIndex == index;
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 8.0),
                         child: SelectQuestZoneCard(
-                          questZone: selectQuestState.questZones[index],
+                          questZone: questZones[index],
                           isOpen: isOpen,
                           onTap: () => context
                               .read<SelectQuestCubit>()
@@ -336,7 +346,7 @@ class ZoneEnemyCard extends StatelessWidget {
             height: 80,
             child: Image.asset(
                 discovered
-                    ? 'images/enemies/${enemy.id.toLowerCase()}.png'
+                    ? 'images/enemies/${enemy.name.toLowerCase().replaceAll(' ', '-')}.png'
                     : 'images/pixel-icons/question-mark.png',
                 filterQuality: FilterQuality.none),
           ),

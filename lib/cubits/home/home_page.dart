@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 import 'package:questvale/cubits/character_tab/character/character_page.dart';
 import 'package:questvale/cubits/home/character_data_cubit.dart';
 import 'package:questvale/cubits/home/character_data_state.dart';
@@ -8,7 +9,8 @@ import 'package:questvale/cubits/home/nav_state.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_page.dart';
 import 'package:questvale/cubits/settings/settings_page.dart';
 import 'package:questvale/cubits/town_tab/town/town_page.dart';
-import 'package:questvale/widgets/qv_nav_bar.dart';
+import 'package:questvale/data/providers/game_data.dart';
+import 'package:questvale/cubits/home/qv_nav_bar.dart';
 import 'package:sqflite/sqflite.dart';
 
 class HomePage extends StatelessWidget {
@@ -16,19 +18,36 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (context) => NavCubit(),
-        ),
-        BlocProvider(
-          create: (context) => CharacterDataCubit(
-            db: context.read<Database>(),
-          ),
-        ),
-      ],
-      child: HomeView(),
-    );
+    return FutureBuilder<GameData>(
+        future: GameData.load(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            print(snapshot.error.toString());
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+          final gameData = snapshot.data!;
+          return MultiProvider(
+            providers: [
+              Provider(create: (context) => gameData),
+            ],
+            child: MultiBlocProvider(
+              providers: [
+                BlocProvider(
+                  create: (context) => NavCubit(),
+                ),
+                BlocProvider(
+                  create: (context) => CharacterDataCubit(
+                    db: context.read<Database>(),
+                  ),
+                ),
+              ],
+              child: HomeView(),
+            ),
+          );
+        });
   }
 }
 

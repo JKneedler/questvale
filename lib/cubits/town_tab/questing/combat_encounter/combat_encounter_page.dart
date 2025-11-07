@@ -8,12 +8,14 @@ import 'package:questvale/cubits/town_tab/questing/quest_encounter/quest_encount
 import 'package:questvale/cubits/town_tab/questing/quest_encounter/quest_encounter_state.dart';
 import 'package:questvale/cubits/town_tab/questing/quest_encounter/quest_flee_confirmation_modal.dart';
 import 'package:questvale/data/models/enemy.dart';
-import 'package:questvale/data/models/quest_zone.dart';
+import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
+import 'package:questvale/data/providers/game_data_models/quest_zone.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_blinking.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_enemy_info_modal.dart';
 import 'package:questvale/widgets/qv_primary_border.dart';
+import 'package:questvale/widgets/qv_skill_button.dart';
 import 'package:sqflite/sqflite.dart';
 
 class CombatEncounterPage extends StatelessWidget {
@@ -55,6 +57,7 @@ class CombatEncounterView extends StatelessWidget {
     return BlocBuilder<CombatEncounterCubit, CombatEncounterState>(
         builder: (context, combatEncounterState) {
       final combatStats = context.watch<CharacterDataCubit>().state.combatStats;
+      final zone = context.read<QuestEncounterCubit>().questZone;
       return BlocListener<CombatEncounterCubit, CombatEncounterState>(
         listenWhen: (prev, next) =>
             prev.status != CombatEncounterStatus.complete &&
@@ -84,16 +87,12 @@ class CombatEncounterView extends StatelessWidget {
                         i < combatEncounterState.enemies.length;
                         i++)
                       EnemyView(
+                        zone: zone,
                         firstPlay: true,
                         onTap: () => context
                             .read<CombatEncounterCubit>()
                             .onEnemyButtonTap(context, i),
                         enemy: combatEncounterState.enemies[i],
-                        zone: context
-                            .read<QuestEncounterCubit>()
-                            .state
-                            .quest
-                            .zone,
                         alignment: getAlignment(
                             i, combatEncounterState.enemies.length),
                         isDarkened: !(combatEncounterState.status ==
@@ -111,6 +110,12 @@ class CombatEncounterView extends StatelessWidget {
               ),
               if (combatEncounterState.status.isEnemyStatus())
                 EnemyInfoPanel(
+                    enemyData: zone.enemies.firstWhere((enemyData) =>
+                        enemyData.id ==
+                        combatEncounterState
+                            .enemies[
+                                combatEncounterState.status.getEnemyIndex()]
+                            .enemyDataId),
                     enemy: combatEncounterState
                         .enemies[combatEncounterState.status.getEnemyIndex()]),
               Expanded(child: SizedBox()),
@@ -463,27 +468,30 @@ class CombatEncounterView extends StatelessWidget {
 
 class EnemyView extends StatelessWidget {
   final Enemy enemy;
-  final QuestZone zone;
   final Alignment alignment;
   final bool isDarkened;
   final VoidCallback onTap;
   final bool isGlowing;
   final bool firstPlay;
+  final QuestZone zone;
 
   const EnemyView({
     super.key,
     required this.enemy,
-    required this.zone,
     this.alignment = Alignment.center,
     this.isDarkened = false,
     required this.onTap,
     this.isGlowing = false,
     this.firstPlay = false,
+    required this.zone,
   });
 
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final enemyData = zone.enemies
+        .firstWhere((enemyData) => enemyData.id == enemy.enemyDataId);
+
     return Align(
       alignment: alignment,
       child: SizedBox(
@@ -539,7 +547,7 @@ class EnemyView extends StatelessWidget {
                                       : const ColorFilter.mode(
                                           Colors.transparent, BlendMode.color),
                                   child: Image.asset(
-                                    'images/enemies/${enemy.enemyData.id}.png',
+                                    'images/enemies/${enemyData.id.toLowerCase()}.png',
                                     fit: BoxFit.contain,
                                     filterQuality: FilterQuality.none,
                                   ),
@@ -558,7 +566,7 @@ class EnemyView extends StatelessWidget {
                                       alignment: Alignment.centerLeft,
                                       child: FractionallySizedBox(
                                         widthFactor: enemy.currentHealth /
-                                            enemy.enemyData.health,
+                                            enemyData.health,
                                         child: Container(
                                           height: 18,
                                           color: isDarkened
@@ -570,7 +578,7 @@ class EnemyView extends StatelessWidget {
                                     ),
                                     Center(
                                         child: Text(
-                                      '${enemy.currentHealth} / ${enemy.enemyData.health}',
+                                      '${enemy.currentHealth} / ${enemyData.health}',
                                       style: TextStyle(
                                           fontSize: 16,
                                           color: Colors.white,
@@ -589,7 +597,7 @@ class EnemyView extends StatelessWidget {
                         foregroundDecoration: BoxDecoration(
                           image: DecorationImage(
                             image: AssetImage(
-                                'images/ui/borders/${enemy.enemyData.rarity.name.toLowerCase()}-border-mini-2x.png'),
+                                'images/ui/borders/${enemyData.rarity.name.toLowerCase()}-border-mini-2x.png'),
                             centerSlice: Rect.fromLTWH(16, 16, 32, 32),
                             fit: BoxFit.fill,
                             filterQuality: FilterQuality.none,
@@ -611,7 +619,7 @@ class EnemyView extends StatelessWidget {
               darkened: isDarkened,
               height: 36,
               width: MediaQuery.of(context).size.width * 0.25,
-              buttonColor: ButtonColor.getColor(enemy.enemyData.rarity),
+              buttonColor: ButtonColor.getColor(enemyData.rarity),
               child: Center(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -667,26 +675,35 @@ class CombatSkillButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
-    return QvButton(
-      darkened: currentStatus != CombatEncounterStatus.idle &&
-          currentStatus != CombatEncounterStatus.getSkillStatus(skillIndex),
+    // return QvButton(
+    //   darkened: currentStatus != CombatEncounterStatus.idle &&
+    //       currentStatus != CombatEncounterStatus.getSkillStatus(skillIndex),
+    //   onTap: onTap,
+    //   width: 56,
+    //   height: 56,
+    //   buttonColor: color,
+    //   child: Center(
+    //     child: Text(
+    //       '${skillIndex + 1}',
+    //       style: TextStyle(fontSize: 30, color: colorScheme.secondary),
+    //     ),
+    //   ),
+    // );
+    return QvSkillButton(
+      skillIconPath: 'images/skills/ice_spike.png',
       onTap: onTap,
-      width: 56,
-      height: 56,
-      buttonColor: color,
-      child: Center(
-        child: Text(
-          '${skillIndex + 1}',
-          style: TextStyle(fontSize: 30, color: colorScheme.secondary),
-        ),
-      ),
+      width: 64,
+      height: 64,
+      skillButtonColor: SkillButtonColor.iceBlue,
     );
   }
 }
 
 class EnemyInfoPanel extends StatelessWidget {
   final Enemy enemy;
-  const EnemyInfoPanel({super.key, required this.enemy});
+  final EnemyData enemyData;
+  const EnemyInfoPanel(
+      {super.key, required this.enemy, required this.enemyData});
 
   @override
   Widget build(BuildContext context) {
@@ -703,7 +720,7 @@ class EnemyInfoPanel extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    enemy.enemyData.name,
+                    enemyData.name,
                     style: TextStyle(
                       fontSize: 20,
                       color: colorScheme.onSurface,
@@ -921,7 +938,7 @@ class EnemyInfoPanel extends StatelessWidget {
             ),
             SizedBox(width: 10),
             QvButton(
-              onTap: () => QvEnemyInfoModal.showModal(context, enemy.enemyData),
+              onTap: () => QvEnemyInfoModal.showModal(context, enemyData),
               width: 80,
               height: 100,
               child: Column(

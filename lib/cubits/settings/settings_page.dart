@@ -78,7 +78,7 @@ class SettingsPage extends StatelessWidget {
                         ),
                         QvInsetBackground(
                           width: double.infinity,
-                          height: 450,
+                          height: 430,
                           padding: const EdgeInsets.symmetric(
                               vertical: 10, horizontal: 10),
                           child: SingleChildScrollView(
@@ -90,6 +90,27 @@ class SettingsPage extends StatelessWidget {
                             ),
                           ),
                         ),
+                        Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Image.asset(
+                                'images/pixel-icons/sword-icon-secondary.png',
+                                width: 40,
+                                height: 40,
+                                scale: .1,
+                                filterQuality: FilterQuality.none,
+                              ),
+                              Image.asset(
+                                'images/pixel-icons/house-icon-primary.png',
+                                width: 40,
+                                height: 40,
+                                scale: .1,
+                                filterQuality: FilterQuality.none,
+                              ),
+                            ],
+                          ),
+                        )
                       ],
                     ),
                   ),

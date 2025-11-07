@@ -1,0 +1,356 @@
+[
+  {
+    "id": "fieldlands",
+    "name": "Fieldlands",
+    "requiredLevel": 1,
+    "maxLevel": 10,
+    "minFloors": 1,
+    "maxFloors": 1,
+    "minEncountersPerFloor": 5,
+    "maxEncountersPerFloor": 7,
+    "minGold": 50,
+    "maxGold": 100,
+    "experience": 150,
+    "enemies": [
+      {
+        "id": "field-rat",
+        "questZoneId": 1,
+        "name": "Field Rat",
+        "rarity": 0,
+        "enemyType": 5,
+        "experience": 8,
+        "health": 10,
+        "minGold": 0,
+        "maxGold": 3,
+        "spawnRate": 0.3,
+        "immunities": [],
+        "resistances": [],
+        "weaknesses": [1],
+        "attacks": [
+          {
+            "name": "Bite",
+            "damage": 3,
+            "damageType": 0,
+            "cooldown": 5.0,
+            "weight": 1.0
+          }
+        ],
+        "drops": [
+          {
+            "itemName": "Rat Tail",
+            "itemQuantityMin": 1,
+            "itemQuantityMax": 2,
+            "useCases": [0, 1],
+            "rarity": 0,
+            "dropChance": 0.65
+          }
+        ]
+      },
+      {
+        "id": "bog-slime",
+        "questZoneId": 1,
+        "name": "Bog Slime",
+        "rarity": 0,
+        "enemyType": 2,
+        "experience": 10,
+        "health": 12,
+        "minGold": 0,
+        "maxGold": 5,
+        "spawnRate": 0.25,
+        "immunities": [],
+        "resistances": [],
+        "weaknesses": [],
+        "attacks": [
+          {
+            "name": "Slam",
+            "damage": 4,
+            "damageType": 0,
+            "cooldown": 6.0,
+            "weight": 1.0
+          }
+        ],
+        "drops": [
+          {
+            "itemName": "Slime Goo",
+            "itemQuantityMin": 1,
+            "itemQuantityMax": 3,
+            "useCases": [0, 1],
+            "rarity": 0,
+            "dropChance": 0.75
+          }
+        ]
+      },
+      {
+        "id": "wild-wolf",
+        "questZoneId": 1,
+        "name": "Wild Wolf",
+        "rarity": 0,
+        "enemyType": 5,
+        "experience": 15,
+        "health": 18,
+        "minGold": 2,
+        "maxGold": 6,
+        "spawnRate": 0.2,
+        "immunities": [],
+        "resistances": [],
+        "weaknesses": [1],
+        "attacks": [
+          {
+            "name": "Claw Swipe",
+            "damage": 5,
+            "damageType": 0,
+            "cooldown": 7.0,
+            "weight": 1.0
+          }
+        ],
+        "drops": [
+          {
+            "itemName": "Wolf Pelt",
+            "itemQuantityMin": 1,
+            "itemQuantityMax": 1,
+            "useCases": [0, 1],
+            "rarity": 0,
+            "dropChance": 0.55
+          }
+        ]
+      },
+      {
+        "id": "field-hawk",
+        "questZoneId": 1,
+        "name": "Field Hawk",
+        "rarity": 0,
+        "enemyType": 5,
+        "experience": 12,
+        "health": 14,
+        "minGold": 1,
+        "maxGold": 4,
+        "spawnRate": 0.1,
+        "immunities": [],
+        "resistances": [],
+        "weaknesses": [],
+        "attacks": [
+          {
+            "name": "Dive Peck",
+            "damage": 6,
+            "damageType": 0,
+            "cooldown": 5.0,
+            "weight": 1.0
+          }
+        ],
+        "drops": [
+          {
+            "itemName": "Feather",
+            "itemQuantityMin": 1,
+            "itemQuantityMax": 2,
+            "useCases": [0, 1],
+            "rarity": 0,
+            "dropChance": 0.65
+          }
+        ]
+      },
+      {
+        "id": "grass-viper",
+        "questZoneId": 1,
+        "name": "Grass Viper",
+        "rarity": 1,
+        "enemyType": 5,
+        "experience": 18,
+        "health": 20,
+        "minGold": 4,
+        "maxGold": 8,
+        "spawnRate": 0.15,
+        "immunities": [],
+        "resistances": [1],
+        "weaknesses": [2],
+        "attacks": [
+          {
+            "name": "Bite",
+            "damage": 6,
+            "damageType": 0,
+            "cooldown": 6.0,
+            "weight": 0.8
+          },
+          {
+            "name": "Venom Spit",
+            "damage": 4,
+            "damageType": 3,
+            "cooldown": 6.0,
+            "weight": 0.2
+          }
+        ],
+        "drops": [
+          {
+            "itemName": "Venom Gland",
+            "itemQuantityMin": 1,
+            "itemQuantityMax": 1,
+            "useCases": [0, 1],
+            "rarity": 1,
+            "dropChance": 0.4
+          },
+          {
+            "itemName": "Venom Gland",
+            "itemQuantityMin": 1,
+            "itemQuantityMax": 1,
+            "useCases": [0, 1],
+            "rarity": 2,
+            "dropChance": 0.4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "verdant-hollow",
+    "name": "Verdant Hollow",
+    "requiredLevel": 10,
+    "maxLevel": 20,
+    "minFloors": 1,
+    "maxFloors": 2,
+    "minEncountersPerFloor": 5,
+    "maxEncountersPerFloor": 8,
+    "minGold": 0,
+    "maxGold": 0,
+    "experience": 0,
+    "enemies": []
+  },
+  {
+    "id": "ashfen-marsh",
+    "name": "Ashfen Marsh",
+    "requiredLevel": 20,
+    "maxLevel": 30,
+    "minFloors": 1,
+    "maxFloors": 2,
+    "minEncountersPerFloor": 6,
+    "maxEncountersPerFloor": 8,
+    "minGold": 0,
+    "maxGold": 0,
+    "experience": 0,
+    "enemies": []
+  },
+  {
+    "id": "cragspire-foothills",
+    "name": "Cragspire Foothills",
+    "requiredLevel": 30,
+    "maxLevel": 40,
+    "minFloors": 1,
+    "maxFloors": 2,
+    "minEncountersPerFloor": 6,
+    "maxEncountersPerFloor": 9,
+    "minGold": 0,
+    "maxGold": 0,
+    "experience": 0,
+    "enemies": []
+  },
+  {
+    "id": "ember-caverns",
+    "name": "Ember Caverns",
+    "requiredLevel": 40,
+    "maxLevel": 50,
+    "minFloors": 2,
+    "maxFloors": 3,
+    "minEncountersPerFloor": 6,
+    "maxEncountersPerFloor": 9,
+    "minGold": 0,
+    "maxGold": 0,
+    "experience": 0,
+    "enemies": []
+  },
+  {
+    "id": "howling-steppe",
+    "name": "Howling Steppe",
+    "requiredLevel": 50,
+    "maxLevel": 60,
+    "minFloors": 2,
+    "maxFloors": 3,
+    "minEncountersPerFloor": 6,
+    "maxEncountersPerFloor": 10,
+    "minGold": 0,
+    "maxGold": 0,
+    "experience": 0,
+    "enemies": []
+  },
+  {
+    "id": "shattered-coast",
+    "name": "Shattered Coast",
+    "requiredLevel": 60,
+    "maxLevel": 70,
+    "minFloors": 2,
+    "maxFloors": 3,
+    "minEncountersPerFloor": 7,
+    "maxEncountersPerFloor": 10,
+    "minGold": 0,
+    "maxGold": 0,
+    "experience": 0,
+    "enemies": []
+  },
+  {
+    "id": "obsidian-depths",
+    "name": "Obsidian Depths",
+    "requiredLevel": 70,
+    "maxLevel": 80,
+    "minFloors": 3,
+    "maxFloors": 4,
+    "minEncountersPerFloor": 7,
+    "maxEncountersPerFloor": 10,
+    "minGold": 0,
+    "maxGold": 0,
+    "experience": 0,
+    "enemies": []
+  },
+  {
+    "id": "frostbound-expanse",
+    "name": "Frostbound Expanse",
+    "requiredLevel": 80,
+    "maxLevel": 90,
+    "minFloors": 3,
+    "maxFloors": 4,
+    "minEncountersPerFloor": 7,
+    "maxEncountersPerFloor": 11,
+    "minGold": 0,
+    "maxGold": 0,
+    "experience": 0,
+    "enemies": []
+  },
+  {
+    "id": "tomb-of-whispers",
+    "name": "Tomb of Whispers",
+    "requiredLevel": 90,
+    "maxLevel": 100,
+    "minFloors": 3,
+    "maxFloors": 5,
+    "minEncountersPerFloor": 7,
+    "maxEncountersPerFloor": 11,
+    "minGold": 0,
+    "maxGold": 0,
+    "experience": 0,
+    "enemies": []
+  },
+  {
+    "id": "eclipsed-citadel",
+    "name": "Eclipsed Citadel",
+    "requiredLevel": 100,
+    "maxLevel": 110,
+    "minFloors": 4,
+    "maxFloors": 5,
+    "minEncountersPerFloor": 7,
+    "maxEncountersPerFloor": 12,
+    "minGold": 0,
+    "maxGold": 0,
+    "experience": 0,
+    "enemies": []
+  },
+  {
+    "id": "heart-of-the-abyss",
+    "name": "Heart of the Abyss",
+    "requiredLevel": 110,
+    "maxLevel": 120,
+    "minFloors": 4,
+    "maxFloors": 6,
+    "minEncountersPerFloor": 8,
+    "maxEncountersPerFloor": 12,
+    "minGold": 0,
+    "maxGold": 0,
+    "experience": 0,
+    "enemies": []
+  }
+]

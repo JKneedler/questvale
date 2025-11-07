@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/town_tab/questing/quest_floor_begin/quest_floor_begin_cubit.dart';
 import 'package:questvale/cubits/town_tab/questing/quest_floor_begin/quest_floor_begin_state.dart';
+import 'package:questvale/data/providers/game_data.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
 import 'package:questvale/data/repositories/quest_repository.dart';
 import 'package:questvale/widgets/qv_blinking.dart';
@@ -25,6 +26,9 @@ class QuestFloorBeginPage extends StatelessWidget {
           ),
           child: BlocBuilder<QuestFloorBeginCubit, QuestFloorBeginState>(
               builder: (context, state) {
+            final questZones = context.read<GameData>().questZones;
+            final zone =
+                questZones.firstWhere((zone) => zone.id == state.quest!.zoneId);
             return Container(
               height: MediaQuery.of(context).size.height,
               width: MediaQuery.of(context).size.width,
@@ -32,7 +36,7 @@ class QuestFloorBeginPage extends StatelessWidget {
                   ? BoxDecoration(
                       image: DecorationImage(
                         image: AssetImage(
-                          'images/backgrounds/${state.quest!.zone.id}.png',
+                          'images/backgrounds/${zone.id}.png',
                         ),
                         fit: BoxFit.cover,
                         filterQuality: FilterQuality.none,
@@ -44,7 +48,7 @@ class QuestFloorBeginPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    state.quest != null ? state.quest!.zone.name : '',
+                    state.quest != null ? zone.name : '',
                     style: TextStyle(
                       color: colorScheme.secondary,
                       fontSize: 48,
