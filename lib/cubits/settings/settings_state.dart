@@ -9,13 +9,15 @@ enum TableType {
   todoReminders,
   quests,
   questZones,
-  questSummaries,
   encounters,
   encounterRewards,
   enemies,
   enemyData,
   enemyAttackData,
-  enemyDropData;
+  enemyDropData,
+  equipments,
+  statModifiers,
+  equipmentEncounterRewards;
 
   String get tableName {
     switch (this) {
@@ -33,8 +35,6 @@ enum TableType {
         return 'Quests';
       case TableType.questZones:
         return 'QuestZones';
-      case TableType.questSummaries:
-        return 'QuestSummaries';
       case TableType.encounters:
         return 'Encounters';
       case TableType.encounterRewards:
@@ -47,6 +47,12 @@ enum TableType {
         return 'EnemyAttackData';
       case TableType.enemyDropData:
         return 'EnemyDropData';
+      case TableType.equipments:
+        return 'Equipments';
+      case TableType.statModifiers:
+        return 'StatModifiers';
+      case TableType.equipmentEncounterRewards:
+        return 'EquipmentEncounterRewards';
     }
   }
 }
@@ -54,7 +60,11 @@ enum TableType {
 class TableInfo {
   final TableType tableType;
   final int numRows;
-  const TableInfo({required this.tableType, required this.numRows});
+  final bool isDeletable;
+  const TableInfo(
+      {required this.tableType,
+      required this.numRows,
+      this.isDeletable = true});
 }
 
 class SettingsState extends Equatable {

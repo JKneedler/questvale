@@ -72,11 +72,15 @@ flutter:
     - images/pixel-icons/
     - images/ui/
     - images/ui/borders/
+    - images/ui/borders/skills/
     - images/ui/buttons/
     - images/enemies/
     - images/enemies/drops/
     - images/backgrounds/
+    - images/equipment/
+    - images/skills/
     - fonts/
+    - data/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

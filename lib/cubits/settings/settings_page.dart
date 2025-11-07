@@ -26,41 +26,92 @@ class SettingsPage extends StatelessWidget {
               character: characterDataState.character!),
           child: BlocBuilder<SettingsCubit, SettingsState>(
               builder: (context, settingsState) {
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
+            return SizedBox(
               width: MediaQuery.of(context).size.width,
               child: Column(
-                spacing: 10,
                 children: [
-                  QVAppBar(title: 'Settings'),
-                  BlocListener<SettingsCubit, SettingsState>(
-                    listenWhen: (prev, next) =>
-                        prev.questsNum != next.questsNum,
-                    listener: (context, settingsState) {
-                      context.read<CharacterDataCubit>().updateQuest();
-                    },
-                    child: InfoSlice(
-                      title: 'Quests',
-                      count: settingsState.questsNum,
-                      onTap: settingsState.questsNum > 0
-                          ? () => context
-                              .read<SettingsCubit>()
-                              .deleteTableContents(TableType.quests)
-                          : () => {},
-                    ),
-                  ),
-                  QvInsetBackground(
-                    width: double.infinity,
-                    height: 500,
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10, horizontal: 10),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          for (var tableInfo in settingsState.tableInfos)
-                            TableInfoSlice(tableInfo: tableInfo),
-                        ],
-                      ),
+                  QvAppBar(title: 'Settings'),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Column(
+                      spacing: 10,
+                      children: [
+                        BlocListener<SettingsCubit, SettingsState>(
+                          listenWhen: (prev, next) =>
+                              prev.questsNum != next.questsNum,
+                          listener: (context, settingsState) {
+                            context.read<CharacterDataCubit>().updateQuest();
+                          },
+                          child: InfoSlice(
+                            title: 'Quests',
+                            count: settingsState.questsNum,
+                            onTap: settingsState.questsNum > 0
+                                ? () => context
+                                    .read<SettingsCubit>()
+                                    .deleteTableContents(settingsState
+                                        .tableInfos
+                                        .firstWhere((tableInfo) =>
+                                            tableInfo.tableType ==
+                                            TableType.quests))
+                                : () => {},
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                                child: Text('Generate 10 loot',
+                                    style: TextStyle(fontSize: 20))),
+                            QvButton(
+                              width: 180,
+                              height: 50,
+                              buttonColor: ButtonColor.silver,
+                              onTap: () =>
+                                  context.read<SettingsCubit>().generateLoot(),
+                              child: Center(
+                                child: Text('Generate',
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        color: colorScheme.onPrimary)),
+                              ),
+                            ),
+                          ],
+                        ),
+                        QvInsetBackground(
+                          width: double.infinity,
+                          height: 430,
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 10),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                for (var tableInfo in settingsState.tableInfos)
+                                  TableInfoSlice(tableInfo: tableInfo),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Image.asset(
+                                'images/pixel-icons/sword-icon-secondary.png',
+                                width: 40,
+                                height: 40,
+                                scale: .1,
+                                filterQuality: FilterQuality.none,
+                              ),
+                              Image.asset(
+                                'images/pixel-icons/house-icon-primary.png',
+                                width: 40,
+                                height: 40,
+                                scale: .1,
+                                filterQuality: FilterQuality.none,
+                              ),
+                            ],
+                          ),
+                        )
+                      ],
                     ),
                   ),
                 ],
@@ -95,7 +146,7 @@ class TableInfoSlice extends StatelessWidget {
                   style: TextStyle(fontSize: 20))),
           QvButton(
             height: 40,
-            width: 60,
+            width: tableInfo.isDeletable ? 60 : 130,
             buttonColor: ButtonColor.silver,
             onTap: () {
               context
@@ -107,20 +158,23 @@ class TableInfoSlice extends StatelessWidget {
                   style: TextStyle(color: colorScheme.onPrimary, fontSize: 18)),
             ),
           ),
-          QvButton(
-            height: 40,
-            width: 80,
-            buttonColor: ButtonColor.silver,
-            onTap: () {
-              context
-                  .read<SettingsCubit>()
-                  .deleteTableContents(tableInfo.tableType);
-            },
-            child: Center(
-              child: Text('Delete',
-                  style: TextStyle(color: colorScheme.onPrimary, fontSize: 18)),
-            ),
-          ),
+          tableInfo.isDeletable
+              ? QvButton(
+                  height: 40,
+                  width: 80,
+                  buttonColor: ButtonColor.silver,
+                  onTap: () {
+                    context
+                        .read<SettingsCubit>()
+                        .deleteTableContents(tableInfo);
+                  },
+                  child: Center(
+                    child: Text('Delete',
+                        style: TextStyle(
+                            color: colorScheme.onPrimary, fontSize: 18)),
+                  ),
+                )
+              : SizedBox.shrink(),
         ],
       ),
     );

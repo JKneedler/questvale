@@ -1,16 +1,22 @@
 import 'package:questvale/data/models/encounter.dart';
 import 'package:questvale/data/models/encounter_reward.dart';
+import 'package:questvale/data/models/equipment.dart';
+import 'package:questvale/data/models/equipment_encounter_reward.dart';
 import 'package:questvale/data/repositories/enemy_repository.dart';
+import 'package:questvale/data/repositories/equipment_repository.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:uuid/uuid.dart';
 
 class EncounterRepository {
   final Database db;
 
   late EnemyRepository enemyRepository;
+  late EquipmentRepository equipmentRepository;
 
   EncounterRepository({required this.db}) {
     enemyRepository = EnemyRepository(db: db);
+    equipmentRepository = EquipmentRepository(db: db);
   }
 
   /*
@@ -111,11 +117,36 @@ class EncounterRepository {
     if (result.isEmpty) {
       return null;
     }
-    return _getEncounterRewardFromMap(result[0]);
+    final encounterReward = await _getEncounterRewardFromMap(result[0]);
+    return encounterReward;
+  }
+
+  // GET ENCOUNTER REWARD BY QUEST ID
+  Future<List<EncounterReward>> getEncounterRewardsByQuestId(
+      String questId) async {
+    final result = await db.query(EncounterReward.encounterRewardTableName,
+        where: '${EncounterReward.questIdColumnName} = ?',
+        whereArgs: [questId]);
+    List<EncounterReward> encounterRewards = [];
+    for (var map in result) {
+      final encounterReward = await _getEncounterRewardFromMap(map);
+      encounterRewards.add(encounterReward);
+    }
+    return encounterRewards;
   }
 
   // INSERT ENCOUNTER REWARD
   Future<void> insertEncounterReward(EncounterReward encounterReward) async {
+    for (var equipmentReward in encounterReward.equipmentRewards) {
+      await db.insert(
+          EquipmentEncounterReward.equipmentEncounterRewardTableName,
+          EquipmentEncounterReward(
+                  id: Uuid().v4(),
+                  encounterRewardId: encounterReward.id,
+                  equipmentId: equipmentReward.id)
+              .toMap());
+      await equipmentRepository.insertEquipment(equipmentReward);
+    }
     await db.insert(
         EncounterReward.encounterRewardTableName, encounterReward.toMap());
   }
@@ -142,16 +173,40 @@ class EncounterRepository {
         whereArgs: [encounterId]);
   }
 
+  // DELETE ENCOUNTER REWARD BY QUEST ID
+  Future<void> deleteEncounterRewardsByQuestId(String questId) async {
+    await db.delete(EncounterReward.encounterRewardTableName,
+        where: '${EncounterReward.questIdColumnName} = ?',
+        whereArgs: [questId]);
+  }
+
   // map method for encounter reward
-  EncounterReward _getEncounterRewardFromMap(Map<String, Object?> map) {
+  Future<EncounterReward> _getEncounterRewardFromMap(
+      Map<String, Object?> map) async {
+    final equipmentRewards = await _getEquipmentByEncounterRewardId(
+        map[EncounterReward.idColumnName] as String);
     return EncounterReward(
       id: map[EncounterReward.idColumnName] as String,
       encounterId: map[EncounterReward.encounterIdColumnName] as String,
       questId: map[EncounterReward.questIdColumnName] as String,
       xp: map[EncounterReward.xpColumnName] as int,
       gold: map[EncounterReward.goldColumnName] as int,
-      createdAt: DateTime.fromMillisecondsSinceEpoch(
-          map[EncounterReward.createdAtColumnName] as int),
+      equipmentRewards: equipmentRewards,
     );
+  }
+
+  Future<List<Equipment>> _getEquipmentByEncounterRewardId(
+      String encounterRewardId) async {
+    final result = await db.query(
+        EquipmentEncounterReward.equipmentEncounterRewardTableName,
+        where: '${EquipmentEncounterReward.encounterRewardIdColumnName} = ?',
+        whereArgs: [encounterRewardId]);
+    List<Equipment> equipment = [];
+    for (var map in result) {
+      final equipmentItem = await equipmentRepository.getEquipmentById(
+          map[EquipmentEncounterReward.equipmentIdColumnName] as String);
+      equipment.add(equipmentItem);
+    }
+    return equipment;
   }
 }

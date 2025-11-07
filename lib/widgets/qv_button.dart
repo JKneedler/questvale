@@ -10,8 +10,7 @@ enum ButtonColor {
   uncommon,
   rare,
   legendary,
-  epic,
-  mythic;
+  epic;
 
   static ButtonColor getColor(Rarity rarity) {
     switch (rarity) {
@@ -25,8 +24,6 @@ enum ButtonColor {
         return ButtonColor.epic;
       case Rarity.legendary:
         return ButtonColor.legendary;
-      case Rarity.mythic:
-        return ButtonColor.mythic;
       default:
         return ButtonColor.common;
     }

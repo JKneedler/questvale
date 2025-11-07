@@ -1,10 +1,13 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/settings/settings_state.dart';
 import 'package:questvale/data/models/character.dart';
+import 'package:questvale/data/repositories/equipment_repository.dart';
+import 'package:questvale/services/equipment_service.dart';
 import 'package:sqflite/sqflite.dart';
 
 class SettingsCubit extends Cubit<SettingsState> {
   final Database db;
+  late EquipmentRepository equipmentRepository;
 
   SettingsCubit({required this.db, required Character character})
       : super(SettingsState(
@@ -14,6 +17,7 @@ class SettingsCubit extends Cubit<SettingsState> {
             enemiesNum: 0,
             tableInfos: [])) {
     loadSettings();
+    equipmentRepository = EquipmentRepository(db: db);
   }
 
   Future<void> loadSettings() async {
@@ -28,23 +32,8 @@ class SettingsCubit extends Cubit<SettingsState> {
           tableType: TableType.enemies,
           numRows: await getTableLength(TableType.enemies)),
       TableInfo(
-          tableType: TableType.enemyData,
-          numRows: await getTableLength(TableType.enemyData)),
-      TableInfo(
-          tableType: TableType.enemyAttackData,
-          numRows: await getTableLength(TableType.enemyAttackData)),
-      TableInfo(
-          tableType: TableType.enemyDropData,
-          numRows: await getTableLength(TableType.enemyDropData)),
-      TableInfo(
           tableType: TableType.encounterRewards,
           numRows: await getTableLength(TableType.encounterRewards)),
-      TableInfo(
-          tableType: TableType.questZones,
-          numRows: await getTableLength(TableType.questZones)),
-      TableInfo(
-          tableType: TableType.questSummaries,
-          numRows: await getTableLength(TableType.questSummaries)),
       TableInfo(
           tableType: TableType.characterTags,
           numRows: await getTableLength(TableType.characterTags)),
@@ -59,9 +48,21 @@ class SettingsCubit extends Cubit<SettingsState> {
           numRows: await getTableLength(TableType.todoReminders)),
       TableInfo(
           tableType: TableType.characters,
-          numRows: await getTableLength(TableType.characters)),
+          numRows: await getTableLength(TableType.characters),
+          isDeletable: false),
+      TableInfo(
+          tableType: TableType.equipments,
+          numRows: await getTableLength(TableType.equipments)),
+      TableInfo(
+          tableType: TableType.statModifiers,
+          numRows: await getTableLength(TableType.statModifiers)),
+      TableInfo(
+          tableType: TableType.equipmentEncounterRewards,
+          numRows: await getTableLength(TableType.equipmentEncounterRewards)),
     ];
-    emit(state.copyWith(tableInfos: tableInfos));
+    if (!isClosed) {
+      emit(state.copyWith(tableInfos: tableInfos));
+    }
   }
 
   Future<int> getTableLength(TableType tableType) async {
@@ -69,12 +70,28 @@ class SettingsCubit extends Cubit<SettingsState> {
     return tableLength.length;
   }
 
-  Future<void> deleteTableContents(TableType tableType) async {}
+  Future<void> deleteTableContents(TableInfo tableInfo) async {
+    if (tableInfo.isDeletable) {
+      await db.delete(tableInfo.tableType.tableName);
+    }
+    loadSettings();
+  }
 
   Future<void> logTableContents(TableType tableType) async {
     final tableContents = await db.query(tableType.tableName);
     for (var content in tableContents) {
       print(content);
     }
+  }
+
+  Future<void> generateLoot() async {
+    final equipmentService = EquipmentService(db: db);
+    // final questZones = context.read<GameData>().questZones;
+    // for (var i = 0; i < 10; i++) {
+    //   final equipment = equipmentService.generateRandomTestEquipment(
+    //       state.character, questZones[0], EncounterType.genericCombat);
+    //   print(equipment);
+    //   await equipmentRepository.insertEquipment(equipment);
+    // }
   }
 }

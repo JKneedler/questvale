@@ -1,16 +1,10 @@
 import 'package:questvale/data/models/quest.dart';
-import 'package:questvale/data/models/quest_summary.dart';
-import 'package:questvale/data/repositories/quest_zone_repository.dart';
 import 'package:sqflite/sqflite.dart';
 
 class QuestRepository {
   final Database db;
 
-  late QuestZoneRepository questZoneRepository;
-
-  QuestRepository({required this.db}) {
-    questZoneRepository = QuestZoneRepository(db: db);
-  }
+  QuestRepository({required this.db});
 
   /*
 
@@ -45,9 +39,11 @@ class QuestRepository {
   }
 
   // UPDATE QUEST
-  Future<void> updateQuest(Quest quest) async {
+  Future<Quest?> updateQuest(Quest quest) async {
     await db.update(Quest.questTableName, quest.toMap(),
         where: '${Quest.idColumnName} = ?', whereArgs: [quest.id]);
+    final updatedQuest = await getQuest(quest.characterId);
+    return updatedQuest;
   }
 
   // DELETE QUEST
@@ -69,11 +65,9 @@ class QuestRepository {
 
   // map method for quest
   Future<Quest> _getQuestFromMap(Map<String, dynamic> map) async {
-    final zoneId = map[Quest.zoneColumnName] as String;
-    final zone = await questZoneRepository.getQuestZone(zoneId, false, false);
     return Quest(
       id: map[Quest.idColumnName] as String,
-      zone: zone,
+      zoneId: map[Quest.zoneColumnName] as String,
       characterId: map[Quest.characterIdColumnName] as String,
       numFloors: map[Quest.numFloorsColumnName] as int,
       numEncountersCurFloor: map[Quest.numEncountersCurFloorColumnName] as int,
@@ -85,57 +79,6 @@ class QuestRepository {
           ? DateTime.fromMillisecondsSinceEpoch(
               map[Quest.completedAtColumnName] as int)
           : null,
-    );
-  }
-
-  /*
-
-  --------------------------- Quest Reward ---------------------------------
-
-  */
-
-  // GET QUEST REWARD BY QUEST ID
-  Future<QuestSummary?> getQuestSummaryByQuestId(String questId) async {
-    final result = await db.query(QuestSummary.questSummaryTableName,
-        where: '${QuestSummary.questIdColumnName} = ?', whereArgs: [questId]);
-    if (result.isEmpty) {
-      return null;
-    }
-    return _getQuestSummaryFromMap(result[0]);
-  }
-
-  // INSERT QUEST REWARD
-  Future<void> insertQuestSummary(QuestSummary questSummary) async {
-    await db.insert(QuestSummary.questSummaryTableName, questSummary.toMap());
-  }
-
-  // UPDATE QUEST REWARD
-  Future<void> updateQuestSummary(QuestSummary questSummary) async {
-    await db.update(QuestSummary.questSummaryTableName, questSummary.toMap(),
-        where: '${QuestSummary.idColumnName} = ?',
-        whereArgs: [questSummary.id]);
-  }
-
-  // DELETE QUEST REWARD
-  Future<void> deleteQuestSummary(QuestSummary questSummary) async {
-    await db.delete(QuestSummary.questSummaryTableName,
-        where: '${QuestSummary.idColumnName} = ?',
-        whereArgs: [questSummary.id]);
-  }
-
-  // DELETE QUEST REWARD BY QUEST ID
-  Future<void> deleteQuestSummaryByQuestId(String questId) async {
-    await db.delete(QuestSummary.questSummaryTableName,
-        where: '${QuestSummary.questIdColumnName} = ?', whereArgs: [questId]);
-  }
-
-  // map method for quest reward
-  QuestSummary _getQuestSummaryFromMap(Map<String, Object?> map) {
-    return QuestSummary(
-      id: map[QuestSummary.idColumnName] as String,
-      questId: map[QuestSummary.questIdColumnName] as String,
-      xp: map[QuestSummary.xpColumnName] as int,
-      gold: map[QuestSummary.goldColumnName] as int,
     );
   }
 }

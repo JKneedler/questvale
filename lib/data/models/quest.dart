@@ -1,6 +1,7 @@
-import 'package:questvale/data/models/quest_zone.dart';
+import 'package:equatable/equatable.dart';
+import 'package:questvale/data/providers/game_data_models/quest_zone.dart';
 
-class Quest {
+class Quest extends Equatable {
   static const questTableName = 'Quests';
 
   static const idColumnName = 'id';
@@ -28,7 +29,7 @@ class Quest {
   ''';
 
   final String id;
-  final QuestZone zone;
+  final String zoneId;
   final String characterId;
   final int numFloors;
   final int numEncountersCurFloor;
@@ -37,9 +38,9 @@ class Quest {
   final DateTime createdAt;
   final DateTime? completedAt;
 
-  Quest({
+  const Quest({
     required this.id,
-    required this.zone,
+    required this.zoneId,
     required this.characterId,
     required this.numFloors,
     required this.numEncountersCurFloor,
@@ -52,7 +53,7 @@ class Quest {
   Map<String, Object?> toMap() {
     return {
       Quest.idColumnName: id,
-      Quest.zoneColumnName: zone.id,
+      Quest.zoneColumnName: zoneId,
       Quest.characterIdColumnName: characterId,
       Quest.numFloorsColumnName: numFloors,
       Quest.numEncountersCurFloorColumnName: numEncountersCurFloor,
@@ -65,11 +66,11 @@ class Quest {
 
   @override
   String toString() {
-    return 'Quest(id: $id, zone: $zone, characterId: $characterId, numFloors: $numFloors, numEncountersCurFloor: $numEncountersCurFloor, curFloor: $curFloor, curEncounterNum: $curEncounterNum, createdAt: $createdAt, completedAt: $completedAt)';
+    return 'Quest(id: $id, zoneId: $zoneId, characterId: $characterId, numFloors: $numFloors, numEncountersCurFloor: $numEncountersCurFloor, curFloor: $curFloor, curEncounterNum: $curEncounterNum, createdAt: $createdAt, completedAt: $completedAt)';
   }
 
   Quest copyWith({
-    QuestZone? zone,
+    String? zoneId,
     String? characterId,
     int? numFloors,
     int? numEncountersCurFloor,
@@ -80,7 +81,7 @@ class Quest {
   }) {
     return Quest(
       id: id,
-      zone: zone ?? this.zone,
+      zoneId: zoneId ?? this.zoneId,
       characterId: characterId ?? this.characterId,
       numFloors: numFloors ?? this.numFloors,
       numEncountersCurFloor:
@@ -91,4 +92,17 @@ class Quest {
       completedAt: completedAt ?? this.completedAt,
     );
   }
+
+  @override
+  List<Object?> get props => [
+        id,
+        zoneId,
+        characterId,
+        numFloors,
+        numEncountersCurFloor,
+        curFloor,
+        curEncounterNum,
+        createdAt,
+        completedAt
+      ];
 }
