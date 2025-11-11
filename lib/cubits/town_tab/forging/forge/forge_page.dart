@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:questvale/cubits/home/character_data_cubit.dart';
+import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/town_tab/forging/forge/forge_cubit.dart';
 import 'package:questvale/cubits/town_tab/forging/forge/forge_state.dart';
 import 'package:questvale/cubits/town_tab/forging/select_equipment/select_equipment_page.dart';
@@ -23,7 +23,7 @@ class ForgePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final character = context.read<CharacterDataCubit>().state.character;
+    final character = context.read<PlayerCubit>().state.character;
     if (character == null) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -78,7 +78,7 @@ class UpgradeView extends StatelessWidget {
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     final equipment = context.watch<ForgeCubit>().state.selectedEquipment;
-    final character = context.read<CharacterDataCubit>().state.character!;
+    final character = context.read<PlayerCubit>().state.character!;
 
     final upgradeable =
         equipment != null && equipment.rarity != Rarity.legendary;

@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/character_tab/character/character_cubit.dart';
 import 'package:questvale/cubits/character_tab/character_overview/character_overview_cubit.dart';
 import 'package:questvale/cubits/character_tab/character_overview/character_overview_state.dart';
-import 'package:questvale/cubits/home/character_data_cubit.dart';
+import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/widgets/qv_app_bar.dart';
@@ -20,7 +20,7 @@ class CharacterOverviewPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final character = context.read<CharacterDataCubit>().state.character;
+    final character = context.read<PlayerCubit>().state.character;
     if (character == null) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -43,9 +43,8 @@ class CharacterOverviewView extends StatelessWidget {
     const gridSpacing = 6.0;
     return BlocBuilder<CharacterOverviewCubit, CharacterOverviewState>(
         builder: (context, characterOverviewState) {
-      final character = context.watch<CharacterDataCubit>().state.character;
-      final characterStats =
-          context.watch<CharacterDataCubit>().state.combatStats;
+      final character = context.watch<PlayerCubit>().state.character;
+      final characterStats = context.watch<PlayerCubit>().state.combatStats;
       if (character == null || characterStats == null) {
         return const Center(child: CircularProgressIndicator());
       }
@@ -645,7 +644,7 @@ class EquipmentItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
-    final character = context.read<CharacterDataCubit>().state.character;
+    final character = context.read<PlayerCubit>().state.character;
     if (character == null) {
       return const Center(child: CircularProgressIndicator());
     }

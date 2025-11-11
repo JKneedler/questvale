@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:questvale/data/models/enemy.dart';
+import 'package:questvale/data/models/character_combat_stats.dart';
 
 enum CombatEncounterStatus {
   idle,
@@ -109,25 +110,29 @@ class CombatEncounterState extends Equatable {
   final List<Enemy> enemies;
   final CombatEncounterStatus status;
   final CombatEncounterTarget target;
+  final CharacterCombatStats? combatStats;
 
   const CombatEncounterState({
     required this.enemies,
     this.status = CombatEncounterStatus.idle,
     this.target = CombatEncounterTarget.none,
+    this.combatStats,
   });
 
   CombatEncounterState copyWith({
     List<Enemy>? enemies,
     CombatEncounterStatus? status,
     CombatEncounterTarget? target,
+    CharacterCombatStats? combatStats,
   }) {
     return CombatEncounterState(
       enemies: enemies ?? this.enemies,
       status: status ?? this.status,
       target: target ?? this.target,
+      combatStats: combatStats ?? this.combatStats,
     );
   }
 
   @override
-  List<Object?> get props => [enemies, status, target];
+  List<Object?> get props => [enemies, status, target, combatStats];
 }

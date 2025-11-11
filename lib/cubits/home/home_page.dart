@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
-import 'package:questvale/cubits/character_tab/character/character_page.dart';
-import 'package:questvale/cubits/home/character_data_cubit.dart';
-import 'package:questvale/cubits/home/character_data_state.dart';
+import 'package:questvale/cubits/home/player_cubit.dart';
+import 'package:questvale/cubits/home/player_state.dart';
 import 'package:questvale/cubits/home/nav_cubit.dart';
 import 'package:questvale/cubits/home/nav_state.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_page.dart';
 import 'package:questvale/cubits/settings/settings_page.dart';
 import 'package:questvale/cubits/town_tab/town/town_page.dart';
 import 'package:questvale/data/providers/game_data.dart';
-import 'package:questvale/cubits/home/qv_nav_bar.dart';
+import 'package:questvale/cubits/home/nav_bar.dart';
 import 'package:sqflite/sqflite.dart';
 
 class HomePage extends StatelessWidget {
@@ -39,7 +38,7 @@ class HomePage extends StatelessWidget {
                   create: (context) => NavCubit(),
                 ),
                 BlocProvider(
-                  create: (context) => CharacterDataCubit(
+                  create: (context) => PlayerCubit(
                     db: context.read<Database>(),
                   ),
                 ),
@@ -58,13 +57,11 @@ class HomeView extends StatelessWidget {
     GlobalKey<NavigatorState>(),
     GlobalKey<NavigatorState>(),
     GlobalKey<NavigatorState>(),
-    GlobalKey<NavigatorState>(),
-    GlobalKey<NavigatorState>(),
   ];
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<CharacterDataCubit, CharacterDataState>(
+    return BlocBuilder<PlayerCubit, PlayerState>(
         builder: (context, characterDataState) {
       if (characterDataState.character == null) {
         return const Center(child: CircularProgressIndicator());
@@ -76,71 +73,37 @@ class HomeView extends StatelessWidget {
             children: [
               _TabNavigator(
                 navigatorKey: _navigatorKeys[0],
-                rootPage: CharacterPage(),
-              ),
-              _TabNavigator(
-                navigatorKey: _navigatorKeys[1],
                 rootPage: TownPage(),
               ),
               _TabNavigator(
+                navigatorKey: _navigatorKeys[1],
+                rootPage: TodosOverviewPage(),
+              ),
+              _TabNavigator(
                 navigatorKey: _navigatorKeys[2],
-                rootPage: TodosOverviewPage(),
-              ),
-              _TabNavigator(
-                navigatorKey: _navigatorKeys[3],
-                rootPage: TodosOverviewPage(),
-              ),
-              _TabNavigator(
-                navigatorKey: _navigatorKeys[4],
                 rootPage: SettingsPage(),
               ),
             ],
           ),
-          bottomNavigationBar: QVNavBar(
+          bottomNavigationBar: NavBar(
             items: [
-              QVNavBarItem(
-                icon: Image.asset(
-                  'images/pixel-icons/helmet.png',
-                  filterQuality: FilterQuality.none,
-                ),
-                label: 'Character',
-              ),
-              QVNavBarItem(
-                icon: Image.asset(
-                  'images/pixel-icons/sword.png',
-                  filterQuality: FilterQuality.none,
-                ),
+              NavBarItem(
+                iconName: 'sword',
                 label: 'World',
+                selected: navState.tab == 0,
               ),
-              QVNavBarItem(
-                icon: Image.asset(
-                  'images/pixel-icons/quill.png',
-                  filterQuality: FilterQuality.none,
-                ),
-                label: 'Tasks',
+              NavBarItem(
+                iconName: 'house',
+                label: 'Home',
+                selected: navState.tab == 1,
               ),
-              QVNavBarItem(
-                icon: Image.asset(
-                  'images/pixel-icons/book.png',
-                  filterQuality: FilterQuality.none,
-                ),
-                label: 'Calendar',
-              ),
-              QVNavBarItem(
-                icon: Image.asset(
-                  'images/pixel-icons/settings-gear.png',
-                  filterQuality: FilterQuality.none,
-                ),
-                label: 'Settings',
+              NavBarItem(
+                iconName: 'player',
+                label: 'Player',
+                selected: navState.tab == 2,
               ),
             ],
-            showCharacterAP: navState.tab == 1 ? false : true,
-            showCharacterResources: navState.tab == 0 ? false : true,
-            // showSelectedLabels: false,
-            // showUnselectedLabels: false,
-            // type: BottomNavigationBarType.fixed,
             currentIndex: navState.tab,
-            // backgroundColor: colorScheme.primary,
             onTap: (index) => context.read<NavCubit>().changeTab(index),
           ),
         );

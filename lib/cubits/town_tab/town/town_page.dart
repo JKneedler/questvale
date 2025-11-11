@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:questvale/cubits/home/character_data_cubit.dart';
+import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/town_tab/forging/forge/forge_page.dart';
 import 'package:questvale/cubits/town_tab/questing/quest_encounter/quest_encounter_page.dart';
 import 'package:questvale/cubits/town_tab/select_quest/select_quest_page.dart';
@@ -51,7 +51,7 @@ class TownPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider<TownCubit>(
         create: (context) => TownCubit(
-              character: context.read<CharacterDataCubit>().state.character!,
+              character: context.read<PlayerCubit>().state.character!,
               db: context.read<Database>(),
             ),
         child: BlocBuilder<TownCubit, TownState>(builder: (context, townState) {
@@ -257,7 +257,7 @@ class TownLocationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
 
-    final character = context.read<CharacterDataCubit>().state.character;
+    final character = context.read<PlayerCubit>().state.character;
     final isUnlocked = character != null && character.level >= requiredLevel;
 
     return Expanded(

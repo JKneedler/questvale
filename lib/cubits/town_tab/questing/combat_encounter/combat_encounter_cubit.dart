@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:questvale/cubits/home/character_data_cubit.dart';
+import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/town_tab/questing/combat_encounter/combat_encounter_state.dart';
 import 'package:questvale/cubits/town_tab/questing/quest_encounter/quest_encounter_cubit.dart';
 import 'package:questvale/data/models/character.dart';
@@ -40,10 +40,12 @@ class CombatEncounterCubit extends Cubit<CombatEncounterState> {
     final enemies = await enemyRepository.getEnemiesByEncounterId(encounter.id);
     if (!isClosed && state.status != CombatEncounterStatus.complete) {
       if (enemies.every((enemy) => enemy.currentHealth <= 0)) {
-        emit(state
-            .copyWith(status: CombatEncounterStatus.complete, enemies: []));
+        emit(state.copyWith(
+            status: CombatEncounterStatus.complete,
+            enemies: [],
+            combatStats: combatStats));
       } else {
-        emit(state.copyWith(enemies: enemies));
+        emit(state.copyWith(enemies: enemies, combatStats: combatStats));
       }
     }
   }
@@ -73,7 +75,7 @@ class CombatEncounterCubit extends Cubit<CombatEncounterState> {
   void onEnemyButtonTap(BuildContext context, int enemyIndex) {
     QuestEncounterCubit questEncounterCubit =
         context.read<QuestEncounterCubit>();
-    final combatStats = context.read<CharacterDataCubit>().state.combatStats;
+    final combatStats = state.combatStats;
     if (state.status.isTargetSelectStatus()) {
       if (state.target.getEnemyIndex() == enemyIndex) {
         if (state.status == CombatEncounterStatus.targetSelectBasicAttack) {

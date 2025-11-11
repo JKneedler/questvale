@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:questvale/cubits/home/character_data_cubit.dart';
+import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
 
 class QvAppBar extends StatelessWidget {
@@ -11,7 +11,7 @@ class QvAppBar extends StatelessWidget {
     this.insetColor,
     this.includeBackButton = false,
     this.onBackButtonPressed,
-    this.showAP = true,
+    this.showAP = false,
   });
 
   final String title;
@@ -28,7 +28,7 @@ class QvAppBar extends StatelessWidget {
 
     return Container(
       padding: EdgeInsets.only(top: topPadding, left: 16, right: 16),
-      height: 60 + topPadding,
+      height: 40 + topPadding,
       color: color ?? colorScheme.surface,
       child: Row(
         children: [
@@ -67,7 +67,7 @@ class QvAppBar extends StatelessWidget {
                     type: insetColor ?? QvInsetBackgroundType.secondary,
                     child: Center(
                       child: Text(
-                        '${context.read<CharacterDataCubit>().state.character?.attacksRemaining ?? 0}',
+                        '${context.read<PlayerCubit>().state.character?.attacksRemaining ?? 0}',
                         style: TextStyle(
                             color: colorScheme.onSurface,
                             fontSize: 28,

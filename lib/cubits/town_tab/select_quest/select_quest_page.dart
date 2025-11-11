@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:questvale/cubits/home/character_data_cubit.dart';
+import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/town_tab/select_quest/select_quest_cubit.dart';
 import 'package:questvale/cubits/town_tab/select_quest/select_quest_state.dart';
 import 'package:questvale/cubits/town_tab/town/town_cubit.dart';
@@ -24,7 +24,7 @@ class SelectQuestPage extends StatelessWidget {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
 
     final questZones = context.read<GameData>().questZones;
-    final character = context.read<CharacterDataCubit>().state.character;
+    final character = context.read<PlayerCubit>().state.character;
 
     if (character == null) {
       return const Center(child: CircularProgressIndicator());
@@ -230,9 +230,6 @@ class SelectQuestZoneCard extends StatelessWidget {
                               if (state.questCreateState ==
                                   QuestCreateStates.createdSuccess) {
                                 context.read<TownCubit>().onQuestCreated();
-                                context
-                                    .read<CharacterDataCubit>()
-                                    .recoverCharacter();
                               } else if (state.questCreateState ==
                                   QuestCreateStates.createdFailed) {
                                 ScaffoldMessenger.of(context).showSnackBar(
