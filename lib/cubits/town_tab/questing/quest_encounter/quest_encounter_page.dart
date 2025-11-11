@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:questvale/cubits/home/character_data_cubit.dart';
+import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/town_tab/questing/chest_loot/chest_loot_page.dart';
 import 'package:questvale/cubits/town_tab/questing/combat_encounter/combat_encounter_page.dart';
 import 'package:questvale/cubits/town_tab/questing/combat_loot/combat_loot_page.dart';
@@ -124,7 +124,7 @@ class QuestEncounterView extends StatelessWidget {
             BlocListener<QuestEncounterCubit, QuestEncounterState>(
               listenWhen: (prev, next) => next.questStatus != prev.questStatus,
               listener: (context, questState) {
-                context.read<CharacterDataCubit>().loadCharacter();
+                context.read<PlayerCubit>().loadCharacter();
               },
             ),
           ],

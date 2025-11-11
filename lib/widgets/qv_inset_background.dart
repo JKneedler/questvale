@@ -11,6 +11,7 @@ class QvInsetBackground extends StatelessWidget {
   final double? width;
   final double? height;
   final QvInsetBackgroundType type;
+  final bool enabled;
   const QvInsetBackground({
     super.key,
     required this.child,
@@ -18,6 +19,7 @@ class QvInsetBackground extends StatelessWidget {
     this.width,
     this.height,
     this.type = QvInsetBackgroundType.secondary,
+    this.enabled = true,
   });
 
   @override
@@ -26,14 +28,16 @@ class QvInsetBackground extends StatelessWidget {
       padding: padding,
       width: width,
       height: height,
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('images/ui/${type.name}-background-2x.png'),
-          centerSlice: Rect.fromLTWH(16, 16, 32, 32),
-          fit: BoxFit.fill,
-          filterQuality: FilterQuality.none,
-        ),
-      ),
+      decoration: enabled
+          ? BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('images/ui/${type.name}-background-2x.png'),
+                centerSlice: Rect.fromLTWH(16, 16, 32, 32),
+                fit: BoxFit.fill,
+                filterQuality: FilterQuality.none,
+              ),
+            )
+          : null,
       child: child,
     );
   }

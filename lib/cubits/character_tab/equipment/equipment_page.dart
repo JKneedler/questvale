@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/character_tab/equipment/equipment_cubit.dart';
 import 'package:questvale/cubits/character_tab/equipment/equipment_state.dart';
 import 'package:questvale/cubits/character_tab/character/character_cubit.dart';
-import 'package:questvale/cubits/home/character_data_cubit.dart';
+import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/widgets/qv_app_bar.dart';
 import 'package:questvale/widgets/qv_equipment_item.dart';
@@ -15,7 +15,7 @@ class EquipmentPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final character = context.read<CharacterDataCubit>().state.character;
+    final character = context.read<PlayerCubit>().state.character;
     if (character == null) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -51,7 +51,7 @@ class EquipmentView extends StatelessWidget {
               title: _getEquipmentSlotName(equipmentSlot),
               includeBackButton: true,
               onBackButtonPressed: () {
-                context.read<CharacterDataCubit>().loadCharacter();
+                context.read<PlayerCubit>().loadCharacter();
                 context.read<CharacterCubit>().onBackButtonPressed();
               },
               showAP: false,

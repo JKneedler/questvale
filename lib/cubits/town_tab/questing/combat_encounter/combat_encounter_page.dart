@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:questvale/cubits/home/character_data_cubit.dart';
+import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/town_tab/questing/combat_encounter/combat_encounter_cubit.dart';
 import 'package:questvale/cubits/town_tab/questing/combat_encounter/combat_encounter_state.dart';
 import 'package:questvale/cubits/town_tab/questing/quest_encounter/quest_bag_inventory_modal.dart';
@@ -32,7 +32,7 @@ class CombatEncounterPage extends StatelessWidget {
       return BlocProvider<CombatEncounterCubit>(
         create: (context) => CombatEncounterCubit(
             encounter: encounter,
-            character: context.read<CharacterDataCubit>().state.character!,
+            character: context.read<PlayerCubit>().state.character!,
             db: context.read<Database>()),
         child: const CombatEncounterView(),
       );
@@ -56,7 +56,7 @@ class CombatEncounterView extends StatelessWidget {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     return BlocBuilder<CombatEncounterCubit, CombatEncounterState>(
         builder: (context, combatEncounterState) {
-      final combatStats = context.watch<CharacterDataCubit>().state.combatStats;
+      final combatStats = combatEncounterState.combatStats;
       final zone = context.read<QuestEncounterCubit>().questZone;
       return BlocListener<CombatEncounterCubit, CombatEncounterState>(
         listenWhen: (prev, next) =>
