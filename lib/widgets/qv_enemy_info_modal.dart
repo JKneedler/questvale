@@ -339,6 +339,7 @@ class QvEnemyInfoModal extends StatelessWidget {
                                   itemCount: enemyData.drops.length,
                                   itemBuilder: (context, index) {
                                     return EnemyDropView(
+                                        enemyName: enemyData.name,
                                         drop: enemyData.drops[index]);
                                   },
                                 ),
@@ -565,8 +566,9 @@ class AttackAttributeSlice extends StatelessWidget {
 }
 
 class EnemyDropView extends StatelessWidget {
+  final String enemyName;
   final EnemyDropData drop;
-  const EnemyDropView({super.key, required this.drop});
+  const EnemyDropView({super.key, required this.enemyName, required this.drop});
 
   String _capitalize(String string) {
     return string.substring(0, 1).toUpperCase() + string.substring(1);
@@ -610,7 +612,7 @@ class EnemyDropView extends StatelessWidget {
                 ),
                 child: discovered
                     ? Image.asset(
-                        'images/enemies/drops/${drop.itemName.toLowerCase().replaceAll(' ', '-')}.png',
+                        'images/enemies/drops/${enemyName.toLowerCase().replaceAll(' ', '-')}-${drop.itemName.toLowerCase().replaceAll(' ', '-')}.png',
                         filterQuality: FilterQuality.none,
                       )
                     : QVGrayFilter(

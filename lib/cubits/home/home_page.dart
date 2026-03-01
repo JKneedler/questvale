@@ -7,7 +7,7 @@ import 'package:questvale/cubits/home/nav_cubit.dart';
 import 'package:questvale/cubits/home/nav_state.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_page.dart';
 import 'package:questvale/cubits/settings/settings_page.dart';
-import 'package:questvale/cubits/town_tab/town/town_page.dart';
+import 'package:questvale/cubits/world_tab/world_page.dart';
 import 'package:questvale/data/providers/game_data.dart';
 import 'package:questvale/cubits/home/nav_bar.dart';
 import 'package:sqflite/sqflite.dart';
@@ -73,7 +73,7 @@ class HomeView extends StatelessWidget {
             children: [
               _TabNavigator(
                 navigatorKey: _navigatorKeys[0],
-                rootPage: TownPage(),
+                rootPage: WorldPage(),
               ),
               _TabNavigator(
                 navigatorKey: _navigatorKeys[1],
@@ -86,6 +86,7 @@ class HomeView extends StatelessWidget {
             ],
           ),
           bottomNavigationBar: NavBar(
+            showSeparator: navState.tab == 0,
             items: [
               NavBarItem(
                 iconName: 'sword',

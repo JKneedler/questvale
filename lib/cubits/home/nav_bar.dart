@@ -7,11 +7,13 @@ class NavBar extends StatelessWidget {
     required this.items,
     required this.currentIndex,
     required this.onTap,
+    this.showSeparator = false,
   });
 
   final List<NavBarItem> items;
   final int currentIndex;
   final ValueChanged<int> onTap;
+  final bool showSeparator;
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +26,9 @@ class NavBar extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (showSeparator)
+              Container(height: 2, color: colorScheme.secondary),
+            SizedBox(height: 8),
             SizedBox(
               width: MediaQuery.of(context).size.width + 20,
               height: 6 + bottomPadding,

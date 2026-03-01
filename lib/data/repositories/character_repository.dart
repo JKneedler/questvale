@@ -110,7 +110,7 @@ class CharacterRepository {
       currentExp: map[Character.currentExpColumnName] as int,
       currentHealth: map[Character.currentHealthColumnName] as int,
       currentMana: map[Character.currentManaColumnName] as int,
-      attacksRemaining: map[Character.attacksRemainingColumnName] as int,
+      actionPoints: map[Character.actionPointsColumnName] as int,
     );
     return character;
   }

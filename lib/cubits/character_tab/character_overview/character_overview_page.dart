@@ -44,8 +44,7 @@ class CharacterOverviewView extends StatelessWidget {
     return BlocBuilder<CharacterOverviewCubit, CharacterOverviewState>(
         builder: (context, characterOverviewState) {
       final character = context.watch<PlayerCubit>().state.character;
-      final characterStats = context.watch<PlayerCubit>().state.combatStats;
-      if (character == null || characterStats == null) {
+      if (character == null) {
         return const Center(child: CircularProgressIndicator());
       }
       return Column(
@@ -103,14 +102,14 @@ class CharacterOverviewView extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               ResourceBar(
-                                maxValue: characterStats.maxHealth,
+                                maxValue: character.maxHealth,
                                 currentValue: character.currentHealth,
                                 color: HEALTH_COLOR,
                                 startAlignment: Alignment.centerLeft,
                                 width: MediaQuery.of(context).size.width * 0.4,
                               ),
                               ResourceBar(
-                                maxValue: characterStats.maxResource,
+                                maxValue: character.maxMana,
                                 currentValue: character.currentMana,
                                 color: MANA_COLOR,
                                 startAlignment: Alignment.centerRight,
@@ -128,7 +127,7 @@ class CharacterOverviewView extends StatelessWidget {
                                   color: GOLD_COLOR),
                               HeaderInfoSlide(
                                   title: 'Action Points',
-                                  value: '${character.attacksRemaining}',
+                                  value: '${character.actionPoints}',
                                   color: ACTION_POINTS_COLOR),
                               HeaderInfoSlide(
                                   title: 'Skill Points',

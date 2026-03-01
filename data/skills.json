@@ -1,0 +1,13 @@
+[
+  {
+    "id": "stormwave",
+    "name": "Stormwave",
+    "description": "Sends out a wave of water that deals damage to all enemies",
+    "iconPath": "images/ui/icons/skills/stormwave.png",
+    "cooldown": 5,
+    "apCost": 1,
+    "damageType": 0,
+    "damageBonus": 0.2,
+    "targetingType": "all"
+  }
+]
