@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:questvale/data/models/character_skills.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 
 class Character extends Equatable {
@@ -12,7 +13,12 @@ class Character extends Equatable {
   static const currentExpColumnName = 'currentExp';
   static const currentHealthColumnName = 'currentHealth';
   static const currentManaColumnName = 'currentMana';
-  static const attacksRemainingColumnName = 'attacksRemainingColumnName';
+  static const actionPointsColumnName = 'actionPoints';
+  static const skillSlot1ColumnName = 'skillSlot1';
+  static const skillSlot2ColumnName = 'skillSlot2';
+  static const skillSlot3ColumnName = 'skillSlot3';
+  static const skillSlot4ColumnName = 'skillSlot4';
+  static const skillSlot5ColumnName = 'skillSlot5';
 
   static const createTableSQL = '''
 		CREATE TABLE ${Character.characterTableName}(
@@ -24,7 +30,12 @@ class Character extends Equatable {
 			${Character.currentExpColumnName} INTEGER NOT NULL,
 			${Character.currentHealthColumnName} INTEGER NOT NULL,
 			${Character.currentManaColumnName} INTEGER NOT NULL,
-			${Character.attacksRemainingColumnName} INTEGER NOT NULL
+			${Character.actionPointsColumnName} INTEGER NOT NULL,
+      ${Character.skillSlot1ColumnName} VARCHAR,
+      ${Character.skillSlot2ColumnName} VARCHAR,
+      ${Character.skillSlot3ColumnName} VARCHAR,
+      ${Character.skillSlot4ColumnName} VARCHAR,
+      ${Character.skillSlot5ColumnName} VARCHAR
 		);
 	''';
 
@@ -36,7 +47,12 @@ class Character extends Equatable {
   final int currentExp;
   final int currentHealth;
   final int currentMana;
-  final int attacksRemaining;
+  final int actionPoints;
+  final CharacterSkills? skillSlot1;
+  final CharacterSkills? skillSlot2;
+  final CharacterSkills? skillSlot3;
+  final CharacterSkills? skillSlot4;
+  final CharacterSkills? skillSlot5;
 
   const Character({
     required this.id,
@@ -47,7 +63,12 @@ class Character extends Equatable {
     required this.currentExp,
     required this.currentHealth,
     required this.currentMana,
-    required this.attacksRemaining,
+    required this.actionPoints,
+    this.skillSlot1,
+    this.skillSlot2,
+    this.skillSlot3,
+    this.skillSlot4,
+    this.skillSlot5,
   });
 
   int get maxHealth {
@@ -68,13 +89,18 @@ class Character extends Equatable {
       Character.currentExpColumnName: currentExp,
       Character.currentHealthColumnName: currentHealth,
       Character.currentManaColumnName: currentMana,
-      Character.attacksRemainingColumnName: attacksRemaining,
+      Character.actionPointsColumnName: actionPoints,
+      Character.skillSlot1ColumnName: skillSlot1?.id,
+      Character.skillSlot2ColumnName: skillSlot2?.id,
+      Character.skillSlot3ColumnName: skillSlot3?.id,
+      Character.skillSlot4ColumnName: skillSlot4?.id,
+      Character.skillSlot5ColumnName: skillSlot5?.id,
     };
   }
 
   @override
   String toString() {
-    return 'Character {id: $id, name: $name, characterClass: $characterClass, level: $level, gold: $gold, currentExp: $currentExp, currentHealth: $currentHealth, currentMana: $currentMana, attacksRemaining: $attacksRemaining}';
+    return 'Character {id: $id, name: $name, characterClass: $characterClass, level: $level, gold: $gold, currentExp: $currentExp, currentHealth: $currentHealth, currentMana: $currentMana, actionPoints: $actionPoints, skillSlot1: $skillSlot1, skillSlot2: $skillSlot2, skillSlot3: $skillSlot3, skillSlot4: $skillSlot4, skillSlot5: $skillSlot5}';
   }
 
   Character copyWith({
@@ -85,7 +111,12 @@ class Character extends Equatable {
     int? currentExp,
     int? currentHealth,
     int? currentMana,
-    int? attacksRemaining,
+    int? actionPoints,
+    CharacterSkills? skillSlot1,
+    CharacterSkills? skillSlot2,
+    CharacterSkills? skillSlot3,
+    CharacterSkills? skillSlot4,
+    CharacterSkills? skillSlot5,
   }) {
     return Character(
       id: id,
@@ -96,7 +127,12 @@ class Character extends Equatable {
       currentExp: currentExp ?? this.currentExp,
       currentHealth: currentHealth ?? this.currentHealth,
       currentMana: currentMana ?? this.currentMana,
-      attacksRemaining: attacksRemaining ?? this.attacksRemaining,
+      actionPoints: actionPoints ?? this.actionPoints,
+      skillSlot1: skillSlot1 ?? this.skillSlot1,
+      skillSlot2: skillSlot2 ?? this.skillSlot2,
+      skillSlot3: skillSlot3 ?? this.skillSlot3,
+      skillSlot4: skillSlot4 ?? this.skillSlot4,
+      skillSlot5: skillSlot5 ?? this.skillSlot5,
     );
   }
 
@@ -110,6 +146,11 @@ class Character extends Equatable {
         currentExp,
         currentHealth,
         currentMana,
-        attacksRemaining
+        actionPoints,
+        skillSlot1,
+        skillSlot2,
+        skillSlot3,
+        skillSlot4,
+        skillSlot5
       ];
 }

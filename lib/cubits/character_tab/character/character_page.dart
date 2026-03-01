@@ -4,7 +4,7 @@ import 'package:questvale/cubits/character_tab/character/character_cubit.dart';
 import 'package:questvale/cubits/character_tab/character/character_state.dart';
 import 'package:questvale/cubits/character_tab/character_overview/character_overview_page.dart';
 import 'package:questvale/cubits/character_tab/equipment/equipment_page.dart';
-import 'package:questvale/cubits/home/character_data_cubit.dart';
+import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/home/nav_cubit.dart';
 import 'package:questvale/cubits/home/nav_state.dart';
 import 'package:questvale/widgets/qv_animated_transition.dart';
@@ -15,7 +15,7 @@ class CharacterPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final character = context.read<CharacterDataCubit>().state.character;
+    final character = context.read<PlayerCubit>().state.character;
     if (character == null) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -68,7 +68,7 @@ class CharacterView extends StatelessWidget {
         return BlocListener<NavCubit, NavState>(
           listenWhen: (prev, next) => prev.tab != 0 && next.tab == 0,
           listener: (context, navState) {
-            context.read<CharacterDataCubit>().loadCharacter();
+            context.read<PlayerCubit>().loadCharacter();
           },
           child: Scaffold(
             body: QvAnimatedTransition(

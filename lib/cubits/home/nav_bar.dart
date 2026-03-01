@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:questvale/widgets/qv_inset_background.dart';
 
 class NavBar extends StatelessWidget {
   const NavBar({
@@ -6,11 +7,13 @@ class NavBar extends StatelessWidget {
     required this.items,
     required this.currentIndex,
     required this.onTap,
+    this.showSeparator = false,
   });
 
   final List<NavBarItem> items;
   final int currentIndex;
   final ValueChanged<int> onTap;
+  final bool showSeparator;
 
   @override
   Widget build(BuildContext context) {
@@ -18,19 +21,20 @@ class NavBar extends StatelessWidget {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Material(
-      elevation: 10,
-      color: colorScheme.primary,
       child: SafeArea(
         top: false,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (showSeparator)
+              Container(height: 2, color: colorScheme.secondary),
+            SizedBox(height: 8),
             SizedBox(
               width: MediaQuery.of(context).size.width + 20,
-              height: 48 + bottomPadding,
+              height: 6 + bottomPadding,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
                 mainAxisSize: MainAxisSize.max,
                 children: List.generate(items.length, (i) {
                   return Expanded(
@@ -42,31 +46,18 @@ class NavBar extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: colorScheme.surface,
                         ),
-                        child: Column(
-                          spacing: 4,
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            SizedBox(
-                              width: 35,
-                              height: 35,
-                              child: Image.asset(
-                                items[i].iconName,
-                                filterQuality: FilterQuality.none,
-                                scale: .1,
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                            Text(
-                              items[i].label,
-                              style: TextStyle(
-                                color: currentIndex == i
-                                    ? colorScheme.onSurface
-                                    : colorScheme.onPrimary,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
+                        child: QvInsetBackground(
+                          type: QvInsetBackgroundType.secondary,
+                          enabled: items[i].selected,
+                          width: 100,
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          child: Image.asset(
+                            'images/ui/icons/${items[i].iconName}-icon-${items[i].selected ? 'primary' : 'secondary'}.png',
+                            filterQuality: FilterQuality.none,
+                            scale: .1,
+                            fit: BoxFit.contain,
+                          ),
                         ),
                       ),
                     ),
@@ -85,8 +76,10 @@ class NavBarItem {
   const NavBarItem({
     required this.iconName,
     required this.label,
+    this.selected = false,
   });
 
   final String iconName;
   final String label;
+  final bool selected;
 }

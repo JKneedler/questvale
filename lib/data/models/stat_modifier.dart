@@ -120,6 +120,8 @@ enum StatModifierType {
         return tier * .1;
       case StatModifierType.lifeSteal:
         return tier * .04;
+      case StatModifierType.apEfficiency:
+        return tier * .1;
       case StatModifierType.statusEffectChance:
         return tier * .05;
       case StatModifierType.statusEffectDuration:

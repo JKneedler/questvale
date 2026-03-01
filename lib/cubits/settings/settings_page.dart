@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:questvale/cubits/home/character_data_cubit.dart';
-import 'package:questvale/cubits/home/character_data_state.dart';
+import 'package:questvale/cubits/home/player_cubit.dart';
+import 'package:questvale/cubits/home/player_state.dart';
 import 'package:questvale/cubits/settings/settings_cubit.dart';
 import 'package:questvale/cubits/settings/settings_state.dart';
 import 'package:questvale/widgets/qv_app_bar.dart';
@@ -18,7 +18,7 @@ class SettingsPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      body: BlocBuilder<CharacterDataCubit, CharacterDataState>(
+      body: BlocBuilder<PlayerCubit, PlayerState>(
           builder: (context, characterDataState) {
         return BlocProvider<SettingsCubit>(
           create: (context) => SettingsCubit(
@@ -36,25 +36,17 @@ class SettingsPage extends StatelessWidget {
                     child: Column(
                       spacing: 10,
                       children: [
-                        BlocListener<SettingsCubit, SettingsState>(
-                          listenWhen: (prev, next) =>
-                              prev.questsNum != next.questsNum,
-                          listener: (context, settingsState) {
-                            context.read<CharacterDataCubit>().updateQuest();
-                          },
-                          child: InfoSlice(
-                            title: 'Quests',
-                            count: settingsState.questsNum,
-                            onTap: settingsState.questsNum > 0
-                                ? () => context
-                                    .read<SettingsCubit>()
-                                    .deleteTableContents(settingsState
-                                        .tableInfos
-                                        .firstWhere((tableInfo) =>
-                                            tableInfo.tableType ==
-                                            TableType.quests))
-                                : () => {},
-                          ),
+                        InfoSlice(
+                          title: 'Quests',
+                          count: settingsState.questsNum,
+                          onTap: settingsState.questsNum > 0
+                              ? () => context
+                                  .read<SettingsCubit>()
+                                  .deleteTableContents(settingsState.tableInfos
+                                      .firstWhere((tableInfo) =>
+                                          tableInfo.tableType ==
+                                          TableType.quests))
+                              : () => {},
                         ),
                         Row(
                           children: [
@@ -93,22 +85,7 @@ class SettingsPage extends StatelessWidget {
                         Center(
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Image.asset(
-                                'images/pixel-icons/sword-icon-secondary.png',
-                                width: 40,
-                                height: 40,
-                                scale: .1,
-                                filterQuality: FilterQuality.none,
-                              ),
-                              Image.asset(
-                                'images/pixel-icons/house-icon-primary.png',
-                                width: 40,
-                                height: 40,
-                                scale: .1,
-                                filterQuality: FilterQuality.none,
-                              ),
-                            ],
+                            children: [],
                           ),
                         )
                       ],

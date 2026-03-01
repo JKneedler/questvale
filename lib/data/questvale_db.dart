@@ -1,5 +1,6 @@
 import 'package:path/path.dart';
 import 'package:questvale/data/models/character.dart';
+import 'package:questvale/data/models/character_skills.dart';
 import 'package:questvale/data/models/encounter.dart';
 import 'package:questvale/data/models/encounter_reward.dart';
 import 'package:questvale/data/models/enemy.dart';
@@ -36,9 +37,10 @@ class QuestvaleDB {
           currentExp: 0,
           currentHealth: 20,
           currentMana: 10,
-          attacksRemaining: 10,
+          actionPoints: 10,
         ),
       );
+      await db.execute(CharacterSkills.createTableSQL);
 
       await db.execute(Quest.createTableSQL);
       await db.execute(Encounter.createTableSQL);

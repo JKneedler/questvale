@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:questvale/cubits/home/character_data_cubit.dart';
+import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
@@ -23,7 +23,7 @@ class QvEquipmentItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
-    final character = context.read<CharacterDataCubit>().state.character!;
+    final character = context.read<PlayerCubit>().state.character!;
     final isExpandedForEquippedTag = showEquippedTag && equipment!.isEquipped;
 
     return GestureDetector(

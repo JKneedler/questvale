@@ -74,6 +74,8 @@ flutter:
     - images/ui/borders/
     - images/ui/borders/skills/
     - images/ui/buttons/
+    - images/ui/icons/
+    - images/characters/
     - images/enemies/
     - images/enemies/drops/
     - images/backgrounds/

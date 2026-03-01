@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/character_tab/character/character_cubit.dart';
 import 'package:questvale/cubits/character_tab/character_overview/character_overview_cubit.dart';
 import 'package:questvale/cubits/character_tab/character_overview/character_overview_state.dart';
-import 'package:questvale/cubits/home/character_data_cubit.dart';
+import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/widgets/qv_app_bar.dart';
@@ -20,7 +20,7 @@ class CharacterOverviewPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final character = context.read<CharacterDataCubit>().state.character;
+    final character = context.read<PlayerCubit>().state.character;
     if (character == null) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -43,10 +43,8 @@ class CharacterOverviewView extends StatelessWidget {
     const gridSpacing = 6.0;
     return BlocBuilder<CharacterOverviewCubit, CharacterOverviewState>(
         builder: (context, characterOverviewState) {
-      final character = context.watch<CharacterDataCubit>().state.character;
-      final characterStats =
-          context.watch<CharacterDataCubit>().state.combatStats;
-      if (character == null || characterStats == null) {
+      final character = context.watch<PlayerCubit>().state.character;
+      if (character == null) {
         return const Center(child: CircularProgressIndicator());
       }
       return Column(
@@ -104,14 +102,14 @@ class CharacterOverviewView extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               ResourceBar(
-                                maxValue: characterStats.maxHealth,
+                                maxValue: character.maxHealth,
                                 currentValue: character.currentHealth,
                                 color: HEALTH_COLOR,
                                 startAlignment: Alignment.centerLeft,
                                 width: MediaQuery.of(context).size.width * 0.4,
                               ),
                               ResourceBar(
-                                maxValue: characterStats.maxResource,
+                                maxValue: character.maxMana,
                                 currentValue: character.currentMana,
                                 color: MANA_COLOR,
                                 startAlignment: Alignment.centerRight,
@@ -129,7 +127,7 @@ class CharacterOverviewView extends StatelessWidget {
                                   color: GOLD_COLOR),
                               HeaderInfoSlide(
                                   title: 'Action Points',
-                                  value: '${character.attacksRemaining}',
+                                  value: '${character.actionPoints}',
                                   color: ACTION_POINTS_COLOR),
                               HeaderInfoSlide(
                                   title: 'Skill Points',
@@ -645,7 +643,7 @@ class EquipmentItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
-    final character = context.read<CharacterDataCubit>().state.character;
+    final character = context.read<PlayerCubit>().state.character;
     if (character == null) {
       return const Center(child: CircularProgressIndicator());
     }
