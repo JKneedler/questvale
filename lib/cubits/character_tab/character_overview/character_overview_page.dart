@@ -5,6 +5,7 @@ import 'package:questvale/cubits/character_tab/character_overview/character_over
 import 'package:questvale/cubits/character_tab/character_overview/character_overview_state.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/data/models/equipment.dart';
+import 'package:questvale/data/providers/game_data_models/skill_data.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/widgets/qv_app_bar.dart';
 import 'package:questvale/widgets/qv_skill_button.dart';

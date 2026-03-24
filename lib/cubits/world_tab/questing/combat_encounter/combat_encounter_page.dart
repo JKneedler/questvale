@@ -10,6 +10,7 @@ import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_flee_c
 import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
 import 'package:questvale/data/providers/game_data_models/quest_zone.dart';
+import 'package:questvale/data/providers/game_data_models/skill_data.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_blinking.dart';
 import 'package:questvale/widgets/qv_button.dart';

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/world_tab/questing/combat/combat_state.dart';
 import 'package:questvale/data/repositories/enemy_repository.dart';
+import 'package:questvale/data/skills/base_active_skill.dart';
 import 'package:questvale/services/combat_service.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -39,7 +40,7 @@ class CombatCubit extends Cubit<CombatState> {
       state.copyWith(
         status: CombatStatus.idle,
         inspectingEnemyIndex: -1,
-        targetingSkillIndex: -1,
+        targetingSkill: null,
         target: SkillTarget.none,
       ),
     );
@@ -86,32 +87,32 @@ class CombatCubit extends Cubit<CombatState> {
         inspectingEnemyIndex: newInspectingEnemyIndex));
   }
 
-  void onSkillButtonTap(BuildContext context, int skillIndex) {
+  void onSkillButtonTap(BuildContext context, BaseActiveSkill tappedSkill) {
     final CombatState previousState = state;
     CombatStatus newStatus = previousState.status;
     SkillTarget newTarget = previousState.target;
-    int newTargetingSkillIndex = previousState.targetingSkillIndex;
+    BaseActiveSkill? newTargetingSkill = previousState.targetingSkill;
 
     if (previousState.status == CombatStatus.targetingSkill) {
-      if (previousState.targetingSkillIndex == skillIndex) {
+      if (previousState.targetingSkill?.id == tappedSkill.id) {
         newStatus = CombatStatus.idle;
-        newTargetingSkillIndex = -1;
+        newTargetingSkill = null;
       } else {
-        newTargetingSkillIndex = skillIndex;
-        newTarget = getNewTarget(skillIndex);
+        newTargetingSkill = tappedSkill;
+        newTarget = getNewTarget(tappedSkill);
       }
     } else {
       newStatus = CombatStatus.targetingSkill;
-      newTargetingSkillIndex = skillIndex;
-      newTarget = getNewTarget(skillIndex);
+      newTargetingSkill = tappedSkill;
+      newTarget = getNewTarget(tappedSkill);
     }
     emit(previousState.copyWith(
         status: newStatus,
         target: newTarget,
-        targetingSkillIndex: newTargetingSkillIndex));
+        targetingSkill: newTargetingSkill));
   }
 
-  SkillTarget getNewTarget(int skillIndex) {
+  SkillTarget getNewTarget(BaseActiveSkill tappedSkill) {
     // TODO: Set new target appropriately based on skill targeting and what enemies are alive, etc.
     return SkillTarget.enemy1;
   }

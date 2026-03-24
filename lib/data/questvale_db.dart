@@ -1,6 +1,6 @@
 import 'package:path/path.dart';
 import 'package:questvale/data/models/character.dart';
-import 'package:questvale/data/models/character_skills.dart';
+import 'package:questvale/data/models/character_skill.dart';
 import 'package:questvale/data/models/encounter.dart';
 import 'package:questvale/data/models/encounter_reward.dart';
 import 'package:questvale/data/models/enemy.dart';
@@ -27,9 +27,16 @@ class QuestvaleDB {
       await db.execute(CharacterTag.createTableSQL);
       await db.execute(Character.createTableSQL);
       final CharacterRepository characterRepo = CharacterRepository(db: db);
+      final characterId = Uuid().v4();
+      final activeSkillSlot1 = CharacterSkill(
+        id: Uuid().v4(),
+        characterId: characterId,
+        skillId: 'mage-1-arcane_bolt',
+        level: 1,
+      );
       characterRepo.insertCharacter(
         Character(
-          id: Uuid().v4(),
+          id: characterId,
           name: 'Doug',
           characterClass: CharacterClass.mage,
           level: 10,
@@ -38,10 +45,14 @@ class QuestvaleDB {
           currentHealth: 20,
           currentMana: 10,
           actionPoints: 10,
+          skills: [],
+          activeSkillSlot1: activeSkillSlot1,
         ),
       );
-      await db.execute(CharacterSkills.createTableSQL);
-
+      await db.execute(CharacterSkill.createTableSQL);
+      characterRepo.insertCharacterSkill(
+        activeSkillSlot1,
+      );
       await db.execute(Quest.createTableSQL);
       await db.execute(Encounter.createTableSQL);
       await db.execute(EncounterReward.createTableSQL);

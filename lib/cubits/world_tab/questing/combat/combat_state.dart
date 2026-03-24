@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:questvale/data/models/enemy.dart';
+import 'package:questvale/data/skills/base_active_skill.dart';
 
 enum CombatStatus {
   idle,
@@ -39,14 +40,14 @@ class CombatState extends Equatable {
   final List<Enemy> enemies;
   final CombatStatus status;
   final SkillTarget target;
-  final int targetingSkillIndex;
+  final BaseActiveSkill? targetingSkill;
   final int inspectingEnemyIndex;
 
   const CombatState({
     required this.enemies,
     this.status = CombatStatus.idle,
     this.target = SkillTarget.none,
-    this.targetingSkillIndex = -1,
+    this.targetingSkill,
     this.inspectingEnemyIndex = -1,
   });
 
@@ -54,19 +55,19 @@ class CombatState extends Equatable {
     List<Enemy>? enemies,
     CombatStatus? status,
     SkillTarget? target,
-    int? targetingSkillIndex,
+    BaseActiveSkill? targetingSkill,
     int? inspectingEnemyIndex,
   }) {
     return CombatState(
         enemies: enemies ?? this.enemies,
         status: status ?? this.status,
         target: target ?? this.target,
-        targetingSkillIndex: targetingSkillIndex ?? this.targetingSkillIndex,
+        targetingSkill: targetingSkill ?? this.targetingSkill,
         inspectingEnemyIndex:
             inspectingEnemyIndex ?? this.inspectingEnemyIndex);
   }
 
   @override
   List<Object?> get props =>
-      [enemies, status, target, targetingSkillIndex, inspectingEnemyIndex];
+      [enemies, status, target, targetingSkill, inspectingEnemyIndex];
 }

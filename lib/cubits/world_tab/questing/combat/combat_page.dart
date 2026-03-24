@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:questvale/cubits/home/player_cubit.dart';
+import 'package:questvale/cubits/home/player_state.dart';
 import 'package:questvale/cubits/world_tab/questing/combat/combat_cubit.dart';
 import 'package:questvale/cubits/world_tab/questing/combat/combat_state.dart';
 import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_encounter_cubit.dart';
 import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_flee_confirmation_modal.dart';
 import 'package:questvale/data/models/enemy.dart';
-import 'package:questvale/data/providers/game_data_models/quest_zone.dart';
+import 'package:questvale/data/providers/game_data_models/skill_data.dart';
+import 'package:questvale/data/skills/base_active_skill.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/widgets/qv_animated_transition.dart';
 import 'package:questvale/widgets/qv_blinking.dart';
@@ -52,190 +55,248 @@ class CombatView extends StatelessWidget {
             await context.read<QuestEncounterCubit>().completeEncounter();
           }
         },
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            SizedBox(height: 10),
-            SizedBox(
-              height: 138,
-              child: Row(
-                children: [
-                  Container(
-                    width: 84,
-                    padding: EdgeInsets.symmetric(horizontal: 10),
-                    child: Column(
-                      children: [
-                        QvButton(
-                          width: 64,
-                          height: 64,
-                          buttonColor: ButtonColor.silver,
-                          padding: EdgeInsets.only(bottom: 10),
-                          onTap: () {
-                            if (combatState.status == CombatStatus.idle) {
-                              QuestFleeConfirmationModal.showModal(
-                                  context,
-                                  () => context
-                                      .read<QuestEncounterCubit>()
-                                      .fleeQuest());
-                            }
-                          },
-                          child: Center(
-                            child: Image.asset(
-                              'images/pixel-icons/running-man.png',
-                              filterQuality: FilterQuality.none,
-                              width: 40,
-                              height: 40,
-                              scale: .08,
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                        QvButton(
-                          width: 64,
-                          height: 64,
-                          buttonColor: ButtonColor.rare,
-                          padding: EdgeInsets.only(bottom: 0),
-                          child: Center(
-                            child: Image.asset(
-                              'images/pixel-icons/potion-star.png',
-                              filterQuality: FilterQuality.none,
-                              width: 40,
-                              height: 40,
-                              scale: .08,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(child: Container()),
-                  Container(
-                    width: 84,
-                    padding: EdgeInsets.symmetric(horizontal: 10),
-                    alignment: Alignment.topCenter,
-                    child: QvButton(
-                      width: 64,
-                      height: 64,
-                      buttonColor: ButtonColor.surface,
-                      padding: EdgeInsets.only(bottom: 0),
-                      child: Center(
-                        child: Image.asset(
-                          'images/pixel-icons/bag.png',
-                          filterQuality: FilterQuality.none,
-                          width: 40,
-                          height: 40,
-                          scale: .08,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            BattleFieldDisplay(),
-            SizedBox(
-                height: 65,
+        child: BlocBuilder<PlayerCubit, PlayerState>(
+            builder: (context, playerState) {
+          final character = playerState.character;
+          final playerSkills = playerState.playerSkills;
+          if (character == null || playerSkills == null) {
+            return const SizedBox.shrink();
+          }
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              SizedBox(height: 10),
+              SizedBox(
+                height: 138,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    for (int i = 0; i < 5; i++)
-                      CombatSkillButton(
-                        onTap: () => context
-                            .read<CombatCubit>()
-                            .onSkillButtonTap(context, i),
-                        skillIndex: i,
-                        skillButtonColor: SkillButtonColor.iceBlue,
-                        darkened:
-                            combatState.status == CombatStatus.targetingSkill &&
-                                combatState.targetingSkillIndex != i,
-                      ),
-                  ],
-                )),
-            SizedBox(
-              height: 80,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Expanded(
-                    child: ResourceBar(
-                      color: HEALTH_COLOR,
-                      maxValue: 100,
-                      currentValue: 90,
-                      alignment: Alignment.centerLeft,
-                    ),
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage(
-                            'images/ui/buttons/primary-button-no-bottom-2x.png'),
-                        centerSlice: Rect.fromLTWH(16, 16, 32, 32),
-                        fit: BoxFit.fill,
-                      ),
-                    ),
-                    width: 80,
-                    height: combatState.status == CombatStatus.targetingSkill
-                        ? 80
-                        : 50,
-                    padding: const EdgeInsets.symmetric(horizontal: 2),
-                    child: Center(
+                    Container(
+                      width: 84,
+                      padding: EdgeInsets.symmetric(horizontal: 10),
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          SizedBox(
-                            height: 12,
-                            child: Text(
-                              'AP',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: colorScheme.secondary,
-                                height: 1,
-                                fontWeight: FontWeight.bold,
+                          QvButton(
+                            width: 64,
+                            height: 64,
+                            buttonColor: ButtonColor.silver,
+                            padding: EdgeInsets.only(bottom: 10),
+                            onTap: () {
+                              if (combatState.status == CombatStatus.idle) {
+                                QuestFleeConfirmationModal.showModal(
+                                    context,
+                                    () => context
+                                        .read<QuestEncounterCubit>()
+                                        .fleeQuest());
+                              }
+                            },
+                            child: Center(
+                              child: Image.asset(
+                                'images/pixel-icons/running-man.png',
+                                filterQuality: FilterQuality.none,
+                                width: 40,
+                                height: 40,
+                                scale: .08,
                               ),
                             ),
                           ),
-                          SizedBox(
-                            height: 30,
-                            child: Text(
-                              '20',
-                              style: TextStyle(
-                                fontSize: 36,
-                                color: colorScheme.secondary,
-                                height: 1,
+                          SizedBox(height: 10),
+                          QvButton(
+                            width: 64,
+                            height: 64,
+                            buttonColor: ButtonColor.rare,
+                            padding: EdgeInsets.only(bottom: 0),
+                            child: Center(
+                              child: Image.asset(
+                                'images/pixel-icons/potion-star.png',
+                                filterQuality: FilterQuality.none,
+                                width: 40,
+                                height: 40,
+                                scale: .08,
                               ),
-                              textAlign: TextAlign.center,
                             ),
                           ),
-                          if (combatState.status == CombatStatus.targetingSkill)
+                        ],
+                      ),
+                    ),
+                    Expanded(child: Container()),
+                    Container(
+                      width: 84,
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      alignment: Alignment.topCenter,
+                      child: QvButton(
+                        width: 64,
+                        height: 64,
+                        buttonColor: ButtonColor.surface,
+                        padding: EdgeInsets.only(bottom: 0),
+                        child: Center(
+                          child: Image.asset(
+                            'images/pixel-icons/bag.png',
+                            filterQuality: FilterQuality.none,
+                            width: 40,
+                            height: 40,
+                            scale: .08,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              BattleFieldDisplay(),
+              SizedBox(
+                  height: 65,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      if (playerSkills.activeSkillSlot1 != null)
+                        CombatSkillButton(
+                          onTap: () => context
+                              .read<CombatCubit>()
+                              .onSkillButtonTap(
+                                  context, playerSkills.activeSkillSlot1!),
+                          skill: playerSkills.activeSkillSlot1!,
+                          darkened: combatState.status ==
+                                  CombatStatus.targetingSkill &&
+                              combatState.targetingSkill?.id !=
+                                  playerSkills.activeSkillSlot1!.id,
+                        ),
+                      if (playerSkills.activeSkillSlot2 != null)
+                        CombatSkillButton(
+                          onTap: () => context
+                              .read<CombatCubit>()
+                              .onSkillButtonTap(
+                                  context, playerSkills.activeSkillSlot2!),
+                          skill: playerSkills.activeSkillSlot2!,
+                          darkened: combatState.status ==
+                                  CombatStatus.targetingSkill &&
+                              combatState.targetingSkill?.id !=
+                                  playerSkills.activeSkillSlot2!.id,
+                        ),
+                      if (playerSkills.activeSkillSlot3 != null)
+                        CombatSkillButton(
+                          onTap: () => context
+                              .read<CombatCubit>()
+                              .onSkillButtonTap(
+                                  context, playerSkills.activeSkillSlot3!),
+                          skill: playerSkills.activeSkillSlot3!,
+                          darkened: combatState.status ==
+                                  CombatStatus.targetingSkill &&
+                              combatState.targetingSkill?.id !=
+                                  playerSkills.activeSkillSlot3!.id,
+                        ),
+                      if (playerSkills.activeSkillSlot4 != null)
+                        CombatSkillButton(
+                          onTap: () => context
+                              .read<CombatCubit>()
+                              .onSkillButtonTap(
+                                  context, playerSkills.activeSkillSlot4!),
+                          skill: playerSkills.activeSkillSlot4!,
+                          darkened: combatState.status ==
+                                  CombatStatus.targetingSkill &&
+                              combatState.targetingSkill?.id !=
+                                  playerSkills.activeSkillSlot4!.id,
+                        ),
+                      if (playerSkills.activeSkillSlot5 != null)
+                        CombatSkillButton(
+                          onTap: () => context
+                              .read<CombatCubit>()
+                              .onSkillButtonTap(
+                                  context, playerSkills.activeSkillSlot5!),
+                          skill: playerSkills.activeSkillSlot5!,
+                          darkened: combatState.status ==
+                                  CombatStatus.targetingSkill &&
+                              combatState.targetingSkill?.id !=
+                                  playerSkills.activeSkillSlot5!.id,
+                        ),
+                    ],
+                  )),
+              SizedBox(
+                height: 80,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: ResourceBar(
+                        color: HEALTH_COLOR,
+                        maxValue: character.maxHealth,
+                        currentValue: character.currentHealth,
+                        alignment: Alignment.centerLeft,
+                      ),
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage(
+                              'images/ui/buttons/primary-button-no-bottom-2x.png'),
+                          centerSlice: Rect.fromLTWH(16, 16, 32, 32),
+                          fit: BoxFit.fill,
+                        ),
+                      ),
+                      width: 80,
+                      height: combatState.status == CombatStatus.targetingSkill
+                          ? 80
+                          : 50,
+                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              height: 12,
+                              child: Text(
+                                'AP',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: colorScheme.secondary,
+                                  height: 1,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
                             SizedBox(
                               height: 30,
                               child: Text(
-                                '(-1)',
+                                character.actionPoints.toString(),
                                 style: TextStyle(
                                   fontSize: 36,
-                                  color: Colors.red,
+                                  color: colorScheme.secondary,
                                   height: 1,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
                             ),
-                        ],
+                            if (combatState.status ==
+                                CombatStatus.targetingSkill)
+                              SizedBox(
+                                height: 30,
+                                child: Text(
+                                  '(-1)',
+                                  style: TextStyle(
+                                    fontSize: 36,
+                                    color: Colors.red,
+                                    height: 1,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  Expanded(
-                    child: ResourceBar(
-                      color: MANA_COLOR,
-                      maxValue: 100,
-                      currentValue: 30,
-                      alignment: Alignment.centerRight,
+                    Expanded(
+                      child: ResourceBar(
+                        color: MANA_COLOR,
+                        maxValue: character.maxMana,
+                        currentValue: character.currentMana,
+                        alignment: Alignment.centerRight,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          );
+        }),
       );
     });
   }
@@ -286,26 +347,24 @@ class ResourceBar extends StatelessWidget {
 
 class CombatSkillButton extends StatelessWidget {
   final VoidCallback onTap;
-  final int skillIndex;
-  final SkillButtonColor skillButtonColor;
+  final BaseActiveSkill skill;
   final bool darkened;
 
   const CombatSkillButton({
     super.key,
     required this.onTap,
-    required this.skillIndex,
-    required this.skillButtonColor,
+    required this.skill,
     required this.darkened,
   });
 
   @override
   Widget build(BuildContext context) {
     return QvSkillButton(
-      skillIconPath: 'images/skills/ice_spike.png',
+      skillIconPath: skill.data.iconPath,
       onTap: onTap,
       width: 65,
       height: 65,
-      skillButtonColor: skillButtonColor,
+      skillButtonColor: skill.data.buttonColor,
       darkened: darkened,
     );
   }
@@ -379,7 +438,8 @@ class BattleFieldDisplay extends StatelessWidget {
                       duration: Duration(milliseconds: 200),
                       type: getSkillAnimationTransitionType(combatState),
                       child: (combatState.status == CombatStatus.targetingSkill)
-                          ? TargetEnemySkillBox()
+                          ? TargetEnemySkillBox(
+                              skill: combatState.targetingSkill!)
                           : SizedBox.shrink(),
                     ),
                   ],
@@ -771,7 +831,8 @@ class PlayerInfoBox extends StatelessWidget {
 }
 
 class TargetEnemySkillBox extends StatelessWidget {
-  const TargetEnemySkillBox({super.key});
+  final BaseActiveSkill skill;
+  const TargetEnemySkillBox({super.key, required this.skill});
 
   @override
   Widget build(BuildContext context) {
@@ -782,10 +843,10 @@ class TargetEnemySkillBox extends StatelessWidget {
         padding: EdgeInsets.all(10),
         child: Column(
           children: [
-            Text('Stormwave'),
-            Text('Sends out a wave of water that deals damage to all enemies'),
-            Text('Damage: 20'),
-            Text('Damage Type: Physical'),
+            Text(skill.data.name),
+            Text(skill.description),
+            Text('Damage: ${skill.data.primaryBaseValue! * 100}%'),
+            Text('Damage Type: ${skill.data.damageType?.name}'),
             Expanded(child: Container()),
             QvButton(
               width: double.infinity,

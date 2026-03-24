@@ -1,5 +1,9 @@
 import 'package:questvale/data/models/character.dart';
+import 'package:questvale/data/models/character_skill.dart';
 import 'package:questvale/data/models/character_tag.dart';
+import 'package:questvale/data/providers/game_data.dart';
+import 'package:questvale/data/skills/arcane_bolt.dart';
+import 'package:questvale/data/skills/base_active_skill.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -100,6 +104,24 @@ class CharacterRepository {
   }
 
   Future<Character> _getCharacterFromMap(Map<String, Object?> map) async {
+    final skills =
+        await getSkillsByCharacterId(map[Character.idColumnName] as String);
+    final skillSlot1 = map[Character.skillSlot1ColumnName] as String?;
+    final activeSkillSlot1 =
+        skillSlot1 != null ? await getSkillById(skillSlot1) : null;
+    final skillSlot2 = map[Character.skillSlot2ColumnName] as String?;
+    final activeSkillSlot2 =
+        skillSlot2 != null ? await getSkillById(skillSlot2) : null;
+    final skillSlot3 = map[Character.skillSlot3ColumnName] as String?;
+    final activeSkillSlot3 =
+        skillSlot3 != null ? await getSkillById(skillSlot3) : null;
+    final skillSlot4 = map[Character.skillSlot4ColumnName] as String?;
+    final activeSkillSlot4 =
+        skillSlot4 != null ? await getSkillById(skillSlot4) : null;
+    final skillSlot5 = map[Character.skillSlot5ColumnName] as String?;
+    final activeSkillSlot5 =
+        skillSlot5 != null ? await getSkillById(skillSlot5) : null;
+
     final character = Character(
       id: map[Character.idColumnName] as String,
       name: map[Character.nameColumnName] as String,
@@ -111,7 +133,49 @@ class CharacterRepository {
       currentHealth: map[Character.currentHealthColumnName] as int,
       currentMana: map[Character.currentManaColumnName] as int,
       actionPoints: map[Character.actionPointsColumnName] as int,
+      skills: skills,
+      activeSkillSlot1: activeSkillSlot1,
+      activeSkillSlot2: activeSkillSlot2,
+      activeSkillSlot3: activeSkillSlot3,
+      activeSkillSlot4: activeSkillSlot4,
+      activeSkillSlot5: activeSkillSlot5,
     );
     return character;
+  }
+
+  Future<void> insertCharacterSkill(CharacterSkill skill) async {
+    await db.insert(CharacterSkill.characterSkillTableName, skill.toMap());
+  }
+
+  Future<List<CharacterSkill>> getSkillsByCharacterId(
+      String characterId) async {
+    final skillMaps = await db.query(
+      CharacterSkill.characterSkillTableName,
+      where: '${CharacterSkill.characterIdColumnName} = ?',
+      whereArgs: [characterId],
+    );
+    return skillMaps.map((skillMap) => _getSkillFromMap(skillMap)).toList();
+  }
+
+  Future<CharacterSkill?> getSkillById(String? skillId) async {
+    if (skillId == null) return null;
+
+    final skillMap = await db.query(
+      CharacterSkill.characterSkillTableName,
+      where: '${CharacterSkill.idColumnName} = ?',
+      whereArgs: [skillId],
+      limit: 1,
+    );
+
+    return skillMap.isEmpty ? null : _getSkillFromMap(skillMap.first);
+  }
+
+  CharacterSkill _getSkillFromMap(Map<String, Object?> map) {
+    return CharacterSkill(
+      id: map[CharacterSkill.idColumnName] as String,
+      characterId: map[CharacterSkill.characterIdColumnName] as String,
+      skillId: map[CharacterSkill.skillIdColumnName] as String,
+      level: map[CharacterSkill.levelColumnName] as int,
+    );
   }
 }
