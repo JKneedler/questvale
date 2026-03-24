@@ -3,18 +3,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/world_tab/questing/combat/combat_state.dart';
 import 'package:questvale/data/repositories/enemy_repository.dart';
 import 'package:questvale/data/skills/base_active_skill.dart';
-import 'package:questvale/services/combat_service.dart';
 import 'package:sqflite/sqflite.dart';
 
 class CombatCubit extends Cubit<CombatState> {
   final String encounterId;
   late EnemyRepository enemyRepository;
-  late CombatService combatService;
 
   CombatCubit({required this.encounterId, required Database db})
       : super(CombatState(enemies: [])) {
     enemyRepository = EnemyRepository(db: db);
-    combatService = CombatService(db: db);
     init();
   }
 
