@@ -5,16 +5,19 @@ import 'package:questvale/data/providers/game_data_models/enemy_attack_data.dart
 import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_drop_data.dart';
 import 'package:questvale/data/providers/game_data_models/quest_zone.dart';
+import 'package:questvale/data/providers/game_data_models/skill_data.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 
 class GameData {
   late final List<QuestZone> questZones;
+  late final List<SkillData> skills;
 
   GameData._();
 
   static Future<GameData> load() async {
     final gameData = GameData._();
     gameData.questZones = await gameData.loadQuestZones();
+    gameData.skills = await gameData.loadSkills();
     return gameData;
   }
 
@@ -93,5 +96,15 @@ class GameData {
       rarity: Rarity.values[json['rarity'] as int],
       dropChance: json['dropChance'] as double,
     );
+  }
+
+  Future<List<SkillData>> loadSkills() async {
+    final skillsStr = await rootBundle.loadString('data/skills.json');
+    final skillsJson = jsonDecode(skillsStr) as List<dynamic>;
+    return skillsJson.map((json) => SkillData.fromJson(json)).toList();
+  }
+
+  SkillData getSkillDataById(String id) {
+    return skills.firstWhere((skill) => skill.id == id);
   }
 }

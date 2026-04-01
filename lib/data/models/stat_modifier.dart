@@ -102,7 +102,60 @@ enum StatModifierType {
     }
   }
 
-  double tierValue(int tier) {
+  double equipmentTierValue(int tier) {
+    switch (this) {
+      case StatModifierType.attackPower:
+        return tier * 4;
+      case StatModifierType.physicalDamage:
+        return tier * .05;
+      case StatModifierType.fireDamage:
+        return tier * .05;
+      case StatModifierType.iceDamage:
+        return tier * .05;
+      case StatModifierType.poisonDamage:
+        return tier * .05;
+      case StatModifierType.critChance:
+        return tier * .03;
+      case StatModifierType.critDamage:
+        return tier * .1;
+      case StatModifierType.lifeSteal:
+        return tier * .04;
+      case StatModifierType.apEfficiency:
+        return tier * .1;
+      case StatModifierType.statusEffectChance:
+        return tier * .05;
+      case StatModifierType.statusEffectDuration:
+        return tier * .1;
+      case StatModifierType.armor:
+        return tier * 4;
+      case StatModifierType.health:
+        return tier * 10;
+      case StatModifierType.cooldown:
+        return tier * .04;
+      case StatModifierType.resourceRegen:
+        return tier * 10;
+      case StatModifierType.flaskPotency:
+        return tier * .05;
+      case StatModifierType.damageReflection:
+        return tier * .05;
+      case StatModifierType.blockChance:
+        return tier * .04;
+      case StatModifierType.expGain:
+        return tier * .1;
+      case StatModifierType.goldGain:
+        return tier * .1;
+      case StatModifierType.fireImmunity:
+        return 1.0;
+      case StatModifierType.iceImmunity:
+        return 1.0;
+      case StatModifierType.poisonImmunity:
+        return 1.0;
+      default:
+        return 0.0;
+    }
+  }
+
+  double skillTierValue(int tier) {
     switch (this) {
       case StatModifierType.attackPower:
         return tier * 4;
@@ -283,7 +336,7 @@ class StatModifier {
   }
 
   String valueString() {
-    final value = type.tierValue(tier);
+    final value = type.equipmentTierValue(tier);
     final numberString = type.isPercentage()
         ? '${(value * 100).toStringAsFixed(0)}%'
         : '${value.toInt()}';

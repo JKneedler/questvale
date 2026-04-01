@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
-class CharacterSkills extends Equatable {
-  static const characterSkillsTableName = 'CharacterSkills';
+class CharacterSkill extends Equatable {
+  static const characterSkillTableName = 'CharacterSkill';
 
   static const idColumnName = 'id';
   static const characterIdColumnName = 'characterId';
@@ -9,8 +9,9 @@ class CharacterSkills extends Equatable {
   static const levelColumnName = 'level';
 
   static const createTableSQL = '''
-    CREATE TABLE $characterSkillsTableName (
+    CREATE TABLE $characterSkillTableName (
       $idColumnName VARCHAR PRIMARY KEY,
+      $characterIdColumnName VARCHAR NOT NULL,
       $skillIdColumnName VARCHAR NOT NULL,
       $levelColumnName INTEGER NOT NULL
     );
@@ -21,7 +22,7 @@ class CharacterSkills extends Equatable {
   final String skillId;
   final int level;
 
-  const CharacterSkills({
+  const CharacterSkill({
     required this.id,
     required this.characterId,
     required this.skillId,
@@ -42,15 +43,15 @@ class CharacterSkills extends Equatable {
 
   @override
   String toString() {
-    return 'CharacterSkills(id: $id, characterId: $characterId, skillId: $skillId, level: $level)';
+    return 'CharacterSkill(id: $id, characterId: $characterId, skillId: $skillId, level: $level)';
   }
 
-  CharacterSkills copyWith({
+  CharacterSkill copyWith({
     String? characterId,
     String? skillId,
     int? level,
   }) {
-    return CharacterSkills(
+    return CharacterSkill(
       id: id,
       characterId: characterId ?? this.characterId,
       skillId: skillId ?? this.skillId,

@@ -40,6 +40,7 @@ class HomePage extends StatelessWidget {
                 BlocProvider(
                   create: (context) => PlayerCubit(
                     db: context.read<Database>(),
+                    gameData: gameData,
                   ),
                 ),
               ],

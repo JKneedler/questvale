@@ -1,23 +1,5 @@
 import 'package:flutter/material.dart';
-
-enum SkillButtonColor {
-  fireRed,
-  iceBlue,
-  arcanePurple;
-
-  String get borderImagePath => {
-        SkillButtonColor.fireRed: 'images/ui/borders/skills/infernal_ruby.png',
-        SkillButtonColor.iceBlue: 'images/ui/borders/skills/arctic_dawn.png',
-        SkillButtonColor.arcanePurple:
-            'images/ui/borders/skills/royal_dusk.png',
-      }[this]!;
-
-  Color get backgroundColor => {
-        SkillButtonColor.fireRed: Color(0xFF4A0C0A),
-        SkillButtonColor.iceBlue: Color(0xFF0C2034),
-        SkillButtonColor.arcanePurple: Color(0xFF200A2D),
-      }[this]!;
-}
+import 'package:questvale/data/providers/game_data_models/skill_data.dart';
 
 class QvSkillButton extends StatelessWidget {
   const QvSkillButton({
