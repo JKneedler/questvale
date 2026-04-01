@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/world_tab/questing/combat/combat_state.dart';
+import 'package:questvale/data/models/enemy.dart';
+import 'package:questvale/data/providers/game_data_models/skill_data.dart';
 import 'package:questvale/data/repositories/enemy_repository.dart';
 import 'package:questvale/data/skills/base_active_skill.dart';
+import 'package:questvale/services/combat_service.dart';
 import 'package:sqflite/sqflite.dart';
 
 class CombatCubit extends Cubit<CombatState> {
   final String encounterId;
   late EnemyRepository enemyRepository;
+  late CombatService combatService;
 
   CombatCubit({required this.encounterId, required Database db})
       : super(CombatState(enemies: [])) {
     enemyRepository = EnemyRepository(db: db);
+    combatService = CombatService(db: db);
     init();
   }
 
@@ -25,10 +31,18 @@ class CombatCubit extends Cubit<CombatState> {
     if (state.status != CombatStatus.complete) {
       if (enemies.every((enemy) => enemy.currentHealth <= 0)) {
         newStatus = CombatStatus.complete;
+      } else {
+        newStatus = CombatStatus.idle;
       }
     }
     if (!isClosed) {
-      emit(state.copyWith(enemies: enemies, status: newStatus));
+      emit(state.copyWith(
+        enemies: enemies,
+        status: newStatus,
+        targetingSkill: null,
+        target: SkillTarget.none,
+        inspectingEnemyIndex: -1,
+      ));
     }
   }
 
@@ -111,6 +125,43 @@ class CombatCubit extends Cubit<CombatState> {
 
   SkillTarget getNewTarget(BaseActiveSkill tappedSkill) {
     // TODO: Set new target appropriately based on skill targeting and what enemies are alive, etc.
-    return SkillTarget.enemy1;
+    if (tappedSkill.data.targetingType == SkillTargetingType.allEnemies) {
+      return SkillTarget.all;
+    } else if (tappedSkill.data.targetingType ==
+        SkillTargetingType.singleEnemy) {
+      for (int i = 0; i < state.enemies.length; i++) {
+        if (state.enemies[i].currentHealth > 0) {
+          return SkillTarget.getEnemyTarget(i);
+        }
+      }
+    } else if (tappedSkill.data.targetingType == SkillTargetingType.self) {
+      return SkillTarget.self;
+    }
+    return SkillTarget.none;
+  }
+
+  Future<void> onAttackButtonTap(BuildContext context) async {
+    final CombatState previousState = state;
+    final playerCombatStats =
+        context.read<PlayerCubit>().state.playerCombatStats;
+    if (playerCombatStats == null) {
+      return;
+    }
+    if (previousState.status == CombatStatus.targetingSkill &&
+        previousState.targetingSkill != null) {
+      List<Enemy> targettedEnemies = [];
+      if (previousState.target == SkillTarget.all) {
+        targettedEnemies = previousState.enemies;
+      } else if ([SkillTarget.enemy1, SkillTarget.enemy2, SkillTarget.enemy3]
+          .contains(previousState.target)) {
+        targettedEnemies = [
+          previousState.enemies[previousState.target.getEnemyIndex()]
+        ];
+      }
+      // TODO: Handle attack
+      await previousState.targetingSkill!
+          .execute(combatService, playerCombatStats, targettedEnemies);
+      reload();
+    }
   }
 }

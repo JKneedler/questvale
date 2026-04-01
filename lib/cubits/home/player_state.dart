@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:questvale/data/models/character.dart';
+import 'package:questvale/data/models/player_combat_stats.dart';
 import 'package:questvale/data/skills/base_active_skill.dart';
 
 class PlayerSkills {
@@ -40,19 +41,23 @@ class PlayerSkills {
 class PlayerState extends Equatable {
   final Character? character;
   final PlayerSkills? playerSkills;
+  final PlayerCombatStats? playerCombatStats;
 
   const PlayerState({
     required this.character,
     required this.playerSkills,
+    required this.playerCombatStats,
   });
 
   PlayerState copyWith({
     Character? character,
     PlayerSkills? playerSkills,
+    PlayerCombatStats? playerCombatStats,
   }) {
     return PlayerState(
       character: character ?? this.character,
       playerSkills: playerSkills ?? this.playerSkills,
+      playerCombatStats: playerCombatStats ?? this.playerCombatStats,
     );
   }
 
@@ -60,5 +65,6 @@ class PlayerState extends Equatable {
   List<Object?> get props => [
         character,
         playerSkills,
+        playerCombatStats,
       ];
 }

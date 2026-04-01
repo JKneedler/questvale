@@ -270,9 +270,9 @@ class CombatView extends StatelessWidget {
                               SizedBox(
                                 height: 30,
                                 child: Text(
-                                  '(-1)',
+                                  '(-${combatState.targetingSkill?.data.apCost ?? 0})',
                                   style: TextStyle(
-                                    fontSize: 36,
+                                    fontSize: 30,
                                     color: Colors.red,
                                     height: 1,
                                   ),
@@ -448,7 +448,7 @@ class BattleFieldDisplay extends StatelessWidget {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(
-                      left: 30, right: 30, top: 60, bottom: 60),
+                      left: 30, right: 30, top: 40, bottom: 40),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
@@ -463,7 +463,9 @@ class BattleFieldDisplay extends StatelessWidget {
                           isTargeted: combatState.status ==
                                   CombatStatus.targetingSkill &&
                               (combatState.target.getEnemyIndex() == i ||
-                                  combatState.target == SkillTarget.all),
+                                  (combatState.target == SkillTarget.all &&
+                                      combatState.enemies[i].currentHealth >
+                                          0)),
                         ),
                     ],
                   ),
@@ -556,6 +558,14 @@ class EnemyDisplay extends StatelessWidget {
                   child: Container(height: 6, color: HEALTH_COLOR),
                 ),
               ),
+              // Text(
+              //   '${enemy.currentHealth} / ${enemyData.health}',
+              //   style: TextStyle(
+              //     fontSize: 18,
+              //     color: Colors.grey[100],
+              //     height: 1,
+              //   ),
+              // ),
             ],
           ),
         ],
@@ -837,6 +847,11 @@ class TargetEnemySkillBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final playerCombatStats =
+        context.read<PlayerCubit>().state.playerCombatStats;
+    if (playerCombatStats == null) {
+      return const SizedBox.shrink();
+    }
     return Padding(
       padding: EdgeInsets.all(6),
       child: QvMetalCornerBorder(
@@ -845,14 +860,16 @@ class TargetEnemySkillBox extends StatelessWidget {
           children: [
             Text(skill.data.name),
             Text(skill.description),
-            Text('Damage: ${skill.data.primaryBaseValue! * 100}%'),
+            Text(
+                'Damage: ${(skill.data.primaryBaseValue! * playerCombatStats.physicalAttackPower).toStringAsFixed(0)}'),
             Text('Damage Type: ${skill.data.damageType?.name}'),
             Expanded(child: Container()),
             QvButton(
               width: double.infinity,
               height: 36,
               buttonColor: ButtonColor.primary,
-              onTap: () => context.read<CombatCubit>().setIdle(),
+              onTap: () =>
+                  context.read<CombatCubit>().onAttackButtonTap(context),
               child: Center(
                   child: Text(
                 'Attack',

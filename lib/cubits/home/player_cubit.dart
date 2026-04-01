@@ -1,20 +1,25 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/player_state.dart';
+import 'package:questvale/data/models/player_combat_stats.dart';
 import 'package:questvale/data/providers/game_data.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
+import 'package:questvale/data/repositories/equipment_repository.dart';
 import 'package:questvale/services/skill_service.dart';
 import 'package:sqflite/sqflite.dart';
 
 class PlayerCubit extends Cubit<PlayerState> {
   late CharacterRepository characterRepository;
+  late EquipmentRepository equipmentRepository;
   late SkillService skillService;
 
   PlayerCubit({required Database db, required GameData gameData})
       : super(PlayerState(
           character: null,
           playerSkills: null,
+          playerCombatStats: null,
         )) {
     characterRepository = CharacterRepository(db: db);
+    equipmentRepository = EquipmentRepository(db: db);
     skillService = SkillService(gameData: gameData);
     loadCharacter();
   }
@@ -39,6 +44,15 @@ class PlayerCubit extends Cubit<PlayerState> {
           ? skillService.getSkillById(character.activeSkillSlot5!.skillId)
           : null,
     );
-    emit(state.copyWith(character: character, playerSkills: playerSkills));
+    final equipments = await equipmentRepository
+        .getEquippedEquipmentByCharacterId(character.id);
+    final playerCombatStats = PlayerCombatStats(
+      playerLevel: character.level,
+      equipments: equipments,
+    );
+    emit(state.copyWith(
+        character: character,
+        playerSkills: playerSkills,
+        playerCombatStats: playerCombatStats));
   }
 }
