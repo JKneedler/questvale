@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
-import 'package:questvale/cubits/world_tab/select_quest/select_quest_cubit.dart';
-import 'package:questvale/cubits/world_tab/select_quest/select_quest_state.dart';
+import 'package:questvale/cubits/world_tab/town/quest_board/quest_board_cubit.dart';
+import 'package:questvale/cubits/world_tab/town/quest_board/select_quest/select_quest_cubit.dart';
+import 'package:questvale/cubits/world_tab/town/quest_board/select_quest/select_quest_state.dart';
 import 'package:questvale/cubits/world_tab/town/town_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/town_state.dart';
-import 'package:questvale/cubits/world_tab/world_cubit.dart';
 import 'package:questvale/data/providers/game_data.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
 import 'package:questvale/data/providers/game_data_models/quest_zone.dart';
@@ -13,7 +13,6 @@ import 'package:questvale/widgets/qv_app_bar.dart';
 import 'package:questvale/widgets/qv_enemy_info_modal.dart';
 import 'package:questvale/widgets/qv_gray_filter.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
-import 'package:sqflite/sqflite.dart';
 
 class SelectQuestPage extends StatelessWidget {
   const SelectQuestPage({
@@ -44,10 +43,7 @@ class SelectQuestPage extends StatelessWidget {
             child: Container(
               color: colorScheme.surface,
               child: BlocProvider(
-                create: (context) => SelectQuestCubit(
-                    db: context.read<Database>(),
-                    questZones: questZones,
-                    character: character),
+                create: (context) => SelectQuestCubit(questZones: questZones),
                 child: BlocBuilder<SelectQuestCubit, SelectQuestState>(
                     builder: (context, selectQuestState) {
                   return ListView.builder(
@@ -223,56 +219,33 @@ class SelectQuestZoneCard extends StatelessWidget {
                                 )
                               : const SizedBox(height: 80),
                           SizedBox(height: 16),
-                          BlocListener<SelectQuestCubit, SelectQuestState>(
-                            listenWhen: (prev, next) =>
-                                next.questCreateState ==
-                                QuestCreateStates.createdSuccess,
-                            listener: (context, state) {
-                              if (state.questCreateState ==
-                                  QuestCreateStates.createdSuccess) {
-                                context.read<WorldCubit>().onQuestCreated();
-                              } else if (state.questCreateState ==
-                                  QuestCreateStates.createdFailed) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                        content:
-                                            Text('Failed to create quest')));
-                              }
-                            },
-                            child: Container(
-                              padding:
-                                  const EdgeInsets.only(left: 20, right: 20),
-                              child: GestureDetector(
-                                onTap: () => {
-                                  context.read<SelectQuestCubit>().beginQuest(),
-                                },
-                                child: Container(
-                                  width: double.infinity,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                      centerSlice:
-                                          Rect.fromLTWH(16, 16, 32, 32),
-                                      image: AssetImage(
-                                        'images/ui/buttons/primary-button-2x.png',
-                                      ),
+                          Container(
+                            padding: const EdgeInsets.only(left: 20, right: 20),
+                            child: GestureDetector(
+                              onTap: () => {
+                                context
+                                    .read<QuestBoardCubit>()
+                                    .onQuestZoneSelected(questZone),
+                              },
+                              child: Container(
+                                width: double.infinity,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                    centerSlice: Rect.fromLTWH(16, 16, 32, 32),
+                                    image: AssetImage(
+                                      'images/ui/buttons/primary-button-2x.png',
                                     ),
                                   ),
-                                  child: Center(
-                                    child: Text(
-                                      context
-                                                  .read<SelectQuestCubit>()
-                                                  .state
-                                                  .questCreateState ==
-                                              QuestCreateStates.creating
-                                          ? 'Embarking...'
-                                          : 'Embark',
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        color: colorScheme.secondary,
-                                      ),
-                                      textAlign: TextAlign.center,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    'Gear Up',
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      color: colorScheme.secondary,
                                     ),
+                                    textAlign: TextAlign.center,
                                   ),
                                 ),
                               ),

@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
+
+class QvAppBarButton {
+  final String button;
+  final VoidCallback onTap;
+
+  QvAppBarButton({required this.button, required this.onTap});
+}
 
 class QvAppBar extends StatelessWidget {
   const QvAppBar({
@@ -9,17 +14,15 @@ class QvAppBar extends StatelessWidget {
     this.title = 'Questvale',
     this.color,
     this.insetColor,
-    this.includeBackButton = false,
     this.onBackButtonPressed,
-    this.showAP = false,
+    this.trailingButton,
   });
 
   final String title;
   final Color? color;
   final QvInsetBackgroundType? insetColor;
-  final bool includeBackButton;
   final VoidCallback? onBackButtonPressed;
-  final bool showAP;
+  final QvAppBarButton? trailingButton;
 
   @override
   Widget build(BuildContext context) {
@@ -59,23 +62,24 @@ class QvAppBar extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(
-            width: 60,
-            height: 40,
-            child: showAP
-                ? QvInsetBackground(
-                    type: insetColor ?? QvInsetBackgroundType.secondary,
-                    child: Center(
+          GestureDetector(
+            onTap: trailingButton?.onTap ?? () {},
+            child: SizedBox(
+              width: 60,
+              height: 40,
+              child: trailingButton == null
+                  ? SizedBox.shrink()
+                  : SizedBox(
                       child: Text(
-                        '${context.read<PlayerCubit>().state.character?.actionPoints ?? 0}',
+                        trailingButton!.button,
                         style: TextStyle(
-                            color: colorScheme.onSurface,
-                            fontSize: 28,
-                            height: 1),
+                          fontSize: 26,
+                          color: colorScheme.onSurface,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
                     ),
-                  )
-                : SizedBox.shrink(),
+            ),
           ),
         ],
       ),

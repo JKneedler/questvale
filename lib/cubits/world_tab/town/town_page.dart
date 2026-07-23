@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
-import 'package:questvale/cubits/world_tab/forging/forge/forge_page.dart';
-import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_encounter_page.dart';
-import 'package:questvale/cubits/world_tab/select_quest/select_quest_page.dart';
+import 'package:questvale/cubits/world_tab/town/forging/forge/forge_page.dart';
+import 'package:questvale/cubits/world_tab/town/quest_board/quest_board_page.dart';
 import 'package:questvale/cubits/world_tab/town/town_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/town_state.dart';
 import 'package:questvale/widgets/qv_animated_transition.dart';
@@ -20,7 +19,7 @@ class TownPage extends StatelessWidget {
       case TownLocation.townSquare:
         return TownSquare(key: const ValueKey('townSquare'));
       case TownLocation.questBoard:
-        return SelectQuestPage(key: const ValueKey('selectQuestPage'));
+        return QuestBoardPage(key: const ValueKey('questBoardPage'));
       case TownLocation.shop:
         return SizedBox();
       case TownLocation.guildHall:

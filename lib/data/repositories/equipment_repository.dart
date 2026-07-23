@@ -31,21 +31,6 @@ class EquipmentRepository {
     return equipment;
   }
 
-  // GET EQUIPPED EQUIPMENT BY CHARACTER ID
-  Future<List<Equipment>> getEquippedEquipmentByCharacterId(
-      String characterId) async {
-    final result = await db.query(Equipment.equipmentTableName,
-        where:
-            '${Equipment.characterIdColumnName} = ? AND ${Equipment.isEquippedColumnName} = 1',
-        whereArgs: [characterId]);
-    List<Equipment> equipment = [];
-    for (var map in result) {
-      final equipmentItem = await _getEquipmentFromMap(map);
-      equipment.add(equipmentItem);
-    }
-    return equipment;
-  }
-
   // GET EQUIPMENT BY EQUIPMENT SLOT
   Future<List<Equipment>> getEquipmentByEquipmentSlot(
       EquipmentSlot equipmentSlot, String characterId) async {
@@ -99,12 +84,10 @@ class EquipmentRepository {
     return Equipment(
       id: map[Equipment.idColumnName] as String,
       characterId: map[Equipment.characterIdColumnName] as String,
-      isEquipped: map[Equipment.isEquippedColumnName] as int == 1,
       rarity: Rarity.values[map[Equipment.rarityColumnName] as int],
       type: EquipmentType.values[map[Equipment.typeColumnName] as int],
       tier: map[Equipment.tierColumnName] as int,
       attackPower: map[Equipment.attackPowerColumnName] as int,
-      actionPointCost: map[Equipment.actionPointCostColumnName] as int,
       damageType: DamageType.values[map[Equipment.damageTypeColumnName] as int],
       armorValue: map[Equipment.armorValueColumnName] as int,
       statModifiers: statModifiers,

@@ -1,16 +1,18 @@
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/character_skill.dart';
 import 'package:questvale/data/models/character_tag.dart';
-import 'package:questvale/data/providers/game_data.dart';
-import 'package:questvale/data/skills/arcane_bolt.dart';
-import 'package:questvale/data/skills/base_active_skill.dart';
+import 'package:questvale/data/repositories/equipment_repository.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:sqflite/sqflite.dart';
 
 class CharacterRepository {
   final Database db;
 
-  CharacterRepository({required this.db});
+  late EquipmentRepository equipmentRepository;
+
+  CharacterRepository({required this.db}) {
+    equipmentRepository = EquipmentRepository(db: db);
+  }
 
   // GET the one existing character -- temporary
   Future<Character> getSingleCharacter() async {
@@ -122,6 +124,40 @@ class CharacterRepository {
     final activeSkillSlot5 =
         skillSlot5 != null ? await getSkillById(skillSlot5) : null;
 
+    final equippedWeapon = map[Character.equippedWeaponColumnName] as String?;
+    final weapon = equippedWeapon != null
+        ? await equipmentRepository.getEquipmentById(equippedWeapon)
+        : null;
+    final equippedHelmet = map[Character.equippedHelmetColumnName] as String?;
+    final helmet = equippedHelmet != null
+        ? await equipmentRepository.getEquipmentById(equippedHelmet)
+        : null;
+    final equippedChestplate =
+        map[Character.equippedChestplateColumnName] as String?;
+    final chestplate = equippedChestplate != null
+        ? await equipmentRepository.getEquipmentById(equippedChestplate)
+        : null;
+    final equippedGloves = map[Character.equippedGlovesColumnName] as String?;
+    final gloves = equippedGloves != null
+        ? await equipmentRepository.getEquipmentById(equippedGloves)
+        : null;
+    final equippedBoots = map[Character.equippedBootsColumnName] as String?;
+    final boots = equippedBoots != null
+        ? await equipmentRepository.getEquipmentById(equippedBoots)
+        : null;
+    final equippedAmulet = map[Character.equippedAmuletColumnName] as String?;
+    final amulet = equippedAmulet != null
+        ? await equipmentRepository.getEquipmentById(equippedAmulet)
+        : null;
+    final equippedRing1 = map[Character.equippedRing1ColumnName] as String?;
+    final ring1 = equippedRing1 != null
+        ? await equipmentRepository.getEquipmentById(equippedRing1)
+        : null;
+    final equippedRing2 = map[Character.equippedRing2ColumnName] as String?;
+    final ring2 = equippedRing2 != null
+        ? await equipmentRepository.getEquipmentById(equippedRing2)
+        : null;
+
     final character = Character(
       id: map[Character.idColumnName] as String,
       name: map[Character.nameColumnName] as String,
@@ -133,6 +169,14 @@ class CharacterRepository {
       currentHealth: map[Character.currentHealthColumnName] as int,
       currentMana: map[Character.currentManaColumnName] as int,
       actionPoints: map[Character.actionPointsColumnName] as int,
+      equippedWeapon: weapon,
+      equippedHelmet: helmet,
+      equippedChestplate: chestplate,
+      equippedGloves: gloves,
+      equippedBoots: boots,
+      equippedAmulet: amulet,
+      equippedRing1: ring1,
+      equippedRing2: ring2,
       skills: skills,
       activeSkillSlot1: activeSkillSlot1,
       activeSkillSlot2: activeSkillSlot2,

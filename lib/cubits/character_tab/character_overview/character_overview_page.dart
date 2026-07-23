@@ -14,7 +14,6 @@ import 'package:questvale/widgets/qv_card_border.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_metal_corner_border.dart';
-import 'package:sqflite/sqflite.dart';
 
 class CharacterOverviewPage extends StatelessWidget {
   const CharacterOverviewPage({super.key});
@@ -26,8 +25,7 @@ class CharacterOverviewPage extends StatelessWidget {
       return const Center(child: CircularProgressIndicator());
     }
     return BlocProvider<CharacterOverviewCubit>(
-      create: (context) => CharacterOverviewCubit(
-          characterId: character.id, db: context.read<Database>()),
+      create: (context) => CharacterOverviewCubit(character: character),
       child: CharacterOverviewView(),
     );
   }

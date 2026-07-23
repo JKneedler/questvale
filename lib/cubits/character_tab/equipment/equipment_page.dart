@@ -49,12 +49,10 @@ class EquipmentView extends StatelessWidget {
           children: [
             QvAppBar(
               title: _getEquipmentSlotName(equipmentSlot),
-              includeBackButton: true,
               onBackButtonPressed: () {
                 context.read<PlayerCubit>().loadCharacter();
                 context.read<CharacterCubit>().onBackButtonPressed();
               },
-              showAP: false,
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -65,14 +63,7 @@ class EquipmentView extends StatelessWidget {
                   SizedBox(height: 6),
                   QvEquipmentItem(
                     equipment: equipmentState.equippedEquipment,
-                    onTap: () {
-                      if (equipmentState.equippedEquipment != null &&
-                          !equipmentState.equippedEquipment!.isEquipped) {
-                        context
-                            .read<EquipmentCubit>()
-                            .equipEquipment(equipmentState.equippedEquipment!);
-                      }
-                    },
+                    isEquipped: true,
                   ),
                   SizedBox(height: 6),
                 ],
@@ -100,16 +91,20 @@ class EquipmentView extends StatelessWidget {
                 child: ListView.builder(
                   padding: EdgeInsets.only(top: 10, bottom: 10),
                   itemCount: equipmentState.equipment
-                      .where((equipment) => !equipment.isEquipped)
+                      .where((equipment) =>
+                          equipment.id != equipmentState.equippedEquipment?.id)
                       .length,
                   itemBuilder: (context, index) {
                     final equipment = equipmentState.equipment
-                        .where((equipment) => !equipment.isEquipped)
+                        .where((equipment) =>
+                            equipment.id !=
+                            equipmentState.equippedEquipment?.id)
                         .toList()[index];
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 2),
                       child: QvEquipmentItem(
                         equipment: equipment,
+                        isEquipped: false,
                         onTap: () {
                           context
                               .read<EquipmentCubit>()

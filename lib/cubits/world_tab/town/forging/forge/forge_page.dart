@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
-import 'package:questvale/cubits/world_tab/forging/forge/forge_cubit.dart';
-import 'package:questvale/cubits/world_tab/forging/forge/forge_state.dart';
-import 'package:questvale/cubits/world_tab/forging/select_equipment/select_equipment_page.dart';
+import 'package:questvale/cubits/world_tab/town/forging/forge/forge_cubit.dart';
+import 'package:questvale/cubits/world_tab/town/forging/forge/forge_state.dart';
+import 'package:questvale/cubits/world_tab/town/forging/select_equipment/select_equipment_page.dart';
 import 'package:questvale/cubits/world_tab/town/town_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/town_state.dart';
 import 'package:questvale/data/models/equipment.dart';
