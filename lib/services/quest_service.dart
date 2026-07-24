@@ -48,7 +48,7 @@ class QuestService {
       zoneId: questZone.id,
       characterId: character.id,
       numFloors: numFloors,
-      numEncountersCurFloor: 2,
+      numEncountersCurFloor: numEncountersCurFloor,
       curFloor: 1,
       curEncounterNum: 1,
       createdAt: DateTime.now(),

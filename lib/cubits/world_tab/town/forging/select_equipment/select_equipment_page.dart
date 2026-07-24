@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:questvale/cubits/world_tab/forging/forge/forge_cubit.dart';
-import 'package:questvale/cubits/world_tab/forging/forge/forge_state.dart';
-import 'package:questvale/cubits/world_tab/forging/select_equipment/select_equipment_cubit.dart';
-import 'package:questvale/cubits/world_tab/forging/select_equipment/select_equipment_state.dart';
+import 'package:questvale/cubits/world_tab/town/forging/forge/forge_cubit.dart';
+import 'package:questvale/cubits/world_tab/town/forging/forge/forge_state.dart';
+import 'package:questvale/cubits/world_tab/town/forging/select_equipment/select_equipment_cubit.dart';
+import 'package:questvale/cubits/world_tab/town/forging/select_equipment/select_equipment_state.dart';
 import 'package:questvale/cubits/world_tab/town/town_cubit.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/data/models/equipment.dart';
@@ -130,6 +130,8 @@ class EquipmentSelectView extends StatelessWidget {
     final capitalizedName = slot.name[0].toUpperCase() + slot.name.substring(1);
 
     final equipmentList = context.watch<SelectEquipmentCubit>().state.equipment;
+    final character = context.read<SelectEquipmentCubit>().character;
+    final equippedEquipment = character.equippedForSlot(slot);
     return Column(
       children: [
         QvAppBar(
@@ -153,6 +155,8 @@ class EquipmentSelectView extends StatelessWidget {
                       onTap: () => context
                           .read<ForgeCubit>()
                           .onEquipmentSelected(equipmentList[index]),
+                      isEquipped:
+                          equipmentList[index].id == equippedEquipment?.id,
                       showEquippedTag: true,
                     ),
                   );

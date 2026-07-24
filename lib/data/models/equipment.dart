@@ -82,24 +82,6 @@ enum EquipmentType {
     }
   }
 
-  int get actionPointCost {
-    if ([
-      EquipmentType.swordAndShield,
-      EquipmentType.daggers,
-      EquipmentType.wandAndFocus,
-    ].contains(this)) {
-      return 1;
-    } else if ([
-      EquipmentType.twoHandedSword,
-      EquipmentType.bow,
-      EquipmentType.staff
-    ].contains(this)) {
-      return 2;
-    } else {
-      return 0;
-    }
-  }
-
   static List<EquipmentType> availableEquipmentTypes(CharacterClass classType) {
     switch (classType) {
       case CharacterClass.warrior:
@@ -205,12 +187,10 @@ class Equipment {
 
   static const idColumnName = 'id';
   static const characterIdColumnName = 'characterId';
-  static const isEquippedColumnName = 'isEquipped';
   static const rarityColumnName = 'rarity';
   static const typeColumnName = 'type';
   static const tierColumnName = 'tier';
   static const attackPowerColumnName = 'attackPower';
-  static const actionPointCostColumnName = 'actionPointCost';
   static const damageTypeColumnName = 'damageType';
   static const armorValueColumnName = 'armorValue';
 
@@ -218,12 +198,10 @@ class Equipment {
     CREATE TABLE $equipmentTableName (
       $idColumnName VARCHAR PRIMARY KEY,
       $characterIdColumnName VARCHAR NOT NULL,
-      $isEquippedColumnName BOOLEAN NOT NULL,
       $rarityColumnName INTEGER NOT NULL,
       $typeColumnName INTEGER NOT NULL,
       $tierColumnName INTEGER NOT NULL,
       $attackPowerColumnName INTEGER NOT NULL,
-      $actionPointCostColumnName INTEGER NOT NULL,
       $damageTypeColumnName INTEGER NOT NULL,
       $armorValueColumnName INTEGER NOT NULL
     );
@@ -231,12 +209,10 @@ class Equipment {
 
   final String id;
   final String characterId;
-  final bool isEquipped;
   final Rarity rarity;
   final EquipmentType type;
   final int tier;
   final int attackPower;
-  final int actionPointCost;
   final DamageType damageType;
   final int armorValue;
   final List<StatModifier> statModifiers;
@@ -244,12 +220,10 @@ class Equipment {
   const Equipment({
     required this.id,
     required this.characterId,
-    required this.isEquipped,
     required this.rarity,
     required this.type,
     required this.tier,
     required this.attackPower,
-    required this.actionPointCost,
     required this.damageType,
     required this.armorValue,
     required this.statModifiers,
@@ -259,12 +233,10 @@ class Equipment {
     return {
       idColumnName: id,
       characterIdColumnName: characterId,
-      isEquippedColumnName: isEquipped ? 1 : 0,
       rarityColumnName: rarity.index,
       typeColumnName: type.index,
       tierColumnName: tier,
       attackPowerColumnName: attackPower,
-      actionPointCostColumnName: actionPointCost,
       damageTypeColumnName: damageType.index,
       armorValueColumnName: armorValue,
     };
@@ -272,7 +244,7 @@ class Equipment {
 
   @override
   String toString() {
-    return 'Equipment(id: $id, characterId: $characterId, isEquipped: $isEquipped, rarity: $rarity, type: $type, tier: $tier, attackPower: $attackPower, actionPointCost: $actionPointCost, damageType: $damageType, armorValue: $armorValue)';
+    return 'Equipment(id: $id, characterId: $characterId, rarity: $rarity, type: $type, tier: $tier, attackPower: $attackPower, damageType: $damageType, armorValue: $armorValue)';
   }
 
   String iconPath(CharacterClass characterClass) {
@@ -312,12 +284,10 @@ class Equipment {
   Equipment copyWith({
     String? id,
     String? characterId,
-    bool? isEquipped,
     Rarity? rarity,
     EquipmentType? type,
     int? tier,
     int? attackPower,
-    int? actionPointCost,
     DamageType? damageType,
     int? armorValue,
     List<StatModifier>? statModifiers,
@@ -325,12 +295,10 @@ class Equipment {
     return Equipment(
       id: id ?? this.id,
       characterId: characterId ?? this.characterId,
-      isEquipped: isEquipped ?? this.isEquipped,
       rarity: rarity ?? this.rarity,
       type: type ?? this.type,
       tier: tier ?? this.tier,
       attackPower: attackPower ?? this.attackPower,
-      actionPointCost: actionPointCost ?? this.actionPointCost,
       damageType: damageType ?? this.damageType,
       armorValue: armorValue ?? this.armorValue,
       statModifiers: statModifiers ?? this.statModifiers,

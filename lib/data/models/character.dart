@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:questvale/data/models/character_skill.dart';
-import 'package:questvale/data/skills/base_active_skill.dart';
+import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 
 class Character extends Equatable {
@@ -15,6 +15,14 @@ class Character extends Equatable {
   static const currentHealthColumnName = 'currentHealth';
   static const currentManaColumnName = 'currentMana';
   static const actionPointsColumnName = 'actionPoints';
+  static const equippedWeaponColumnName = 'equippedWeapon';
+  static const equippedHelmetColumnName = 'equippedHelmet';
+  static const equippedChestplateColumnName = 'equippedChestplate';
+  static const equippedGlovesColumnName = 'equippedGloves';
+  static const equippedBootsColumnName = 'equippedBoots';
+  static const equippedAmuletColumnName = 'equippedAmulet';
+  static const equippedRing1ColumnName = 'equippedRing1';
+  static const equippedRing2ColumnName = 'equippedRing2';
   static const skillSlot1ColumnName = 'skillSlot1';
   static const skillSlot2ColumnName = 'skillSlot2';
   static const skillSlot3ColumnName = 'skillSlot3';
@@ -32,6 +40,14 @@ class Character extends Equatable {
 			${Character.currentHealthColumnName} INTEGER NOT NULL,
 			${Character.currentManaColumnName} INTEGER NOT NULL,
 			${Character.actionPointsColumnName} INTEGER NOT NULL,
+      ${Character.equippedWeaponColumnName} VARCHAR,
+      ${Character.equippedHelmetColumnName} VARCHAR,
+      ${Character.equippedChestplateColumnName} VARCHAR,
+      ${Character.equippedGlovesColumnName} VARCHAR,
+      ${Character.equippedBootsColumnName} VARCHAR,
+      ${Character.equippedAmuletColumnName} VARCHAR,
+      ${Character.equippedRing1ColumnName} VARCHAR,
+      ${Character.equippedRing2ColumnName} VARCHAR,
       ${Character.skillSlot1ColumnName} VARCHAR,
       ${Character.skillSlot2ColumnName} VARCHAR,
       ${Character.skillSlot3ColumnName} VARCHAR,
@@ -49,6 +65,14 @@ class Character extends Equatable {
   final int currentHealth;
   final int currentMana;
   final int actionPoints;
+  final Equipment? equippedWeapon;
+  final Equipment? equippedHelmet;
+  final Equipment? equippedChestplate;
+  final Equipment? equippedGloves;
+  final Equipment? equippedBoots;
+  final Equipment? equippedAmulet;
+  final Equipment? equippedRing1;
+  final Equipment? equippedRing2;
   final List<CharacterSkill> skills;
   final CharacterSkill? activeSkillSlot1;
   final CharacterSkill? activeSkillSlot2;
@@ -66,6 +90,14 @@ class Character extends Equatable {
     required this.currentHealth,
     required this.currentMana,
     required this.actionPoints,
+    this.equippedWeapon,
+    this.equippedHelmet,
+    this.equippedChestplate,
+    this.equippedGloves,
+    this.equippedBoots,
+    this.equippedAmulet,
+    this.equippedRing1,
+    this.equippedRing2,
     this.skills = const [],
     this.activeSkillSlot1,
     this.activeSkillSlot2,
@@ -82,6 +114,55 @@ class Character extends Equatable {
     return (level * 10) + 10;
   }
 
+  List<Equipment> get equippedEquipmentList => [
+        if (equippedWeapon != null) equippedWeapon!,
+        if (equippedHelmet != null) equippedHelmet!,
+        if (equippedChestplate != null) equippedChestplate!,
+        if (equippedGloves != null) equippedGloves!,
+        if (equippedBoots != null) equippedBoots!,
+        if (equippedAmulet != null) equippedAmulet!,
+        if (equippedRing1 != null) equippedRing1!,
+        if (equippedRing2 != null) equippedRing2!,
+      ];
+
+  Equipment? equippedForSlot(EquipmentSlot slot) {
+    switch (slot) {
+      case EquipmentSlot.weapon:
+        return equippedWeapon;
+      case EquipmentSlot.head:
+        return equippedHelmet;
+      case EquipmentSlot.body:
+        return equippedChestplate;
+      case EquipmentSlot.hands:
+        return equippedGloves;
+      case EquipmentSlot.feet:
+        return equippedBoots;
+      case EquipmentSlot.neck:
+        return equippedAmulet;
+      case EquipmentSlot.ring:
+        return equippedRing1;
+    }
+  }
+
+  Character copyWithEquippedForSlot(EquipmentSlot slot, Equipment equipment) {
+    switch (slot) {
+      case EquipmentSlot.weapon:
+        return copyWith(equippedWeapon: equipment);
+      case EquipmentSlot.head:
+        return copyWith(equippedHelmet: equipment);
+      case EquipmentSlot.body:
+        return copyWith(equippedChestplate: equipment);
+      case EquipmentSlot.hands:
+        return copyWith(equippedGloves: equipment);
+      case EquipmentSlot.feet:
+        return copyWith(equippedBoots: equipment);
+      case EquipmentSlot.neck:
+        return copyWith(equippedAmulet: equipment);
+      case EquipmentSlot.ring:
+        return copyWith(equippedRing1: equipment);
+    }
+  }
+
   Map<String, Object?> toMap() {
     return {
       Character.idColumnName: id,
@@ -93,6 +174,14 @@ class Character extends Equatable {
       Character.currentHealthColumnName: currentHealth,
       Character.currentManaColumnName: currentMana,
       Character.actionPointsColumnName: actionPoints,
+      Character.equippedWeaponColumnName: equippedWeapon?.id,
+      Character.equippedHelmetColumnName: equippedHelmet?.id,
+      Character.equippedChestplateColumnName: equippedChestplate?.id,
+      Character.equippedGlovesColumnName: equippedGloves?.id,
+      Character.equippedBootsColumnName: equippedBoots?.id,
+      Character.equippedAmuletColumnName: equippedAmulet?.id,
+      Character.equippedRing1ColumnName: equippedRing1?.id,
+      Character.equippedRing2ColumnName: equippedRing2?.id,
       Character.skillSlot1ColumnName: activeSkillSlot1?.id,
       Character.skillSlot2ColumnName: activeSkillSlot2?.id,
       Character.skillSlot3ColumnName: activeSkillSlot3?.id,
@@ -103,7 +192,7 @@ class Character extends Equatable {
 
   @override
   String toString() {
-    return 'Character {id: $id, name: $name, characterClass: $characterClass, level: $level, gold: $gold, currentExp: $currentExp, currentHealth: $currentHealth, currentMana: $currentMana, actionPoints: $actionPoints, skills: $skills, activeSkillSlot1: $activeSkillSlot1, activeSkillSlot2: $activeSkillSlot2, activeSkillSlot3: $activeSkillSlot3, activeSkillSlot4: $activeSkillSlot4, activeSkillSlot5: $activeSkillSlot5}';
+    return 'Character {id: $id, name: $name, characterClass: $characterClass, level: $level, gold: $gold, currentExp: $currentExp, currentHealth: $currentHealth, currentMana: $currentMana, actionPoints: $actionPoints, equippedWeapon: $equippedWeapon, equippedHelmet: $equippedHelmet, equippedChestplate: $equippedChestplate, equippedGloves: $equippedGloves, equippedBoots: $equippedBoots, equippedAmulet: $equippedAmulet, equippedRing1: $equippedRing1, equippedRing2: $equippedRing2, skills: $skills, activeSkillSlot1: $activeSkillSlot1, activeSkillSlot2: $activeSkillSlot2, activeSkillSlot3: $activeSkillSlot3, activeSkillSlot4: $activeSkillSlot4, activeSkillSlot5: $activeSkillSlot5}';
   }
 
   Character copyWith({
@@ -115,6 +204,14 @@ class Character extends Equatable {
     int? currentHealth,
     int? currentMana,
     int? actionPoints,
+    Equipment? equippedWeapon,
+    Equipment? equippedHelmet,
+    Equipment? equippedChestplate,
+    Equipment? equippedGloves,
+    Equipment? equippedBoots,
+    Equipment? equippedAmulet,
+    Equipment? equippedRing1,
+    Equipment? equippedRing2,
     List<CharacterSkill>? skills,
     CharacterSkill? activeSkillSlot1,
     CharacterSkill? activeSkillSlot2,
@@ -132,6 +229,14 @@ class Character extends Equatable {
       currentHealth: currentHealth ?? this.currentHealth,
       currentMana: currentMana ?? this.currentMana,
       actionPoints: actionPoints ?? this.actionPoints,
+      equippedWeapon: equippedWeapon ?? this.equippedWeapon,
+      equippedHelmet: equippedHelmet ?? this.equippedHelmet,
+      equippedChestplate: equippedChestplate ?? this.equippedChestplate,
+      equippedGloves: equippedGloves ?? this.equippedGloves,
+      equippedBoots: equippedBoots ?? this.equippedBoots,
+      equippedAmulet: equippedAmulet ?? this.equippedAmulet,
+      equippedRing1: equippedRing1 ?? this.equippedRing1,
+      equippedRing2: equippedRing2 ?? this.equippedRing2,
       skills: skills ?? this.skills,
       activeSkillSlot1: activeSkillSlot1 ?? this.activeSkillSlot1,
       activeSkillSlot2: activeSkillSlot2 ?? this.activeSkillSlot2,
@@ -152,6 +257,14 @@ class Character extends Equatable {
         currentHealth,
         currentMana,
         actionPoints,
+        equippedWeapon,
+        equippedHelmet,
+        equippedChestplate,
+        equippedGloves,
+        equippedBoots,
+        equippedAmulet,
+        equippedRing1,
+        equippedRing2,
         skills,
         activeSkillSlot1,
         activeSkillSlot2,

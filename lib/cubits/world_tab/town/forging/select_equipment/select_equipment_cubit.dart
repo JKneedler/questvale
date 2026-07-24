@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:questvale/cubits/world_tab/forging/select_equipment/select_equipment_state.dart';
+import 'package:questvale/cubits/world_tab/town/forging/select_equipment/select_equipment_state.dart';
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/data/repositories/equipment_repository.dart';

@@ -1,4 +1,4 @@
-import 'package:questvale/cubits/world_tab/forging/forge/forge_state.dart';
+import 'package:questvale/cubits/world_tab/town/forging/forge/forge_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/data/repositories/equipment_repository.dart';

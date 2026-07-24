@@ -87,7 +87,6 @@ class HomeView extends StatelessWidget {
             ],
           ),
           bottomNavigationBar: NavBar(
-            showSeparator: navState.tab == 0,
             items: [
               NavBarItem(
                 iconName: 'sword',
