@@ -63,10 +63,10 @@ class GearUpView extends StatelessWidget {
                           ),
                           GearUpTab(
                             title: 'Skills',
-                            selected: gearUpState.gearTabIndex == 2,
+                            selected: gearUpState.gearTabIndex == 1,
                             onTap: () => context
                                 .read<GearUpCubit>()
-                                .onGearTabIndexSelected(2),
+                                .onGearTabIndexSelected(1),
                           ),
                         ],
                       ),
@@ -86,6 +86,8 @@ class GearUpView extends StatelessWidget {
                       width: double.infinity,
                       height: 60,
                       buttonColor: ButtonColor.primary,
+                      onTap: () =>
+                          context.read<QuestBoardCubit>().onBeginQuest(context),
                       child: Center(
                         child: Text(
                           'Begin Quest',

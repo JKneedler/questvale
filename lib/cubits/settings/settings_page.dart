@@ -4,6 +4,7 @@ import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/home/player_state.dart';
 import 'package:questvale/cubits/settings/settings_cubit.dart';
 import 'package:questvale/cubits/settings/settings_state.dart';
+import 'package:questvale/data/providers/game_data.dart';
 import 'package:questvale/widgets/qv_app_bar.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
@@ -23,6 +24,7 @@ class SettingsPage extends StatelessWidget {
         return BlocProvider<SettingsCubit>(
           create: (context) => SettingsCubit(
               db: context.read<Database>(),
+              gameData: context.read<GameData>(),
               character: characterDataState.character!),
           child: BlocBuilder<SettingsCubit, SettingsState>(
               builder: (context, settingsState) {

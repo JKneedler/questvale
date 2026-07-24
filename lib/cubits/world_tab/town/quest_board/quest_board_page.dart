@@ -4,6 +4,7 @@ import 'package:questvale/cubits/world_tab/town/quest_board/gear_up/gear_up_page
 import 'package:questvale/cubits/world_tab/town/quest_board/quest_board_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/quest_board/quest_board_state.dart';
 import 'package:questvale/cubits/world_tab/town/quest_board/select_quest/select_quest_page.dart';
+import 'package:questvale/cubits/world_tab/world_cubit.dart';
 import 'package:questvale/widgets/qv_animated_transition.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -28,7 +29,9 @@ class QuestBoardView extends StatelessWidget {
         QuestBoardStates.selectingQuestZone) {
       return SelectQuestPage(key: const ValueKey('selectQuestPage'));
     }
-    if (questBoardState.questBoardState == QuestBoardStates.gearingUp) {
+    if (questBoardState.questBoardState == QuestBoardStates.gearingUp ||
+        questBoardState.questBoardState ==
+            QuestBoardStates.questCreationFailed) {
       return GearUpPage(key: const ValueKey('gearUpPage'));
     }
     return Container();
@@ -44,13 +47,19 @@ class QuestBoardView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<QuestBoardCubit, QuestBoardState>(
-        builder: (context, questBoardState) {
-      return QvAnimatedTransition(
-        duration: const Duration(milliseconds: 200),
-        type: _getTransitionType(questBoardState.questBoardState),
-        child: _getQuestBoardPage(context, questBoardState),
-      );
-    });
+    return BlocConsumer<QuestBoardCubit, QuestBoardState>(
+      listenWhen: (prev, next) =>
+          next.questBoardState == QuestBoardStates.questCreated,
+      listener: (context, questBoardState) {
+        context.read<WorldCubit>().onQuestCreated();
+      },
+      builder: (context, questBoardState) {
+        return QvAnimatedTransition(
+          duration: const Duration(milliseconds: 200),
+          type: _getTransitionType(questBoardState.questBoardState),
+          child: _getQuestBoardPage(context, questBoardState),
+        );
+      },
+    );
   }
 }

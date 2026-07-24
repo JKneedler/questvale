@@ -12,6 +12,7 @@ class QvEquipmentItem extends StatelessWidget {
   final bool isEquipped;
   final bool showEquippedTag;
   final bool changeEquippedColor;
+  final bool showName;
 
   const QvEquipmentItem({
     super.key,
@@ -20,6 +21,7 @@ class QvEquipmentItem extends StatelessWidget {
     this.isEquipped = false,
     this.showEquippedTag = false,
     this.changeEquippedColor = false,
+    this.showName = false,
   });
 
   @override
@@ -27,11 +29,13 @@ class QvEquipmentItem extends StatelessWidget {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     final character = context.read<PlayerCubit>().state.character!;
     final isExpandedForEquippedTag = showEquippedTag && isEquipped;
+    final nameHeight = showName && equipment != null ? 24.0 : 0.0;
+    final cardHeight = (isExpandedForEquippedTag ? 150 : 120) + nameHeight;
 
     return GestureDetector(
       onTap: onTap ?? () {},
       child: QvCardBorder(
-        height: isExpandedForEquippedTag ? 150 : 120,
+        height: cardHeight,
         widthFactor: .97,
         type: equipment == null
             ? QvCardBorderType.surface
@@ -49,7 +53,7 @@ class QvEquipmentItem extends StatelessWidget {
               );
             }
             return SizedBox(
-              height: isExpandedForEquippedTag ? 150 : 120,
+              height: cardHeight,
               child: Column(
                 children: [
                   isExpandedForEquippedTag
@@ -62,6 +66,20 @@ class QvEquipmentItem extends StatelessWidget {
                                   fontStyle: FontStyle.italic)),
                         )
                       : SizedBox(),
+                  if (showName)
+                    SizedBox(
+                      height: nameHeight,
+                      child: Center(
+                        child: Text(
+                          equipment!.itemName(
+                              equipment!.type, character.characterClass),
+                          style: TextStyle(fontSize: 16, height: 1),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
                   Expanded(
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.stretch,

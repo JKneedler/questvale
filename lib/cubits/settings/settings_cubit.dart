@@ -1,15 +1,19 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/settings/settings_state.dart';
 import 'package:questvale/data/models/character.dart';
+import 'package:questvale/data/models/encounter.dart';
+import 'package:questvale/data/providers/game_data.dart';
 import 'package:questvale/data/repositories/equipment_repository.dart';
 import 'package:questvale/services/equipment_service.dart';
 import 'package:sqflite/sqflite.dart';
 
 class SettingsCubit extends Cubit<SettingsState> {
   final Database db;
+  final GameData gameData;
   late EquipmentRepository equipmentRepository;
 
-  SettingsCubit({required this.db, required Character character})
+  SettingsCubit(
+      {required this.db, required this.gameData, required Character character})
       : super(SettingsState(
             character: character,
             questsNum: 0,
@@ -86,12 +90,11 @@ class SettingsCubit extends Cubit<SettingsState> {
 
   Future<void> generateLoot() async {
     final equipmentService = EquipmentService(db: db);
-    // final questZones = context.read<GameData>().questZones;
-    // for (var i = 0; i < 10; i++) {
-    //   final equipment = equipmentService.generateRandomTestEquipment(
-    //       state.character, questZones[0], EncounterType.genericCombat);
-    //   print(equipment);
-    //   await equipmentRepository.insertEquipment(equipment);
-    // }
+    final questZones = gameData.questZones;
+    for (var i = 0; i < 10; i++) {
+      final equipment = equipmentService.generateRandomTestEquipment(
+          state.character, questZones[0], EncounterType.genericCombat);
+      await equipmentRepository.insertEquipment(equipment);
+    }
   }
 }

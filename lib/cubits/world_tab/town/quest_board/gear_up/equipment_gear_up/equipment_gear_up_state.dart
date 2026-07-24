@@ -3,7 +3,7 @@ import 'package:questvale/data/models/equipment.dart';
 
 enum EquipmentGearUpStates {
   overview,
-  selectingWeapon,
+  selectingEquipment,
   selectingPotion,
   selectingArtifact;
 }
@@ -18,6 +18,8 @@ class EquipmentGearUpState extends Equatable {
   final Equipment? equippedAmulet;
   final Equipment? equippedRing1;
   final Equipment? equippedRing2;
+  final EquipmentSlot? selectedEquipmentSlot;
+  final int? selectedRingSlot;
   final List<Equipment> inventoryEquipment;
   // Equipped Potions
   // List of available potions
@@ -34,6 +36,8 @@ class EquipmentGearUpState extends Equatable {
     this.equippedAmulet,
     this.equippedRing1,
     this.equippedRing2,
+    this.selectedEquipmentSlot,
+    this.selectedRingSlot,
     this.inventoryEquipment = const [],
   });
 
@@ -47,6 +51,8 @@ class EquipmentGearUpState extends Equatable {
     Equipment? equippedAmulet,
     Equipment? equippedRing1,
     Equipment? equippedRing2,
+    EquipmentSlot? selectedEquipmentSlot,
+    int? selectedRingSlot,
     List<Equipment>? inventoryEquipment,
   }) {
     return EquipmentGearUpState(
@@ -59,6 +65,9 @@ class EquipmentGearUpState extends Equatable {
       equippedAmulet: equippedAmulet ?? this.equippedAmulet,
       equippedRing1: equippedRing1 ?? this.equippedRing1,
       equippedRing2: equippedRing2 ?? this.equippedRing2,
+      selectedEquipmentSlot:
+          selectedEquipmentSlot ?? this.selectedEquipmentSlot,
+      selectedRingSlot: selectedRingSlot ?? this.selectedRingSlot,
       inventoryEquipment: inventoryEquipment ?? this.inventoryEquipment,
     );
   }
@@ -74,6 +83,8 @@ class EquipmentGearUpState extends Equatable {
         equippedAmulet,
         equippedRing1,
         equippedRing2,
+        selectedEquipmentSlot,
+        selectedRingSlot,
         inventoryEquipment,
       ];
 }
