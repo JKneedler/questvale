@@ -71,6 +71,35 @@ class AddTodoCubit extends Cubit<AddTodoState> {
     emit(state.copyWith(priority: value));
   }
 
+  void habitToggled(bool value) {
+    emit(AddTodoState(
+      id: state.id,
+      characterId: state.characterId,
+      name: state.name,
+      description: state.description,
+      dueDate: state.dueDate,
+      hasTime: state.hasTime,
+      difficulty: state.difficulty,
+      priority: state.priority,
+      availableTags: state.availableTags,
+      selectedTags: state.selectedTags,
+      status: state.status,
+      reminders: state.reminders,
+      isHabit: value,
+      timeframe: value ? (state.timeframe ?? HabitTimeframe.daily) : null,
+      allowsMultipleCompletions:
+          value ? state.allowsMultipleCompletions : false,
+    ));
+  }
+
+  void timeframeChanged(HabitTimeframe value) {
+    emit(state.copyWith(isHabit: true, timeframe: value));
+  }
+
+  void multipleCompletionsToggled(bool value) {
+    emit(state.copyWith(allowsMultipleCompletions: value));
+  }
+
   void toggleTag(Tag tag) {
     if (state.selectedTags.contains(tag)) {
       emit(state.copyWith(
@@ -96,6 +125,10 @@ class AddTodoCubit extends Cubit<AddTodoState> {
         tags: state.selectedTags,
         hasTime: state.hasTime,
         reminders: _createRemindersForTodo(state.id),
+        isHabit: state.isHabit,
+        timeframe: state.timeframe,
+        allowsMultipleCompletions: state.allowsMultipleCompletions,
+        currentPeriodStart: state.isHabit ? DateTime.now() : null,
       );
 
       await todoRepository.createTodo(todo);
@@ -111,6 +144,9 @@ class AddTodoCubit extends Cubit<AddTodoState> {
         priority: PriorityLevel.noPriority,
         selectedTags: [],
         reminders: [],
+        isHabit: false,
+        timeframe: null,
+        allowsMultipleCompletions: false,
       ));
     } catch (e) {
       // Handle error

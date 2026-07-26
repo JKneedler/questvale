@@ -55,6 +55,9 @@ class AddTodoState extends Equatable {
   final List<Tag> availableTags;
   final List<Tag> selectedTags;
   final List<ReminderType> reminders;
+  final bool isHabit;
+  final HabitTimeframe? timeframe;
+  final bool allowsMultipleCompletions;
 
   const AddTodoState({
     this.status = AddTodoStatus.initial,
@@ -69,6 +72,9 @@ class AddTodoState extends Equatable {
     this.availableTags = const [],
     this.selectedTags = const [],
     this.reminders = const [],
+    this.isHabit = false,
+    this.timeframe,
+    this.allowsMultipleCompletions = false,
   });
 
   AddTodoState copyWith({
@@ -84,6 +90,9 @@ class AddTodoState extends Equatable {
     List<Tag>? availableTags,
     List<Tag>? selectedTags,
     List<ReminderType>? reminders,
+    bool? isHabit,
+    HabitTimeframe? timeframe,
+    bool? allowsMultipleCompletions,
   }) {
     return AddTodoState(
       status: status ?? this.status,
@@ -98,6 +107,10 @@ class AddTodoState extends Equatable {
       availableTags: availableTags ?? this.availableTags,
       selectedTags: selectedTags ?? this.selectedTags,
       reminders: reminders ?? this.reminders,
+      isHabit: isHabit ?? this.isHabit,
+      timeframe: timeframe ?? this.timeframe,
+      allowsMultipleCompletions:
+          allowsMultipleCompletions ?? this.allowsMultipleCompletions,
     );
   }
 
@@ -115,5 +128,8 @@ class AddTodoState extends Equatable {
         availableTags,
         selectedTags,
         reminders,
+        isHabit,
+        timeframe,
+        allowsMultipleCompletions,
       ];
 }

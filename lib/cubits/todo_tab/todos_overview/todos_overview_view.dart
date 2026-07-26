@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_cubit.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_item.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_state.dart';
@@ -54,7 +55,16 @@ class TodosOverviewView extends StatelessWidget {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: Column(
         children: [
-          QvAppBar(),
+          QvAppBar(
+            trailingButton: QvAppBarButton(
+              button: '⋮',
+              onTap: () => showModalBottomSheet(
+                context: context,
+                backgroundColor: colorScheme.surfaceContainer,
+                builder: (context) => const TodosOverviewMenuSheet(),
+              ),
+            ),
+          ),
           Expanded(
             child: Container(
               decoration: BoxDecoration(
@@ -77,6 +87,71 @@ class TodosOverviewView extends StatelessWidget {
         ],
       ),
       backgroundColor: colorScheme.surface,
+    );
+  }
+}
+
+// Filter/Sort wired up in a later phase (Filter & Sort); Calendar swap in the
+// Calendar View phase. Shell exists now so the entry point is in place.
+class TodosOverviewMenuSheet extends StatelessWidget {
+  const TodosOverviewMenuSheet({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _MenuRow(
+              icon: Symbols.filter_alt,
+              label: 'Filter',
+              onTap: () {
+                Navigator.pop(context);
+              }),
+          _MenuRow(
+              icon: Symbols.sort,
+              label: 'Sort',
+              onTap: () {
+                Navigator.pop(context);
+              }),
+          _MenuRow(
+              icon: Symbols.calendar_month,
+              label: 'Swap to Calendar View',
+              onTap: () {
+                Navigator.pop(context);
+              }),
+        ],
+      ),
+    );
+  }
+}
+
+class _MenuRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _MenuRow(
+      {required this.icon, required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        child: Row(
+          children: [
+            Icon(icon, color: colorScheme.onSurface, size: 20),
+            const SizedBox(width: 14),
+            Text(
+              label,
+              style: TextStyle(color: colorScheme.onSurface, fontSize: 16),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

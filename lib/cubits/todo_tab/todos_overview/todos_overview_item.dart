@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_cubit.dart';
 import 'package:questvale/data/models/character_tag.dart';
@@ -27,112 +28,166 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
     final isPastDue = widget.todo.dueDate != null &&
         widget.todo.dueDate!.isBefore(DateTime.now());
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('images/ui/buttons/white-button-filled-2x.png'),
-          centerSlice: Rect.fromLTWH(16, 16, 32, 32),
-          fit: BoxFit.fill,
-          filterQuality: FilterQuality.none,
-        ),
+    return Slidable(
+      key: ValueKey(widget.todo.id),
+      endActionPane: ActionPane(
+        motion: const DrawerMotion(),
+        extentRatio: 0.22,
+        children: [
+          SlidableAction(
+            onPressed: (_) => todoCubit.deleteTodo(widget.todo),
+            backgroundColor: colorScheme.error,
+            foregroundColor: colorScheme.onError,
+            icon: Symbols.delete,
+            label: 'Delete',
+          ),
+        ],
       ),
-      child: GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onTap: () async {
-          setState(() {
-            isHighlighted = true;
-          });
-          await Future.delayed(const Duration(milliseconds: 150));
-          if (mounted) {
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('images/ui/buttons/white-button-filled-2x.png'),
+            centerSlice: Rect.fromLTWH(16, 16, 32, 32),
+            fit: BoxFit.fill,
+            filterQuality: FilterQuality.none,
+          ),
+        ),
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () async {
             setState(() {
-              isHighlighted = false;
+              isHighlighted = true;
             });
-            EditTodoPage.show(context, widget.todo);
-          }
-        },
-        child: Material(
-          color: Colors.transparent,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              GestureDetector(
-                onTapUp: (_) => todoCubit.toggleCompletion(widget.todo),
-                child: Material(
-                  color: Colors.transparent,
-                  child: Container(
-                    padding: const EdgeInsets.all(14),
-                    child: QvCheckBox(
-                      width: 20,
-                      height: 20,
-                      isChecked: widget.todo.isCompleted,
+            await Future.delayed(const Duration(milliseconds: 150));
+            if (mounted) {
+              setState(() {
+                isHighlighted = false;
+              });
+              EditTodoPage.show(context, widget.todo);
+            }
+          },
+          child: Material(
+            color: Colors.transparent,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GestureDetector(
+                  onTapUp: (_) => widget.todo.isHabit
+                      ? todoCubit.completeHabitOnce(widget.todo)
+                      : todoCubit.toggleCompletion(widget.todo),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      child: QvCheckBox(
+                        width: 20,
+                        height: 20,
+                        isChecked: widget.todo.isCompleted,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 14, bottom: 14),
-                  child: Column(
-                    spacing: 4,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.todo.name,
-                        softWrap: true,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: widget.todo.isCompleted
-                              ? colorScheme.onPrimaryFixedVariant
-                              : colorScheme.onPrimaryContainer,
-                        ),
-                      ),
-                      if (widget.todo.description.isNotEmpty)
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 14, bottom: 14),
+                    child: Column(
+                      spacing: 4,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          widget.todo.description,
+                          widget.todo.name,
                           softWrap: true,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 12,
-                            color: colorScheme.onPrimaryFixedVariant,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: widget.todo.isCompleted
+                                ? colorScheme.onPrimaryFixedVariant
+                                : colorScheme.onPrimaryContainer,
                           ),
                         ),
-                      if (widget.todo.tags.isNotEmpty)
-                        Wrap(
-                          spacing: 4,
-                          children: widget.todo.tags
-                              .map((tag) => TodoItemTagChip(tag: tag))
-                              .toList(),
-                        ),
-                      Row(
-                        children: [
-                          if (widget.todo.difficulty != DifficultyLevel.trivial)
-                            Icon(
-                              Symbols.trophy,
-                              color: widget.todo.difficulty.color,
-                              size: 16,
+                        if (widget.todo.description.isNotEmpty)
+                          Text(
+                            widget.todo.description,
+                            softWrap: true,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: colorScheme.onPrimaryFixedVariant,
                             ),
-                          const SizedBox(width: 4),
-                          if (widget.todo.dueDate != null)
-                            Text(
-                              DataFormatters.formatDateTime(
-                                  widget.todo.dueDate!, widget.todo.hasTime),
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: isPastDue
-                                    ? colorScheme.error
-                                    : colorScheme.primary,
+                          ),
+                        if (widget.todo.tags.isNotEmpty)
+                          Wrap(
+                            spacing: 4,
+                            children: widget.todo.tags
+                                .map((tag) => TodoItemTagChip(tag: tag))
+                                .toList(),
+                          ),
+                        Row(
+                          children: [
+                            if (widget.todo.isHabit)
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Symbols.local_fire_department,
+                                    color: colorScheme.primary,
+                                    size: 14,
+                                  ),
+                                  const SizedBox(width: 2),
+                                  Text(
+                                    '${widget.todo.currentStreak}',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: colorScheme.primary,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                ],
                               ),
-                            ),
-                        ],
-                      ),
-                    ],
+                            if (widget.todo.isHabit &&
+                                widget.todo.allowsMultipleCompletions &&
+                                widget.todo.completionsInCurrentPeriod > 0)
+                              Padding(
+                                padding: const EdgeInsets.only(right: 6),
+                                child: Text(
+                                  'x${widget.todo.completionsInCurrentPeriod}',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: colorScheme.onPrimaryFixedVariant,
+                                  ),
+                                ),
+                              ),
+                            if (widget.todo.difficulty !=
+                                DifficultyLevel.trivial)
+                              Icon(
+                                Symbols.trophy,
+                                color: widget.todo.difficulty.color,
+                                size: 16,
+                              ),
+                            const SizedBox(width: 4),
+                            if (widget.todo.dueDate != null)
+                              Text(
+                                DataFormatters.formatDateTime(
+                                    widget.todo.dueDate!, widget.todo.hasTime),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: isPastDue
+                                      ? colorScheme.error
+                                      : colorScheme.primary,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

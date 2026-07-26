@@ -93,6 +93,19 @@ class TodoRepository {
       isCompleted: map[Todo.isCompletedColumnName] == 1,
       tags: tags,
       reminders: reminders,
+      isHabit: map[Todo.isHabitColumnName] == 1,
+      timeframe: map[Todo.timeframeColumnName] != null
+          ? HabitTimeframe.values[map[Todo.timeframeColumnName] as int]
+          : null,
+      allowsMultipleCompletions:
+          map[Todo.allowsMultipleCompletionsColumnName] == 1,
+      completionsInCurrentPeriod:
+          map[Todo.completionsInCurrentPeriodColumnName] as int? ?? 0,
+      currentStreak: map[Todo.currentStreakColumnName] as int? ?? 0,
+      currentPeriodStart: map[Todo.currentPeriodStartColumnName] != null
+          ? DateTime.fromMillisecondsSinceEpoch(
+              map[Todo.currentPeriodStartColumnName] as int)
+          : null,
     );
   }
 
@@ -123,13 +136,6 @@ class TodoRepository {
       ),
     );
     return tags.toList();
-  }
-
-  // GET reminders for todo
-  Future<List<TodoReminder>> getRemindersForTodo(String todoId) async {
-    final reminders = await db.query(TodoReminder.todoReminderTableName,
-        where: '${TodoReminder.todoIdColumnName} = ?', whereArgs: [todoId]);
-    return reminders.map((map) => _getReminderFromMap(map)).toList();
   }
 
   // UPDATE reminder

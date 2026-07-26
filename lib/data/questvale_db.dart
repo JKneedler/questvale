@@ -72,6 +72,21 @@ class QuestvaleDB {
       await db.execute(StatModifier.createTableSQL);
 
       await db.execute(Enemy.createTableSQL);
-    }, version: 1);
+    }, onUpgrade: (db, oldVersion, newVersion) async {
+      if (oldVersion < 2) {
+        await db.execute(
+            'ALTER TABLE ${Todo.todoTableName} ADD COLUMN ${Todo.isHabitColumnName} BOOLEAN DEFAULT 0');
+        await db.execute(
+            'ALTER TABLE ${Todo.todoTableName} ADD COLUMN ${Todo.timeframeColumnName} INTEGER');
+        await db.execute(
+            'ALTER TABLE ${Todo.todoTableName} ADD COLUMN ${Todo.allowsMultipleCompletionsColumnName} BOOLEAN DEFAULT 0');
+        await db.execute(
+            'ALTER TABLE ${Todo.todoTableName} ADD COLUMN ${Todo.completionsInCurrentPeriodColumnName} INTEGER DEFAULT 0');
+        await db.execute(
+            'ALTER TABLE ${Todo.todoTableName} ADD COLUMN ${Todo.currentStreakColumnName} INTEGER DEFAULT 0');
+        await db.execute(
+            'ALTER TABLE ${Todo.todoTableName} ADD COLUMN ${Todo.currentPeriodStartColumnName} INTEGER');
+      }
+    }, version: 2);
   }
 }

@@ -29,9 +29,12 @@ class EditTodoCubit extends Cubit<EditTodoState> {
             selectedTags: todo.tags,
             reminders: _convertTodoRemindersToReminderTypes(
                 todo.reminders, todo.hasTime),
+            isHabit: todo.isHabit,
+            timeframe: todo.timeframe,
+            allowsMultipleCompletions: todo.allowsMultipleCompletions,
           ),
         ) {
-    _loadTags();
+    loadTags();
   }
 
   // Helper method to convert TodoReminder to ReminderType
@@ -48,7 +51,7 @@ class EditTodoCubit extends Cubit<EditTodoState> {
     }).toList();
   }
 
-  Future<void> _loadTags() async {
+  Future<void> loadTags() async {
     final characterTags =
         await characterRepository.getCharacterTags(state.todo.characterId);
     // Convert CharacterTag to Tag
@@ -79,8 +82,58 @@ class EditTodoCubit extends Cubit<EditTodoState> {
     emit(state.copyWith(dueDate: dueDate));
   }
 
+  // Matches DueDatePage's onDateSelected callback contract so the edit view
+  // can reuse the same due-date/time/reminders sub-modal as the add form.
+  void dueDateAndRemindersChanged(
+      DateTime? date, bool hasTime, List<ReminderType> reminders) {
+    emit(EditTodoState(
+      todo: state.todo,
+      isCompleted: state.isCompleted,
+      name: state.name,
+      description: state.description,
+      dueDate: date,
+      hasTime: hasTime,
+      difficulty: state.difficulty,
+      priority: state.priority,
+      availableTags: state.availableTags,
+      selectedTags: state.selectedTags,
+      reminders: reminders,
+      isHabit: state.isHabit,
+      timeframe: state.timeframe,
+      allowsMultipleCompletions: state.allowsMultipleCompletions,
+    ));
+  }
+
   void hasTimeChanged(bool hasTime) {
     emit(state.copyWith(hasTime: hasTime));
+  }
+
+  void habitToggled(bool value) {
+    emit(EditTodoState(
+      todo: state.todo,
+      isCompleted: state.isCompleted,
+      name: state.name,
+      description: state.description,
+      dueDate: state.dueDate,
+      hasTime: state.hasTime,
+      difficulty: state.difficulty,
+      priority: state.priority,
+      availableTags: state.availableTags,
+      selectedTags: state.selectedTags,
+      reminders: state.reminders,
+      isHabit: value,
+      timeframe: value ? (state.timeframe ?? HabitTimeframe.daily) : null,
+      allowsMultipleCompletions:
+          value ? state.allowsMultipleCompletions : false,
+    ));
+  }
+
+  void timeframeChanged(HabitTimeframe value) {
+    emit(state.copyWith(isHabit: true, timeframe: value));
+  }
+
+  void multipleCompletionsToggled(bool value) {
+    emit(state.copyWith(allowsMultipleCompletions: value));
   }
 
   void difficultyChanged(DifficultyLevel difficulty) {
@@ -119,11 +172,23 @@ class EditTodoCubit extends Cubit<EditTodoState> {
     // Create TodoReminders from ReminderTypes
     final todoReminders = _createRemindersForTodo(state.todo.id);
 
+    // Habit fields (streak/completion count) reset if a Task just became a
+    // Habit, carry over untouched if it was already a Habit, and clear if a
+    // Habit just became a one-time Task again.
+    final wasHabit = state.todo.isHabit;
+    final isNowHabit = state.isHabit;
+    final currentPeriodStart = isNowHabit
+        ? (wasHabit ? state.todo.currentPeriodStart : DateTime.now())
+        : null;
+    final completionsInCurrentPeriod =
+        isNowHabit && wasHabit ? state.todo.completionsInCurrentPeriod : 0;
+    final currentStreak = isNowHabit && wasHabit ? state.todo.currentStreak : 0;
+
     final updatedTodo = Todo(
       id: state.todo.id,
       name: state.name,
       description: state.description,
-      isCompleted: state.todo.isCompleted,
+      isCompleted: state.isCompleted,
       dueDate: state.dueDate,
       hasTime: state.hasTime,
       difficulty: state.difficulty,
@@ -131,6 +196,12 @@ class EditTodoCubit extends Cubit<EditTodoState> {
       tags: state.selectedTags,
       reminders: todoReminders,
       characterId: state.todo.characterId,
+      isHabit: isNowHabit,
+      timeframe: state.timeframe,
+      allowsMultipleCompletions: state.allowsMultipleCompletions,
+      currentPeriodStart: currentPeriodStart,
+      completionsInCurrentPeriod: completionsInCurrentPeriod,
+      currentStreak: currentStreak,
     );
 
     await todoRepository.updateTodo(updatedTodo);

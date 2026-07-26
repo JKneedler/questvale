@@ -4,13 +4,16 @@ import 'package:questvale/data/models/todo.dart';
 import 'package:questvale/data/models/tag.dart';
 import 'package:questvale/data/repositories/todo_repository.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
+import 'package:questvale/services/habit_service.dart';
 
 class TodosOverviewCubit extends Cubit<TodosOverviewState> {
   final TodoRepository todoRepository;
   final CharacterRepository characterRepository;
+  late final HabitService habitService;
 
   TodosOverviewCubit(this.todoRepository, this.characterRepository)
       : super(const TodosOverviewState()) {
+    habitService = HabitService(todoRepository: todoRepository);
     loadCharacter();
   }
 
@@ -41,6 +44,11 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
     await todoRepository.updateTodo(
       todo.copyWith(isCompleted: !todo.isCompleted),
     );
+    await loadCharacter();
+  }
+
+  Future<void> completeHabitOnce(Todo todo) async {
+    await habitService.completeOnce(todo);
     await loadCharacter();
   }
 

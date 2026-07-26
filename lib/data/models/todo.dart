@@ -35,6 +35,23 @@ enum DifficultyLevel {
   }
 }
 
+enum HabitTimeframe {
+  daily,
+  weekly,
+  monthly;
+
+  String get name {
+    switch (this) {
+      case HabitTimeframe.daily:
+        return 'Daily';
+      case HabitTimeframe.weekly:
+        return 'Weekly';
+      case HabitTimeframe.monthly:
+        return 'Monthly';
+    }
+  }
+}
+
 enum PriorityLevel {
   noPriority,
   low,
@@ -80,18 +97,32 @@ class Todo {
   static const priorityColumnName = 'priority';
   static const dueDateColumnName = 'dueDate';
   static const hasTimeColumnName = 'hasTime';
+  static const isHabitColumnName = 'isHabit';
+  static const timeframeColumnName = 'timeframe';
+  static const allowsMultipleCompletionsColumnName =
+      'allowsMultipleCompletions';
+  static const completionsInCurrentPeriodColumnName =
+      'completionsInCurrentPeriod';
+  static const currentStreakColumnName = 'currentStreak';
+  static const currentPeriodStartColumnName = 'currentPeriodStart';
 
   static const createTableSQL = '''
 		CREATE TABLE ${Todo.todoTableName}(
-			${Todo.idColumnName} VARCHAR PRIMARY KEY, 
-			${Todo.characterIdColumnName} VARCHAR NOT NULL, 
-			${Todo.nameColumnName} VARCHAR NOT NULL, 
-			${Todo.descriptionColumnName} VARCHAR, 
+			${Todo.idColumnName} VARCHAR PRIMARY KEY,
+			${Todo.characterIdColumnName} VARCHAR NOT NULL,
+			${Todo.nameColumnName} VARCHAR NOT NULL,
+			${Todo.descriptionColumnName} VARCHAR,
 			${Todo.isCompletedColumnName} BOOLEAN,
 			${Todo.difficultyColumnName} INTEGER,
 			${Todo.priorityColumnName} INTEGER,
 			${Todo.dueDateColumnName} INTEGER,
-			${Todo.hasTimeColumnName} BOOLEAN
+			${Todo.hasTimeColumnName} BOOLEAN,
+			${Todo.isHabitColumnName} BOOLEAN DEFAULT 0,
+			${Todo.timeframeColumnName} INTEGER,
+			${Todo.allowsMultipleCompletionsColumnName} BOOLEAN DEFAULT 0,
+			${Todo.completionsInCurrentPeriodColumnName} INTEGER DEFAULT 0,
+			${Todo.currentStreakColumnName} INTEGER DEFAULT 0,
+			${Todo.currentPeriodStartColumnName} INTEGER
 		);
 	''';
 
@@ -106,6 +137,12 @@ class Todo {
   final bool hasTime;
   final List<Tag> tags;
   final List<TodoReminder> reminders;
+  final bool isHabit;
+  final HabitTimeframe? timeframe;
+  final bool allowsMultipleCompletions;
+  final int completionsInCurrentPeriod;
+  final int currentStreak;
+  final DateTime? currentPeriodStart;
 
   const Todo({
     required this.id,
@@ -119,6 +156,12 @@ class Todo {
     required this.hasTime,
     required this.tags,
     required this.reminders,
+    this.isHabit = false,
+    this.timeframe,
+    this.allowsMultipleCompletions = false,
+    this.completionsInCurrentPeriod = 0,
+    this.currentStreak = 0,
+    this.currentPeriodStart,
   });
 
   Map<String, Object?> toMap() {
@@ -132,6 +175,14 @@ class Todo {
       Todo.priorityColumnName: priority.index,
       Todo.dueDateColumnName: dueDate?.millisecondsSinceEpoch,
       Todo.hasTimeColumnName: hasTime ? 1 : 0,
+      Todo.isHabitColumnName: isHabit ? 1 : 0,
+      Todo.timeframeColumnName: timeframe?.index,
+      Todo.allowsMultipleCompletionsColumnName:
+          allowsMultipleCompletions ? 1 : 0,
+      Todo.completionsInCurrentPeriodColumnName: completionsInCurrentPeriod,
+      Todo.currentStreakColumnName: currentStreak,
+      Todo.currentPeriodStartColumnName:
+          currentPeriodStart?.millisecondsSinceEpoch,
     };
   }
 
@@ -160,6 +211,12 @@ class Todo {
     bool? hasTime,
     List<Tag>? tags,
     List<TodoReminder>? reminders,
+    bool? isHabit,
+    HabitTimeframe? timeframe,
+    bool? allowsMultipleCompletions,
+    int? completionsInCurrentPeriod,
+    int? currentStreak,
+    DateTime? currentPeriodStart,
   }) {
     return Todo(
       id: id,
@@ -173,6 +230,14 @@ class Todo {
       hasTime: hasTime ?? this.hasTime,
       tags: tags ?? this.tags,
       reminders: reminders ?? this.reminders,
+      isHabit: isHabit ?? this.isHabit,
+      timeframe: timeframe ?? this.timeframe,
+      allowsMultipleCompletions:
+          allowsMultipleCompletions ?? this.allowsMultipleCompletions,
+      completionsInCurrentPeriod:
+          completionsInCurrentPeriod ?? this.completionsInCurrentPeriod,
+      currentStreak: currentStreak ?? this.currentStreak,
+      currentPeriodStart: currentPeriodStart ?? this.currentPeriodStart,
     );
   }
 }
