@@ -5,6 +5,7 @@ import 'package:questvale/cubits/world_tab/questing/chest_loot/chest_loot_state.
 import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_encounter_cubit.dart';
 import 'package:questvale/cubits/world_tab/questing/simple_equipment_slice.dart';
 import 'package:questvale/cubits/world_tab/questing/loot_summary_slice.dart';
+import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_primary_border.dart';
 import 'package:sqflite/sqflite.dart';
@@ -92,7 +93,7 @@ class ChestLootView extends StatelessWidget {
                         image: DecorationImage(
                           image: AssetImage(
                               'images/ui/secondary-background-2x.png'),
-                          centerSlice: Rect.fromLTWH(16, 16, 32, 32),
+                          centerSlice: STANDARD_BORDER_SLICE,
                           fit: BoxFit.fill,
                           filterQuality: FilterQuality.none,
                         ),

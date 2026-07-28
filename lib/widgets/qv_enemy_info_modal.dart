@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_attack_data.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_drop_data.dart';
+import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_gray_filter.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
@@ -77,7 +78,7 @@ class QvEnemyInfoModal extends StatelessWidget {
                                   image: DecorationImage(
                                     image: AssetImage(
                                         'images/ui/buttons/${enemyData.rarity.name.toLowerCase()}-button-2x.png'),
-                                    centerSlice: Rect.fromLTWH(16, 16, 32, 32),
+                                    centerSlice: STANDARD_BORDER_SLICE,
                                     fit: BoxFit.fill,
                                     filterQuality: FilterQuality.none,
                                   ),
@@ -289,7 +290,7 @@ class QvEnemyInfoModal extends StatelessWidget {
                                     image: AssetImage(
                                       'images/ui/secondary-background-2x.png',
                                     ),
-                                    centerSlice: Rect.fromLTWH(16, 16, 32, 32),
+                                    centerSlice: STANDARD_BORDER_SLICE,
                                     fit: BoxFit.fill,
                                   ),
                                 ),
@@ -360,7 +361,7 @@ class QvEnemyInfoModal extends StatelessWidget {
                     image: DecorationImage(
                       image: AssetImage(
                           'images/ui/borders/primary-metal-edge-border-2x.png'),
-                      centerSlice: Rect.fromLTWH(28, 28, 8, 8),
+                      centerSlice: METAL_CORNER_BORDER_SLICE,
                       fit: BoxFit.fill,
                       filterQuality: FilterQuality.none,
                     ),
@@ -605,7 +606,7 @@ class EnemyDropView extends StatelessWidget {
                 decoration: BoxDecoration(
                   image: DecorationImage(
                     image: AssetImage('images/ui/surface-background-2x.png'),
-                    centerSlice: Rect.fromLTWH(16, 16, 32, 32),
+                    centerSlice: STANDARD_BORDER_SLICE,
                     fit: BoxFit.fill,
                     filterQuality: FilterQuality.none,
                   ),

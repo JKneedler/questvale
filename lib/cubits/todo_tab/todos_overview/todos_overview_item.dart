@@ -5,6 +5,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_cubit.dart';
 import 'package:questvale/data/models/character_tag.dart';
 import 'package:questvale/data/models/tag.dart';
+import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/data_formatters.dart';
 import 'package:questvale/cubits/todo_tab/edit_todo/edit_todo_page.dart';
 import 'package:questvale/widgets/qv_check_box.dart';
@@ -46,9 +47,15 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
+          // TODO: images/ui/buttons/white-button-filled-2x.png doesn't exist
+          // on disk — every todo row was silently failing to load an image.
+          // Standing in with the secondary background (also STANDARD_BORDER
+          // family) until real art exists — surface-background-2x.png is the
+          // same tone as the page's own colorScheme.surface background and
+          // made the cards blend in invisibly.
           image: DecorationImage(
-            image: AssetImage('images/ui/buttons/white-button-filled-2x.png'),
-            centerSlice: Rect.fromLTWH(16, 16, 32, 32),
+            image: AssetImage('images/ui/secondary-background-2x.png'),
+            centerSlice: STANDARD_BORDER_SLICE,
             fit: BoxFit.fill,
             filterQuality: FilterQuality.none,
           ),

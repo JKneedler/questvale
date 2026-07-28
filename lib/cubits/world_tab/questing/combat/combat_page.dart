@@ -228,7 +228,7 @@ class CombatView extends StatelessWidget {
                         image: DecorationImage(
                           image: AssetImage(
                               'images/ui/buttons/primary-button-no-bottom-2x.png'),
-                          centerSlice: Rect.fromLTWH(16, 16, 32, 32),
+                          centerSlice: STANDARD_BORDER_SLICE,
                           fit: BoxFit.fill,
                         ),
                       ),
@@ -591,127 +591,125 @@ class EnemyInfoBox extends StatelessWidget {
       padding: EdgeInsets.all(6),
       child: QvMetalCornerBorder(
         padding: EdgeInsets.all(10),
-        child: Expanded(
-          child: Column(
-            children: [
-              SizedBox(
-                height: 80,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    QvCardBorder(
+        child: Column(
+          children: [
+            SizedBox(
+              height: 80,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  QvCardBorder(
+                    width: 80,
+                    height: 80,
+                    child: Image.asset(
+                      'images/enemies/${enemyData.id.toLowerCase()}.png',
+                      filterQuality: FilterQuality.none,
                       width: 80,
                       height: 80,
-                      child: Image.asset(
-                        'images/enemies/${enemyData.id.toLowerCase()}.png',
-                        filterQuality: FilterQuality.none,
-                        width: 80,
-                        height: 80,
-                        scale: .1,
-                      ),
+                      scale: .1,
                     ),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          QvButton(
-                            height: 36,
-                            buttonColor: ButtonColor.getColor(enemyData.rarity),
-                            child: Center(
-                                child: Text(
-                              enemyData.name,
-                              style: TextStyle(
-                                fontSize: 24,
-                                color: colorScheme.secondary,
-                              ),
-                            )),
-                          ),
-                          Container(
-                            height: 30,
-                            color: colorScheme.secondary,
-                            padding: EdgeInsets.all(2),
-                            margin: EdgeInsets.symmetric(horizontal: 10),
-                            child: Stack(
-                              children: [
-                                FractionallySizedBox(
-                                  widthFactor:
-                                      enemy.currentHealth / enemyData.health,
-                                  child: Container(
-                                    height: double.infinity,
-                                    width: double.infinity,
-                                    decoration: BoxDecoration(
-                                        image: DecorationImage(
-                                      image: AssetImage(
-                                          'images/ui/health-border.png'),
-                                      centerSlice: Rect.fromLTWH(4, 4, 56, 56),
-                                      fit: BoxFit.fill,
-                                      filterQuality: FilterQuality.none,
-                                    )),
-                                  ),
-                                ),
-                                Center(
-                                  child: Text(
-                                    '${enemy.currentHealth} / ${enemyData.health}',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      color: Colors.grey[100],
-                                      height: 1,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                  ),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        QvButton(
+                          height: 36,
+                          buttonColor: ButtonColor.getColor(enemyData.rarity),
+                          child: Center(
+                              child: Text(
+                            enemyData.name,
+                            style: TextStyle(
+                              fontSize: 24,
+                              color: colorScheme.secondary,
                             ),
+                          )),
+                        ),
+                        Container(
+                          height: 30,
+                          color: colorScheme.secondary,
+                          padding: EdgeInsets.all(2),
+                          margin: EdgeInsets.symmetric(horizontal: 10),
+                          child: Stack(
+                            children: [
+                              FractionallySizedBox(
+                                widthFactor:
+                                    enemy.currentHealth / enemyData.health,
+                                child: Container(
+                                  height: double.infinity,
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                      image: DecorationImage(
+                                    image: AssetImage(
+                                        'images/ui/health-border.png'),
+                                    centerSlice: HEALTH_BORDER_SLICE,
+                                    fit: BoxFit.fill,
+                                    filterQuality: FilterQuality.none,
+                                  )),
+                                ),
+                              ),
+                              Center(
+                                child: Text(
+                                  '${enemy.currentHealth} / ${enemyData.health}',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.grey[100],
+                                    height: 1,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    EnemyNextAttackSlice(),
+                    EnemyStatusEffectsSlice(),
+                    Text(enemyData.rarity.name.toUpperCase()),
+                    Text(enemyData.enemyType.name.toUpperCase()),
+                    Text(enemyData.immunities
+                        .map((immunity) => immunity.name.toUpperCase())
+                        .join(', ')),
+                    Text(enemyData.resistances
+                        .map((resistance) => resistance.name.toUpperCase())
+                        .join(', ')),
+                    Text(enemyData.weaknesses
+                        .map((weakness) => weakness.name.toUpperCase())
+                        .join(', ')),
+                    Text(enemyData.attacks
+                        .map((attack) => attack.name.toUpperCase())
+                        .join(', ')),
+                    Text(enemyData.drops
+                        .map((drop) => drop.itemName.toUpperCase())
+                        .join(', ')),
                   ],
                 ),
               ),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      EnemyNextAttackSlice(),
-                      EnemyStatusEffectsSlice(),
-                      Text(enemyData.rarity.name.toUpperCase()),
-                      Text(enemyData.enemyType.name.toUpperCase()),
-                      Text(enemyData.immunities
-                          .map((immunity) => immunity.name.toUpperCase())
-                          .join(', ')),
-                      Text(enemyData.resistances
-                          .map((resistance) => resistance.name.toUpperCase())
-                          .join(', ')),
-                      Text(enemyData.weaknesses
-                          .map((weakness) => weakness.name.toUpperCase())
-                          .join(', ')),
-                      Text(enemyData.attacks
-                          .map((attack) => attack.name.toUpperCase())
-                          .join(', ')),
-                      Text(enemyData.drops
-                          .map((drop) => drop.itemName.toUpperCase())
-                          .join(', ')),
-                    ],
-                  ),
+            ),
+            QvButton(
+              width: double.infinity,
+              height: 36,
+              buttonColor: ButtonColor.primary,
+              onTap: () => context.read<CombatCubit>().setIdle(),
+              child: Center(
+                  child: Text(
+                'Close',
+                style: TextStyle(
+                  fontSize: 24,
+                  color: colorScheme.secondary,
                 ),
-              ),
-              QvButton(
-                width: double.infinity,
-                height: 36,
-                buttonColor: ButtonColor.primary,
-                onTap: () => context.read<CombatCubit>().setIdle(),
-                child: Center(
-                    child: Text(
-                  'Close',
-                  style: TextStyle(
-                    fontSize: 24,
-                    color: colorScheme.secondary,
-                  ),
-                )),
-              ),
-            ],
-          ),
+              )),
+            ),
+          ],
         ),
       ),
     );
@@ -744,7 +742,7 @@ class EnemyNextAttackSlice extends StatelessWidget {
           decoration: BoxDecoration(
             image: DecorationImage(
               image: AssetImage('images/ui/secondary-background-2x.png'),
-              centerSlice: Rect.fromLTWH(16, 16, 32, 32),
+              centerSlice: STANDARD_BORDER_SLICE,
               fit: BoxFit.fill,
               filterQuality: FilterQuality.none,
             ),
@@ -792,7 +790,7 @@ class EnemyStatusEffectsSlice extends StatelessWidget {
           decoration: BoxDecoration(
             image: DecorationImage(
               image: AssetImage('images/ui/secondary-background-2x.png'),
-              centerSlice: Rect.fromLTWH(16, 16, 32, 32),
+              centerSlice: STANDARD_BORDER_SLICE,
               fit: BoxFit.fill,
               filterQuality: FilterQuality.none,
             ),
@@ -813,27 +811,25 @@ class PlayerInfoBox extends StatelessWidget {
       padding: EdgeInsets.all(20),
       child: QvMetalCornerBorder(
         padding: EdgeInsets.all(10),
-        child: Expanded(
-          child: Column(
-            children: [
-              Text('Player'),
-              Expanded(child: Container()),
-              QvButton(
-                width: double.infinity,
-                height: 36,
-                buttonColor: ButtonColor.primary,
-                onTap: () => context.read<CombatCubit>().setIdle(),
-                child: Center(
-                    child: Text(
-                  'Close',
-                  style: TextStyle(
-                    fontSize: 24,
-                    color: colorScheme.secondary,
-                  ),
-                )),
-              ),
-            ],
-          ),
+        child: Column(
+          children: [
+            Text('Player'),
+            Expanded(child: Container()),
+            QvButton(
+              width: double.infinity,
+              height: 36,
+              buttonColor: ButtonColor.primary,
+              onTap: () => context.read<CombatCubit>().setIdle(),
+              child: Center(
+                  child: Text(
+                'Close',
+                style: TextStyle(
+                  fontSize: 24,
+                  color: colorScheme.secondary,
+                ),
+              )),
+            ),
+          ],
         ),
       ),
     );

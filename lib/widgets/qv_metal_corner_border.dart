@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:questvale/helpers/constants.dart';
 
 class QvMetalCornerBorder extends StatelessWidget {
   final Widget child;
@@ -20,35 +21,41 @@ class QvMetalCornerBorder extends StatelessWidget {
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
 
-    return Stack(
-      children: [
-        Center(
-          child: FractionallySizedBox(
-            widthFactor: widthFactor,
-            heightFactor: heightFactor,
-            child: Container(
-              color: color ?? colorScheme.surface,
-              padding: padding,
-              child: child,
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        minWidth: METAL_CORNER_BORDER_MIN_SIZE.width,
+        minHeight: METAL_CORNER_BORDER_MIN_SIZE.height,
+      ),
+      child: Stack(
+        children: [
+          Center(
+            child: FractionallySizedBox(
+              widthFactor: widthFactor,
+              heightFactor: heightFactor,
+              child: Container(
+                color: color ?? colorScheme.surface,
+                padding: padding,
+                child: child,
+              ),
             ),
           ),
-        ),
-        Positioned.fill(
-          child: IgnorePointer(
-            child: Container(
-              foregroundDecoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage(
-                      'images/ui/borders/primary-metal-edge-border-2x.png'),
-                  centerSlice: Rect.fromLTWH(28, 28, 8, 8),
-                  fit: BoxFit.fill,
-                  filterQuality: FilterQuality.none,
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Container(
+                foregroundDecoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage(
+                        'images/ui/borders/primary-metal-edge-border-2x.png'),
+                    centerSlice: METAL_CORNER_BORDER_SLICE,
+                    fit: BoxFit.fill,
+                    filterQuality: FilterQuality.none,
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

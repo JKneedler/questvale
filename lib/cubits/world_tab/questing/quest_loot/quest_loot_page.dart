@@ -4,6 +4,7 @@ import 'package:questvale/cubits/world_tab/questing/quest_loot/quest_loot_cubit.
 import 'package:questvale/cubits/world_tab/questing/quest_loot/quest_loot_state.dart';
 import 'package:questvale/cubits/world_tab/questing/simple_equipment_slice.dart';
 import 'package:questvale/cubits/world_tab/questing/loot_summary_slice.dart';
+import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_metal_corner_border.dart';
 import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_encounter_cubit.dart';
@@ -114,7 +115,7 @@ class QuestLootView extends StatelessWidget {
                           image: DecorationImage(
                             image: AssetImage(
                                 'images/ui/secondary-background-2x.png'),
-                            centerSlice: Rect.fromLTWH(16, 16, 32, 32),
+                            centerSlice: STANDARD_BORDER_SLICE,
                             fit: BoxFit.fill,
                             filterQuality: FilterQuality.none,
                           ),

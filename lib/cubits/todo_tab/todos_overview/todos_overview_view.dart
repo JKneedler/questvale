@@ -6,6 +6,7 @@ import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_item.dar
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_state.dart';
 import 'package:questvale/cubits/todo_tab/add_todo/add_todo_page.dart';
 import 'package:questvale/data/models/character.dart';
+import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/widgets/qv_app_bar.dart';
 
 class TodosOverviewView extends StatelessWidget {
@@ -35,7 +36,7 @@ class TodosOverviewView extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             image: DecorationImage(
               image: AssetImage('images/ui/buttons/primary-button-2x.png'),
-              centerSlice: Rect.fromLTWH(16, 16, 32, 32),
+              centerSlice: STANDARD_BORDER_SLICE,
               fit: BoxFit.fill,
               filterQuality: FilterQuality.none,
             ),

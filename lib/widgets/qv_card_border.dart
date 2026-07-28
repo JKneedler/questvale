@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 
 enum QvCardBorderType {
@@ -43,35 +44,41 @@ class QvCardBorder extends StatelessWidget {
       }
     }
 
-    return SizedBox(
-      height: height > 0 ? height : null,
-      width: width > 0 ? width : null,
-      child: Stack(
-        children: [
-          Center(
-            child: FractionallySizedBox(
-              widthFactor: widthFactor,
-              heightFactor: heightFactor,
-              child: Container(
-                color: bgColor,
-              ),
-            ),
-          ),
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage(getBorderImage()),
-                  centerSlice: Rect.fromLTWH(16, 16, 32, 32),
-                  fit: BoxFit.fill,
-                  filterQuality: FilterQuality.none,
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        minWidth: STANDARD_BORDER_MIN_SIZE.width,
+        minHeight: STANDARD_BORDER_MIN_SIZE.height,
+      ),
+      child: SizedBox(
+        height: height > 0 ? height : null,
+        width: width > 0 ? width : null,
+        child: Stack(
+          children: [
+            Center(
+              child: FractionallySizedBox(
+                widthFactor: widthFactor,
+                heightFactor: heightFactor,
+                child: Container(
+                  color: bgColor,
                 ),
               ),
-              padding: padding,
-              child: child,
             ),
-          ),
-        ],
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage(getBorderImage()),
+                    centerSlice: STANDARD_BORDER_SLICE,
+                    fit: BoxFit.fill,
+                    filterQuality: FilterQuality.none,
+                  ),
+                ),
+                padding: padding,
+                child: child,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
