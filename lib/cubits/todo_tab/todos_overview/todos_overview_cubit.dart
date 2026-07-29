@@ -8,6 +8,7 @@ import 'package:questvale/data/repositories/todo_repository.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
 import 'package:questvale/services/ap_reward_service.dart';
 import 'package:questvale/services/habit_service.dart';
+import 'package:questvale/services/notification_service.dart';
 
 class TodosOverviewCubit extends Cubit<TodosOverviewState> {
   final TodoRepository todoRepository;
@@ -127,6 +128,9 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
 
   Future<void> deleteTodo(Todo todo) async {
     await todoRepository.deleteTodo(todo);
+    for (final reminder in todo.reminders) {
+      await NotificationService().cancelReminder(reminder.id);
+    }
     await loadCharacter();
   }
 

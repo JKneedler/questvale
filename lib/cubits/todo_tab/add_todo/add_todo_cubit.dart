@@ -6,6 +6,7 @@ import 'package:questvale/data/models/todo_reminder.dart';
 import 'package:questvale/data/repositories/todo_repository.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
 import 'package:questvale/services/habit_service.dart';
+import 'package:questvale/services/notification_service.dart';
 import 'package:uuid/uuid.dart';
 
 class AddTodoCubit extends Cubit<AddTodoState> {
@@ -135,6 +136,10 @@ class AddTodoCubit extends Cubit<AddTodoState> {
       );
 
       await todoRepository.createTodo(todo);
+      for (final reminder in todo.reminders) {
+        await NotificationService()
+            .scheduleReminder(reminder, title: todo.name);
+      }
       emit(AddTodoState(
         status: AddTodoStatus.initial,
         id: const Uuid().v4(),
@@ -198,6 +203,7 @@ class AddTodoCubit extends Cubit<AddTodoState> {
           id: const Uuid().v4(),
           todoId: todoId,
           dateTime: reminderDateTime,
+          reminderType: reminder,
         ),
       );
     }

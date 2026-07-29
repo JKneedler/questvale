@@ -45,6 +45,8 @@ dependencies:
   material_symbols_icons: ^4.2805.1
   google_fonts: ^6.3.0
   collection: ^1.19.0
+  flutter_local_notifications: ^19.5.0
+  timezone: ^0.10.1
 
 dev_dependencies:
   flutter_test:

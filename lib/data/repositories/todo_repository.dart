@@ -30,9 +30,19 @@ class TodoRepository {
   }
 
   // UPDATE todo
+  // Also reconciles reminders (replace-all) — the edit flow always rebuilds
+  // its full reminders list from scratch with fresh ids, so this was
+  // previously a silent no-op for reminder changes made via editing.
   Future<void> updateTodo(Todo updateTodo) async {
     await db.update(Todo.todoTableName, updateTodo.toMap(),
         where: '${Todo.idColumnName} = ?', whereArgs: [updateTodo.id]);
+
+    await db.delete(TodoReminder.todoReminderTableName,
+        where: '${TodoReminder.todoIdColumnName} = ?',
+        whereArgs: [updateTodo.id]);
+    for (final reminder in updateTodo.reminders) {
+      await db.insert(TodoReminder.todoReminderTableName, reminder.toMap());
+    }
   }
 
   // DELETE todo
@@ -163,6 +173,9 @@ class TodoRepository {
       todoId: map[TodoReminder.todoIdColumnName] as String,
       dateTime: DateTime.fromMillisecondsSinceEpoch(
           map[TodoReminder.dateTimeColumnName] as int),
+      reminderType: map[TodoReminder.reminderTypeColumnName] != null
+          ? ReminderType.values[map[TodoReminder.reminderTypeColumnName] as int]
+          : null,
     );
   }
 

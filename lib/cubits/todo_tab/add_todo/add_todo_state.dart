@@ -1,46 +1,11 @@
 import 'package:equatable/equatable.dart';
 import 'package:questvale/data/models/tag.dart';
 import 'package:questvale/data/models/todo.dart';
+import 'package:questvale/data/models/todo_reminder.dart';
+
+export 'package:questvale/data/models/todo_reminder.dart' show ReminderType;
 
 enum AddTodoStatus { initial, loading, done }
-
-enum ReminderType {
-  atTimeWithoutTime,
-  oneDayBeforeWithoutTime,
-  twoDaysBeforeWithoutTime,
-  threeDeysBeforeWithoutTime,
-  oneWeekBeforeWithoutTime,
-  atTimeWithTime,
-  fiveMinutesBeforeWithTime,
-  thirtyMinutesBeforeWithTime,
-  oneHourBeforeWithTime,
-  oneDayBeforeWithTime;
-
-  String get name {
-    switch (this) {
-      case ReminderType.atTimeWithoutTime:
-        return 'On time';
-      case ReminderType.oneDayBeforeWithoutTime:
-        return '1 day before';
-      case ReminderType.twoDaysBeforeWithoutTime:
-        return '2 days before';
-      case ReminderType.threeDeysBeforeWithoutTime:
-        return '3 days before';
-      case ReminderType.oneWeekBeforeWithoutTime:
-        return '1 week before';
-      case ReminderType.atTimeWithTime:
-        return 'On time';
-      case ReminderType.fiveMinutesBeforeWithTime:
-        return '5 minutes before';
-      case ReminderType.thirtyMinutesBeforeWithTime:
-        return '30 minutes before';
-      case ReminderType.oneHourBeforeWithTime:
-        return '1 hour before';
-      case ReminderType.oneDayBeforeWithTime:
-        return '1 day before';
-    }
-  }
-}
 
 class AddTodoState extends Equatable {
   final AddTodoStatus status;

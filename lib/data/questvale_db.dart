@@ -97,6 +97,10 @@ class QuestvaleDB {
         await db.execute(
             'ALTER TABLE ${Todo.todoTableName} ADD COLUMN ${Todo.apAwardedColumnName} BOOLEAN DEFAULT 0');
       }
-    }, version: 4);
+      if (oldVersion < 5) {
+        await db.execute(
+            'ALTER TABLE ${TodoReminder.todoReminderTableName} ADD COLUMN ${TodoReminder.reminderTypeColumnName} INTEGER');
+      }
+    }, version: 5);
   }
 }

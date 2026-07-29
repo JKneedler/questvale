@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:questvale/cubits/todo_tab/add_todo/add_todo_state.dart';
 import 'package:questvale/cubits/todo_tab/edit_todo/edit_todo_state.dart';
 import 'package:questvale/data/models/tag.dart';
 import 'package:questvale/data/models/todo.dart';
@@ -7,6 +6,7 @@ import 'package:questvale/data/models/todo_reminder.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
 import 'package:questvale/data/repositories/todo_repository.dart';
 import 'package:questvale/services/habit_service.dart';
+import 'package:questvale/services/notification_service.dart';
 import 'package:uuid/uuid.dart';
 
 class EditTodoCubit extends Cubit<EditTodoState> {
@@ -28,28 +28,16 @@ class EditTodoCubit extends Cubit<EditTodoState> {
             difficulty: todo.difficulty,
             priority: todo.priority,
             selectedTags: todo.tags,
-            reminders: _convertTodoRemindersToReminderTypes(
-                todo.reminders, todo.hasTime),
+            reminders: todo.reminders
+                .where((r) => r.reminderType != null)
+                .map((r) => r.reminderType!)
+                .toList(),
             isHabit: todo.isHabit,
             timeframe: todo.timeframe,
             allowsMultipleCompletions: todo.allowsMultipleCompletions,
           ),
         ) {
     loadTags();
-  }
-
-  // Helper method to convert TodoReminder to ReminderType
-  static List<ReminderType> _convertTodoRemindersToReminderTypes(
-      List<TodoReminder> todoReminders, bool hasTime) {
-    // This is a simplified conversion - in a real app, you would determine the ReminderType
-    // based on the time difference between the due date and reminder time
-    return todoReminders.map((reminder) {
-      if (hasTime) {
-        return ReminderType.oneHourBeforeWithTime;
-      } else {
-        return ReminderType.oneDayBeforeWithoutTime;
-      }
-    }).toList();
   }
 
   Future<void> loadTags() async {
@@ -213,6 +201,17 @@ class EditTodoCubit extends Cubit<EditTodoState> {
     );
 
     await todoRepository.updateTodo(updatedTodo);
+
+    // Every submit rebuilds the reminders list with fresh ids (see
+    // _createRemindersForTodo), so the old scheduled notifications need to
+    // be cancelled explicitly — their DB rows are already gone.
+    for (final oldReminder in state.todo.reminders) {
+      await NotificationService().cancelReminder(oldReminder.id);
+    }
+    for (final reminder in todoReminders) {
+      await NotificationService()
+          .scheduleReminder(reminder, title: updatedTodo.name);
+    }
   }
 
   // Create TodoReminders from ReminderTypes
@@ -258,6 +257,7 @@ class EditTodoCubit extends Cubit<EditTodoState> {
           id: const Uuid().v4(),
           todoId: todoId,
           dateTime: reminderDateTime,
+          reminderType: reminder,
         ),
       );
     }
