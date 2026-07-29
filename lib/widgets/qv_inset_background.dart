@@ -16,7 +16,7 @@ class QvInsetBackground extends StatelessWidget {
   const QvInsetBackground({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+    this.padding = const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
     this.width,
     this.height,
     this.type = QvInsetBackgroundType.secondary,

@@ -5,9 +5,9 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_cubit.dart';
 import 'package:questvale/data/models/character_tag.dart';
 import 'package:questvale/data/models/tag.dart';
-import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/data_formatters.dart';
 import 'package:questvale/cubits/todo_tab/edit_todo/edit_todo_page.dart';
+import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_check_box.dart';
 import '../../../data/models/todo.dart';
 
@@ -45,158 +45,171 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
         ],
       ),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        decoration: BoxDecoration(
-          // TODO: images/ui/buttons/white-button-filled-2x.png doesn't exist
-          // on disk — every todo row was silently failing to load an image.
-          // Standing in with the secondary background (also STANDARD_BORDER
-          // family) until real art exists — surface-background-2x.png is the
-          // same tone as the page's own colorScheme.surface background and
-          // made the cards blend in invisibly.
-          image: DecorationImage(
-            image: AssetImage('images/ui/secondary-background-2x.png'),
-            centerSlice: STANDARD_BORDER_SLICE,
-            fit: BoxFit.fill,
-            filterQuality: FilterQuality.none,
-          ),
-        ),
-        child: GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onTap: () async {
-            setState(() {
-              isHighlighted = true;
-            });
-            await Future.delayed(const Duration(milliseconds: 150));
-            if (mounted) {
+        margin: const EdgeInsets.only(bottom: 10),
+        child: QvButton(
+          buttonColor: ButtonColor.primary,
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () async {
               setState(() {
-                isHighlighted = false;
+                isHighlighted = true;
               });
-              EditTodoPage.show(context, widget.todo);
-            }
-          },
-          child: Material(
-            color: Colors.transparent,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                GestureDetector(
-                  onTapUp: (_) => widget.todo.isHabit
-                      ? todoCubit.completeHabitOnce(widget.todo)
-                      : todoCubit.toggleCompletion(widget.todo),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: Container(
-                      padding: const EdgeInsets.all(14),
-                      child: QvCheckBox(
-                        width: 20,
-                        height: 20,
-                        isChecked: widget.todo.isCompleted,
+              await Future.delayed(const Duration(milliseconds: 150));
+              if (mounted) {
+                setState(() {
+                  isHighlighted = false;
+                });
+                EditTodoPage.show(context, widget.todo);
+              }
+            },
+            child: Material(
+              color: Colors.transparent,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  GestureDetector(
+                    onTapUp: (_) => widget.todo.isHabit
+                        ? todoCubit.completeHabitOnce(widget.todo)
+                        : todoCubit.toggleCompletion(widget.todo),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        child: widget.todo.isHabit &&
+                                widget.todo.allowsMultipleCompletions
+                            ? MultiCheckIndicator(
+                                count: widget.todo.completionsInCurrentPeriod,
+                              )
+                            : QvCheckBox(
+                                width: 24,
+                                height: 24,
+                                isChecked: widget.todo.isCompleted,
+                              ),
                       ),
                     ),
                   ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 14, bottom: 14),
-                    child: Column(
-                      spacing: 4,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.todo.name,
-                          softWrap: true,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: widget.todo.isCompleted
-                                ? colorScheme.onPrimaryFixedVariant
-                                : colorScheme.onPrimaryContainer,
-                          ),
-                        ),
-                        if (widget.todo.description.isNotEmpty)
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 16, bottom: 16),
+                      child: Column(
+                        spacing: 6,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                           Text(
-                            widget.todo.description,
+                            widget.todo.name,
                             softWrap: true,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontSize: 12,
-                              color: colorScheme.onPrimaryFixedVariant,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: widget.todo.isCompleted
+                                  ? colorScheme.onPrimaryFixedVariant
+                                  : colorScheme.onPrimaryContainer,
                             ),
                           ),
-                        if (widget.todo.tags.isNotEmpty)
-                          Wrap(
-                            spacing: 4,
-                            children: widget.todo.tags
-                                .map((tag) => TodoItemTagChip(tag: tag))
-                                .toList(),
-                          ),
-                        Row(
-                          children: [
-                            if (widget.todo.isHabit)
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Symbols.local_fire_department,
-                                    color: colorScheme.primary,
-                                    size: 14,
-                                  ),
-                                  const SizedBox(width: 2),
-                                  Text(
-                                    '${widget.todo.currentStreak}',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                      color: colorScheme.primary,
+                          if (widget.todo.description.isNotEmpty)
+                            Text(
+                              widget.todo.description,
+                              softWrap: true,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: colorScheme.onPrimaryFixedVariant,
+                              ),
+                            ),
+                          if (widget.todo.tags.isNotEmpty)
+                            Wrap(
+                              spacing: 6,
+                              children: widget.todo.tags
+                                  .map((tag) => TodoItemTagChip(tag: tag))
+                                  .toList(),
+                            ),
+                          Row(
+                            children: [
+                              if (widget.todo.isHabit)
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Symbols.local_fire_department,
+                                      color: colorScheme.onPrimaryContainer,
+                                      size: 16,
                                     ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                ],
-                              ),
-                            if (widget.todo.isHabit &&
-                                widget.todo.allowsMultipleCompletions &&
-                                widget.todo.completionsInCurrentPeriod > 0)
-                              Padding(
-                                padding: const EdgeInsets.only(right: 6),
-                                child: Text(
-                                  'x${widget.todo.completionsInCurrentPeriod}',
+                                    const SizedBox(width: 3),
+                                    Text(
+                                      '${widget.todo.currentStreak}',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: colorScheme.onPrimaryContainer,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                  ],
+                                ),
+                              if (widget.todo.difficulty !=
+                                  DifficultyLevel.trivial)
+                                Icon(
+                                  Symbols.trophy,
+                                  color: widget.todo.difficulty.color,
+                                  size: 18,
+                                ),
+                              const SizedBox(width: 6),
+                              if (widget.todo.dueDate != null)
+                                Text(
+                                  DataFormatters.formatDateTime(
+                                      widget.todo.dueDate!,
+                                      widget.todo.hasTime),
                                   style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: colorScheme.onPrimaryFixedVariant,
+                                    fontSize: 14,
+                                    color: isPastDue
+                                        ? colorScheme.error
+                                        : colorScheme.primary,
                                   ),
                                 ),
-                              ),
-                            if (widget.todo.difficulty !=
-                                DifficultyLevel.trivial)
-                              Icon(
-                                Symbols.trophy,
-                                color: widget.todo.difficulty.color,
-                                size: 16,
-                              ),
-                            const SizedBox(width: 4),
-                            if (widget.todo.dueDate != null)
-                              Text(
-                                DataFormatters.formatDateTime(
-                                    widget.todo.dueDate!, widget.todo.hasTime),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: isPastDue
-                                      ? colorScheme.error
-                                      : colorScheme.primary,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class MultiCheckIndicator extends StatelessWidget {
+  final int count;
+  const MultiCheckIndicator({super.key, required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+    return SizedBox(
+      width: 24,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Symbols.add,
+            size: 20,
+            weight: 700,
+            color: colorScheme.onPrimaryContainer,
+          ),
+          Text(
+            '$count',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onPrimaryContainer,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -210,8 +223,8 @@ class TodoItemTagChip extends StatelessWidget {
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     return Container(
-      width: 40,
-      height: 20,
+      width: 46,
+      height: 24,
       decoration: BoxDecoration(
         color: Color.lerp(colorScheme.surfaceContainer,
             CharacterTag.availableColors[tag.colorIndex], 0.6),
@@ -222,7 +235,7 @@ class TodoItemTagChip extends StatelessWidget {
           CharacterTag.availableIcons[tag.iconIndex],
           color: Color.lerp(
               colorScheme.onPrimary, colorScheme.onPrimaryFixedVariant, 0.3),
-          size: 15,
+          size: 17,
         ),
       ),
     );

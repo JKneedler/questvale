@@ -56,4 +56,20 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
     await todoRepository.deleteTodo(todo);
     await loadCharacter();
   }
+
+  void setFilter(TodoFilter filter, {Tag? tag, PriorityLevel? priority}) {
+    emit(TodosOverviewState(
+      character: state.character,
+      todos: state.todos,
+      availableTags: state.availableTags,
+      filter: filter,
+      filterTag: filter == TodoFilter.byTag ? tag : null,
+      filterPriority: filter == TodoFilter.byPriority ? priority : null,
+      sort: state.sort,
+    ));
+  }
+
+  void setSort(TodoSort sort) {
+    emit(state.copyWith(sort: sort));
+  }
 }

@@ -11,7 +11,6 @@ import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/data_formatters.dart';
 import 'package:questvale/widgets/qv_popup_menu.dart';
 import 'package:questvale/widgets/qv_popup_menu_item.dart';
-import 'package:questvale/widgets/qv_popup_menu_check_item.dart';
 import 'package:questvale/widgets/qv_textfield.dart';
 
 class AddTodoView extends StatelessWidget {
@@ -285,6 +284,15 @@ class EtcFields extends StatelessWidget {
         ),
         const SizedBox(width: 12),
         HabitMenu(state: state),
+        if (state.isHabit) ...[
+          const SizedBox(width: 12),
+          MultipleCompletionsToggle(
+            value: state.allowsMultipleCompletions,
+            onTap: () => context
+                .read<AddTodoCubit>()
+                .multipleCompletionsToggled(!state.allowsMultipleCompletions),
+          ),
+        ],
         const SizedBox(width: 12),
         PriorityMenu(priority: state.priority),
         const SizedBox(width: 12),
@@ -370,17 +378,31 @@ class HabitMenu extends StatelessWidget {
               context.read<AddTodoCubit>().timeframeChanged(tf);
             },
           ),
-        if (state.isHabit)
-          QvPopupMenuCheckItem(
-            text: 'Multiple completions per period',
-            isChecked: state.allowsMultipleCompletions,
-            onPressed: () {
-              context
-                  .read<AddTodoCubit>()
-                  .multipleCompletionsToggled(!state.allowsMultipleCompletions);
-            },
-          ),
       ],
+    );
+  }
+}
+
+class MultipleCompletionsToggle extends StatelessWidget {
+  final bool value;
+  final VoidCallback onTap;
+
+  const MultipleCompletionsToggle({
+    super.key,
+    required this.value,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+    return GestureDetector(
+      onTap: onTap,
+      child: Icon(
+        Symbols.plus_one,
+        color: value ? colorScheme.primary : colorScheme.onPrimaryFixedVariant,
+        weight: 600,
+      ),
     );
   }
 }

@@ -13,7 +13,6 @@ import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/data_formatters.dart';
 import 'package:questvale/widgets/qv_check_box.dart';
 import 'package:questvale/widgets/qv_popup_menu.dart';
-import 'package:questvale/widgets/qv_popup_menu_check_item.dart';
 import 'package:questvale/widgets/qv_popup_menu_item.dart';
 import 'package:questvale/widgets/qv_textfield.dart';
 
@@ -181,6 +180,8 @@ class EditTodoView extends StatelessWidget {
                     _buildDifficultyRow(context, state),
                     _buildPriorityRow(context, state),
                     _buildHabitRow(context, state),
+                    if (state.isHabit)
+                      _buildMultipleCompletionsRow(context, state),
                   ],
                 ),
               ),
@@ -286,17 +287,25 @@ class EditTodoView extends StatelessWidget {
               context.read<EditTodoCubit>().timeframeChanged(tf);
             },
           ),
-        if (state.isHabit)
-          QvPopupMenuCheckItem(
-            text: 'Multiple completions per period',
-            isChecked: state.allowsMultipleCompletions,
-            onPressed: () {
-              context
-                  .read<EditTodoCubit>()
-                  .multipleCompletionsToggled(!state.allowsMultipleCompletions);
-            },
-          ),
       ],
+    );
+  }
+
+  Widget _buildMultipleCompletionsRow(
+      BuildContext context, EditTodoState state) {
+    return GestureDetector(
+      onTap: () => context
+          .read<EditTodoCubit>()
+          .multipleCompletionsToggled(!state.allowsMultipleCompletions),
+      child: _buildDetailItem(
+        context,
+        Symbols.plus_one,
+        'Multiple completions',
+        state.allowsMultipleCompletions ? 'On' : 'Off',
+        iconColor: state.allowsMultipleCompletions
+            ? Theme.of(context).colorScheme.primary
+            : null,
+      ),
     );
   }
 
