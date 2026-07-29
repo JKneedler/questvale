@@ -49,6 +49,8 @@ enum TodoSort {
   }
 }
 
+enum TodosViewMode { list, calendar }
+
 class TodosOverviewState extends Equatable {
   final Character? character;
   final List<Todo> todos;
@@ -57,6 +59,7 @@ class TodosOverviewState extends Equatable {
   final Tag? filterTag;
   final PriorityLevel? filterPriority;
   final TodoSort sort;
+  final TodosViewMode viewMode;
 
   const TodosOverviewState({
     this.character,
@@ -66,6 +69,7 @@ class TodosOverviewState extends Equatable {
     this.filterTag,
     this.filterPriority,
     this.sort = TodoSort.dueDate,
+    this.viewMode = TodosViewMode.list,
   });
 
   TodosOverviewState copyWith({
@@ -73,6 +77,7 @@ class TodosOverviewState extends Equatable {
     List<Todo>? todos,
     List<Tag>? availableTags,
     TodoSort? sort,
+    TodosViewMode? viewMode,
   }) {
     return TodosOverviewState(
       character: character ?? this.character,
@@ -82,6 +87,7 @@ class TodosOverviewState extends Equatable {
       filterTag: filterTag,
       filterPriority: filterPriority,
       sort: sort ?? this.sort,
+      viewMode: viewMode ?? this.viewMode,
     );
   }
 
@@ -161,5 +167,6 @@ class TodosOverviewState extends Equatable {
         filterTag,
         filterPriority,
         sort,
+        viewMode,
       ];
 }

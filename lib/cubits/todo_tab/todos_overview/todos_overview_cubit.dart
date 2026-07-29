@@ -72,4 +72,8 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
   void setSort(TodoSort sort) {
     emit(state.copyWith(sort: sort));
   }
+
+  void setViewMode(TodosViewMode viewMode) {
+    emit(state.copyWith(viewMode: viewMode));
+  }
 }

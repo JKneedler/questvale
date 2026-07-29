@@ -5,6 +5,7 @@ import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_cubit.da
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_item.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_state.dart';
 import 'package:questvale/cubits/todo_tab/add_todo/add_todo_page.dart';
+import 'package:questvale/cubits/todo_tab/todos_calendar/todos_calendar_view.dart';
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/tag.dart';
 import 'package:questvale/data/models/todo.dart';
@@ -78,6 +79,9 @@ class TodosOverviewView extends StatelessWidget {
               ),
               child: BlocBuilder<TodosOverviewCubit, TodosOverviewState>(
                   builder: (context, todosOverviewState) {
+                if (todosOverviewState.viewMode == TodosViewMode.calendar) {
+                  return const TodosCalendarBody();
+                }
                 final visibleTodos = todosOverviewState.visibleTodos;
                 return ListView.builder(
                     shrinkWrap: true,
@@ -97,7 +101,6 @@ class TodosOverviewView extends StatelessWidget {
   }
 }
 
-// Calendar swap wired up in the Calendar View phase.
 class TodosOverviewMenuSheet extends StatelessWidget {
   const TodosOverviewMenuSheet({super.key});
 
@@ -132,9 +135,18 @@ class TodosOverviewMenuSheet extends StatelessWidget {
                     ),
                   )),
           _MenuRow(
-              icon: Symbols.calendar_month,
-              label: 'Swap to Calendar View',
+              icon: cubit.state.viewMode == TodosViewMode.calendar
+                  ? Symbols.list
+                  : Symbols.calendar_month,
+              label: cubit.state.viewMode == TodosViewMode.calendar
+                  ? 'Swap to List View'
+                  : 'Swap to Calendar View',
               onTap: () {
+                cubit.setViewMode(
+                  cubit.state.viewMode == TodosViewMode.calendar
+                      ? TodosViewMode.list
+                      : TodosViewMode.calendar,
+                );
                 Navigator.pop(context);
               }),
         ],

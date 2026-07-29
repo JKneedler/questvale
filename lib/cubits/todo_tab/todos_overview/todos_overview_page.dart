@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:questvale/cubits/todo_tab/todos_calendar/todos_calendar_cubit.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_cubit.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_view.dart';
 import 'package:questvale/data/repositories/todo_repository.dart';
@@ -11,11 +12,16 @@ class TodosOverviewPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => TodosOverviewCubit(
-        TodoRepository(db: context.read<Database>()),
-        CharacterRepository(db: context.read<Database>()),
-      ),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => TodosOverviewCubit(
+            TodoRepository(db: context.read<Database>()),
+            CharacterRepository(db: context.read<Database>()),
+          ),
+        ),
+        BlocProvider(create: (context) => TodosCalendarCubit()),
+      ],
       child: const TodosOverviewView(),
     );
   }
