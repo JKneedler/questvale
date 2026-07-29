@@ -90,7 +90,7 @@ class HabitService {
       completionsInCurrentPeriod: completions,
       currentPeriodStart: periodStart,
       isCompleted: false,
-      apAwarded: false,
+      completionAwarded: false,
     );
   }
 

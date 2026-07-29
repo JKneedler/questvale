@@ -116,7 +116,7 @@ class TodoRepository {
           ? DateTime.fromMillisecondsSinceEpoch(
               map[Todo.currentPeriodStartColumnName] as int)
           : null,
-      apAwarded: map[Todo.apAwardedColumnName] == 1,
+      completionAwarded: map[Todo.completionAwardedColumnName] == 1,
     );
   }
 

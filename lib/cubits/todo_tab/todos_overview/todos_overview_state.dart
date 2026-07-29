@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:questvale/data/models/character.dart';
+import 'package:questvale/data/models/character_stats.dart';
 import 'package:questvale/data/models/todo.dart';
 import 'package:questvale/data/models/tag.dart';
 
@@ -53,6 +54,7 @@ enum TodosViewMode { list, calendar }
 
 class TodosOverviewState extends Equatable {
   final Character? character;
+  final CharacterStats? characterStats;
   final List<Todo> todos;
   final List<Tag> availableTags;
   final TodoFilter filter;
@@ -63,6 +65,7 @@ class TodosOverviewState extends Equatable {
 
   const TodosOverviewState({
     this.character,
+    this.characterStats,
     this.todos = const [],
     this.availableTags = const [],
     this.filter = TodoFilter.today,
@@ -74,6 +77,7 @@ class TodosOverviewState extends Equatable {
 
   TodosOverviewState copyWith({
     Character? character,
+    CharacterStats? characterStats,
     List<Todo>? todos,
     List<Tag>? availableTags,
     TodoSort? sort,
@@ -81,6 +85,7 @@ class TodosOverviewState extends Equatable {
   }) {
     return TodosOverviewState(
       character: character ?? this.character,
+      characterStats: characterStats ?? this.characterStats,
       todos: todos ?? this.todos,
       availableTags: availableTags ?? this.availableTags,
       filter: filter,
@@ -163,6 +168,7 @@ class TodosOverviewState extends Equatable {
         todos,
         availableTags,
         character ?? '',
+        characterStats,
         filter,
         filterTag,
         filterPriority,

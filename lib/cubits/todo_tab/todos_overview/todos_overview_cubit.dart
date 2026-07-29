@@ -27,14 +27,26 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
 
   Future<void> loadCharacter() async {
     final character = await characterRepository.getSingleCharacter();
+    var stats = await characterRepository.getCharacterStats(character.id);
     var todos = await todoRepository.getTodosByCharacterId(character.id);
     todos = await Future.wait(todos.map(_advanceHabitPeriodIfNeeded));
+
+    // Stats tracking: longest streak ever achieved across all habits, kept
+    // in sync whenever a period rollover changes a streak.
+    final bestStreak = todos.fold<int>(0,
+        (best, todo) => todo.currentStreak > best ? todo.currentStreak : best);
+    if (bestStreak > stats.longestStreakAchieved) {
+      stats = stats.copyWith(longestStreakAchieved: bestStreak);
+      await characterRepository.updateCharacterStats(stats);
+    }
+
     final availableTags =
         await characterRepository.getCharacterTags(character.id);
     if (!isClosed) {
       emit(
         state.copyWith(
           character: character,
+          characterStats: stats,
           todos: todos,
           availableTags: availableTags
               .map((tag) => Tag(
@@ -60,18 +72,21 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
   }
 
   // Tasks stay freely completable/uncompletable — they just only ever earn
-  // AP once (apAwarded latches true and never resets for a one-time Task).
+  // AP + stats credit once (completionAwarded latches true and never resets
+  // for a one-time Task).
   Future<void> toggleCompletion(Todo todo) async {
     final isCompleting = !todo.isCompleted;
 
-    bool apAwarded = todo.apAwarded;
-    if (isCompleting && !todo.apAwarded) {
-      final awarded = await _awardAp(todo.difficulty, isHabit: false);
-      if (awarded) apAwarded = true;
+    bool completionAwarded = todo.completionAwarded;
+    if (isCompleting && !todo.completionAwarded) {
+      final rewarded =
+          await _grantCompletionRewards(todo.difficulty, isHabit: false);
+      if (rewarded) completionAwarded = true;
     }
 
     await todoRepository.updateTodo(
-      todo.copyWith(isCompleted: isCompleting, apAwarded: apAwarded),
+      todo.copyWith(
+          isCompleted: isCompleting, completionAwarded: completionAwarded),
     );
     await loadCharacter();
   }
@@ -84,29 +99,34 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
       return;
     }
 
-    // Multi-check habits earn AP every tap by design (each one is a
-    // genuinely new completion). Single-check habits toggle like a Task,
-    // so they get the same "only the first time" guard.
-    bool apAwarded = result.updated.apAwarded;
-    if (todo.allowsMultipleCompletions || !todo.apAwarded) {
-      final awarded = await _awardAp(todo.difficulty, isHabit: true);
-      if (awarded && !todo.allowsMultipleCompletions) {
-        apAwarded = true;
+    // Multi-check habits earn AP + stats credit every tap by design (each
+    // one is a genuinely new completion). Single-check habits toggle like
+    // a Task, so they get the same "only the first time" guard.
+    bool completionAwarded = result.updated.completionAwarded;
+    if (todo.allowsMultipleCompletions || !todo.completionAwarded) {
+      final rewarded =
+          await _grantCompletionRewards(todo.difficulty, isHabit: true);
+      if (rewarded && !todo.allowsMultipleCompletions) {
+        completionAwarded = true;
       }
     }
 
     await todoRepository.updateTodo(result.updated.copyWith(
-      apAwarded: apAwarded,
+      completionAwarded: completionAwarded,
     ));
     await loadCharacter();
   }
 
-  // Returns whether AP was actually awarded (false if blocked by the daily
-  // cap) so callers can decide whether to latch apAwarded.
-  Future<bool> _awardAp(DifficultyLevel difficulty,
+  // Grants AP (subject to the daily cap) and increments the totalCompleted
+  // stat together, as one bundled reward — callers gate repeat calls behind
+  // completionAwarded so re-toggling can't farm either one. Returns whether
+  // the reward actually fired (false if blocked by the daily cap), so
+  // callers can decide whether to latch completionAwarded.
+  Future<bool> _grantCompletionRewards(DifficultyLevel difficulty,
       {required bool isHabit}) async {
     final character = state.character;
-    if (character == null) return false;
+    final stats = state.characterStats;
+    if (character == null || stats == null) return false;
 
     final dailyEarned = apRewardService.currentDailyEarned(character);
     final rawAmount = apRewardService.apForCompletion(difficulty, isHabit);
@@ -119,6 +139,9 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
       dailyApEarned: dailyEarned + awarded,
       dailyApEarnedDate: DateTime(today.year, today.month, today.day),
     ));
+    await characterRepository.updateCharacterStats(
+      stats.copyWith(totalCompleted: stats.totalCompleted + 1),
+    );
     // PlayerCubit holds the canonical Character used elsewhere (e.g.
     // world_tab's combat AP display) — it has its own separate in-memory
     // copy, so it won't pick up this change until told to reload.
@@ -137,6 +160,7 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
   void setFilter(TodoFilter filter, {Tag? tag, PriorityLevel? priority}) {
     emit(TodosOverviewState(
       character: state.character,
+      characterStats: state.characterStats,
       todos: state.todos,
       availableTags: state.availableTags,
       filter: filter,
