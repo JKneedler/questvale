@@ -25,6 +25,8 @@ const GOLD_COLOR = Color(0xffFFD966);
 const ACTION_POINTS_COLOR = Colors.white;
 const SKILL_POINTS_COLOR = Color(0xffFFD966);
 
+const PRIMARY_DARK_ACCENT_COLOR = Color(0xffcaa365);
+
 // 9-slice (centerSlice) border/button asset families. All source PNGs are
 // 64x64 at scale 1.0. A widget rendered smaller than a family's min size
 // makes Flutter's centerSlice math collapse to zero and throws "centerSlice

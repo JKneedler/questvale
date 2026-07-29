@@ -4,6 +4,7 @@ import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/quest_board/gear_up/equipment_gear_up/equipment_gear_up_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/quest_board/gear_up/equipment_gear_up/equipment_gear_up_state.dart';
 import 'package:questvale/data/models/equipment.dart';
+import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
 import 'package:questvale/widgets/qv_equipment_item.dart';
@@ -301,7 +302,7 @@ class EquipmentSelectionView extends StatelessWidget {
               Container(
                 height: 2,
                 width: double.infinity,
-                color: Color(0xfffff2be),
+                color: colorScheme.onSurface,
               ),
               Container(
                 height: 4,
@@ -311,7 +312,7 @@ class EquipmentSelectionView extends StatelessWidget {
               Container(
                 height: 2,
                 width: double.infinity,
-                color: Color(0xffcaa365),
+                color: PRIMARY_DARK_ACCENT_COLOR,
               ),
               Expanded(
                 child: Container(
