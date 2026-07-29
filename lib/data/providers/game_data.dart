@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
+import 'package:questvale/data/providers/game_data_models/balance_data.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_attack_data.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_drop_data.dart';
@@ -11,6 +12,7 @@ import 'package:questvale/helpers/shared_enums.dart';
 class GameData {
   late final List<QuestZone> questZones;
   late final List<SkillData> skills;
+  late final BalanceData balance;
 
   GameData._();
 
@@ -18,6 +20,7 @@ class GameData {
     final gameData = GameData._();
     gameData.questZones = await gameData.loadQuestZones();
     gameData.skills = await gameData.loadSkills();
+    gameData.balance = await gameData.loadBalanceData();
     return gameData;
   }
 
@@ -106,5 +109,24 @@ class GameData {
 
   SkillData getSkillDataById(String id) {
     return skills.firstWhere((skill) => skill.id == id);
+  }
+
+  Future<BalanceData> loadBalanceData() async {
+    final balanceStr = await rootBundle.loadString('data/balance.json');
+    final json = jsonDecode(balanceStr) as Map<String, dynamic>;
+    final apPerDifficultyJson = json['apPerDifficulty'] as Map<String, dynamic>;
+    return BalanceData(
+      apPerDifficulty: [
+        apPerDifficultyJson['trivial'] as int,
+        apPerDifficultyJson['easy'] as int,
+        apPerDifficultyJson['medium'] as int,
+        apPerDifficultyJson['hard'] as int,
+      ],
+      habitApMultiplier: (json['habitApMultiplier'] as num).toDouble(),
+      dailyApSoftCap: json['dailyApSoftCap'] as int,
+      dailyApSoftCapEfficiency:
+          (json['dailyApSoftCapEfficiency'] as num).toDouble(),
+      dailyApHardCap: json['dailyApHardCap'] as int,
+    );
   }
 }

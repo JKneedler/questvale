@@ -30,9 +30,19 @@ class TodoRepository {
   }
 
   // UPDATE todo
+  // Also reconciles reminders (replace-all) — the edit flow always rebuilds
+  // its full reminders list from scratch with fresh ids, so this was
+  // previously a silent no-op for reminder changes made via editing.
   Future<void> updateTodo(Todo updateTodo) async {
     await db.update(Todo.todoTableName, updateTodo.toMap(),
         where: '${Todo.idColumnName} = ?', whereArgs: [updateTodo.id]);
+
+    await db.delete(TodoReminder.todoReminderTableName,
+        where: '${TodoReminder.todoIdColumnName} = ?',
+        whereArgs: [updateTodo.id]);
+    for (final reminder in updateTodo.reminders) {
+      await db.insert(TodoReminder.todoReminderTableName, reminder.toMap());
+    }
   }
 
   // DELETE todo
@@ -93,6 +103,20 @@ class TodoRepository {
       isCompleted: map[Todo.isCompletedColumnName] == 1,
       tags: tags,
       reminders: reminders,
+      isHabit: map[Todo.isHabitColumnName] == 1,
+      timeframe: map[Todo.timeframeColumnName] != null
+          ? HabitTimeframe.values[map[Todo.timeframeColumnName] as int]
+          : null,
+      allowsMultipleCompletions:
+          map[Todo.allowsMultipleCompletionsColumnName] == 1,
+      completionsInCurrentPeriod:
+          map[Todo.completionsInCurrentPeriodColumnName] as int? ?? 0,
+      currentStreak: map[Todo.currentStreakColumnName] as int? ?? 0,
+      currentPeriodStart: map[Todo.currentPeriodStartColumnName] != null
+          ? DateTime.fromMillisecondsSinceEpoch(
+              map[Todo.currentPeriodStartColumnName] as int)
+          : null,
+      completionAwarded: map[Todo.completionAwardedColumnName] == 1,
     );
   }
 
@@ -125,13 +149,6 @@ class TodoRepository {
     return tags.toList();
   }
 
-  // GET reminders for todo
-  Future<List<TodoReminder>> getRemindersForTodo(String todoId) async {
-    final reminders = await db.query(TodoReminder.todoReminderTableName,
-        where: '${TodoReminder.todoIdColumnName} = ?', whereArgs: [todoId]);
-    return reminders.map((map) => _getReminderFromMap(map)).toList();
-  }
-
   // UPDATE reminder
   Future<void> updateReminder(TodoReminder reminder) async {
     await db.update(TodoReminder.todoReminderTableName, reminder.toMap(),
@@ -156,6 +173,9 @@ class TodoRepository {
       todoId: map[TodoReminder.todoIdColumnName] as String,
       dateTime: DateTime.fromMillisecondsSinceEpoch(
           map[TodoReminder.dateTimeColumnName] as int),
+      reminderType: map[TodoReminder.reminderTypeColumnName] != null
+          ? ReminderType.values[map[TodoReminder.reminderTypeColumnName] as int]
+          : null,
     );
   }
 

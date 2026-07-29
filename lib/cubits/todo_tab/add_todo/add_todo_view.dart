@@ -283,6 +283,17 @@ class EtcFields extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 12),
+        HabitMenu(state: state),
+        if (state.isHabit) ...[
+          const SizedBox(width: 12),
+          MultipleCompletionsToggle(
+            value: state.allowsMultipleCompletions,
+            onTap: () => context
+                .read<AddTodoCubit>()
+                .multipleCompletionsToggled(!state.allowsMultipleCompletions),
+          ),
+        ],
+        const SizedBox(width: 12),
         PriorityMenu(priority: state.priority),
         const SizedBox(width: 12),
         DifficultyMenu(difficulty: state.difficulty),
@@ -317,6 +328,81 @@ class EtcFields extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class HabitMenu extends StatelessWidget {
+  final AddTodoState state;
+
+  final MenuController menuController = MenuController();
+
+  HabitMenu({super.key, required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+    return QVPopupMenu(
+      menuController: menuController,
+      offset: const Offset(0, -260),
+      button: Icon(
+        Symbols.event_repeat,
+        color: state.isHabit
+            ? colorScheme.primary
+            : colorScheme.onPrimaryFixedVariant,
+        weight: 600,
+      ),
+      menuContents: [
+        QvPopupMenuItem(
+          text: 'One-time Task',
+          icon: Symbols.check_circle,
+          iconColor: !state.isHabit ? colorScheme.primary : null,
+          textColor: !state.isHabit ? colorScheme.primary : null,
+          onPressed: () {
+            menuController.close();
+            context.read<AddTodoCubit>().habitToggled(false);
+          },
+        ),
+        for (final tf in HabitTimeframe.values)
+          QvPopupMenuItem(
+            text: tf.name,
+            icon: Symbols.event_repeat,
+            iconColor: state.isHabit && state.timeframe == tf
+                ? colorScheme.primary
+                : null,
+            textColor: state.isHabit && state.timeframe == tf
+                ? colorScheme.primary
+                : null,
+            onPressed: () {
+              menuController.close();
+              context.read<AddTodoCubit>().timeframeChanged(tf);
+            },
+          ),
+      ],
+    );
+  }
+}
+
+class MultipleCompletionsToggle extends StatelessWidget {
+  final bool value;
+  final VoidCallback onTap;
+
+  const MultipleCompletionsToggle({
+    super.key,
+    required this.value,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+    return GestureDetector(
+      onTap: onTap,
+      child: Icon(
+        Symbols.plus_one,
+        color: value ? colorScheme.primary : colorScheme.onPrimaryFixedVariant,
+        weight: 600,
+      ),
     );
   }
 }

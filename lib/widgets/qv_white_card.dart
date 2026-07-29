@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:questvale/helpers/constants.dart';
 
 class QVWhiteCard extends StatelessWidget {
   const QVWhiteCard({
@@ -19,44 +20,51 @@ class QVWhiteCard extends StatelessWidget {
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Stack(
-        children: [
-          Center(
-            child: FractionallySizedBox(
-              widthFactor: .95,
-              heightFactor: .95,
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        minWidth: STANDARD_BORDER_MIN_SIZE.width,
+        minHeight: STANDARD_BORDER_MIN_SIZE.height,
+      ),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Stack(
+          children: [
+            Center(
+              child: FractionallySizedBox(
+                widthFactor: .95,
+                heightFactor: .95,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: colorScheme.secondary,
+                    image: decorationImage.isNotEmpty
+                        ? DecorationImage(
+                            image: AssetImage(decorationImage),
+                            fit: BoxFit.cover,
+                            filterQuality: FilterQuality.none,
+                          )
+                        : null,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                ),
+              ),
+            ),
+            Positioned.fill(
               child: Container(
-                decoration: BoxDecoration(
-                  color: colorScheme.secondary,
-                  image: decorationImage.isNotEmpty
-                      ? DecorationImage(
-                          image: AssetImage(decorationImage),
-                          fit: BoxFit.cover,
-                          filterQuality: FilterQuality.none,
-                        )
-                      : null,
-                  borderRadius: BorderRadius.circular(24),
+                padding: padding,
+                foregroundDecoration: BoxDecoration(
+                  image: DecorationImage(
+                    image:
+                        AssetImage('images/ui/borders/primary-border-2x.png'),
+                    centerSlice: STANDARD_BORDER_SLICE,
+                    fit: BoxFit.fill,
+                    filterQuality: FilterQuality.none,
+                  ),
                 ),
+                child: child,
               ),
             ),
-          ),
-          Positioned.fill(
-            child: Container(
-              padding: padding,
-              foregroundDecoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('images/ui/borders/primary-border-2x.png'),
-                  centerSlice: Rect.fromLTWH(16, 16, 32, 32),
-                  fit: BoxFit.fill,
-                  filterQuality: FilterQuality.none,
-                ),
-              ),
-              child: child,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:questvale/helpers/constants.dart';
 
 enum QvInsetBackgroundType {
   surface,
@@ -15,7 +16,7 @@ class QvInsetBackground extends StatelessWidget {
   const QvInsetBackground({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+    this.padding = const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
     this.width,
     this.height,
     this.type = QvInsetBackgroundType.secondary,
@@ -24,21 +25,27 @@ class QvInsetBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: padding,
-      width: width,
-      height: height,
-      decoration: enabled
-          ? BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('images/ui/${type.name}-background-2x.png'),
-                centerSlice: Rect.fromLTWH(16, 16, 32, 32),
-                fit: BoxFit.fill,
-                filterQuality: FilterQuality.none,
-              ),
-            )
-          : null,
-      child: child,
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        minWidth: STANDARD_BORDER_MIN_SIZE.width,
+        minHeight: STANDARD_BORDER_MIN_SIZE.height,
+      ),
+      child: Container(
+        padding: padding,
+        width: width,
+        height: height,
+        decoration: enabled
+            ? BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('images/ui/${type.name}-background-2x.png'),
+                  centerSlice: STANDARD_BORDER_SLICE,
+                  fit: BoxFit.fill,
+                  filterQuality: FilterQuality.none,
+                ),
+              )
+            : null,
+        child: child,
+      ),
     );
   }
 }

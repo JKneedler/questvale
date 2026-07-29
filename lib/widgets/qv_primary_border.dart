@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:questvale/helpers/constants.dart';
 
 class QvPrimaryBorder extends StatelessWidget {
   final Widget child;
@@ -19,34 +20,41 @@ class QvPrimaryBorder extends StatelessWidget {
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
 
-    return Stack(
-      children: [
-        Center(
-          child: FractionallySizedBox(
-            widthFactor: widthFactor,
-            heightFactor: heightFactor,
-            child: Container(
-              color: color ?? colorScheme.surface,
-              padding: padding,
-              child: child,
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        minWidth: STANDARD_BORDER_MIN_SIZE.width,
+        minHeight: STANDARD_BORDER_MIN_SIZE.height,
+      ),
+      child: Stack(
+        children: [
+          Center(
+            child: FractionallySizedBox(
+              widthFactor: widthFactor,
+              heightFactor: heightFactor,
+              child: Container(
+                color: color ?? colorScheme.surface,
+                padding: padding,
+                child: child,
+              ),
             ),
           ),
-        ),
-        Positioned.fill(
-          child: IgnorePointer(
-            child: Container(
-              foregroundDecoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('images/ui/borders/primary-border-2x.png'),
-                  centerSlice: Rect.fromLTWH(16, 16, 32, 32),
-                  fit: BoxFit.fill,
-                  filterQuality: FilterQuality.none,
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Container(
+                foregroundDecoration: BoxDecoration(
+                  image: DecorationImage(
+                    image:
+                        AssetImage('images/ui/borders/primary-border-2x.png'),
+                    centerSlice: STANDARD_BORDER_SLICE,
+                    fit: BoxFit.fill,
+                    filterQuality: FilterQuality.none,
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/character_skill.dart';
+import 'package:questvale/data/models/character_stats.dart';
 import 'package:questvale/data/models/character_tag.dart';
 import 'package:questvale/data/repositories/equipment_repository.dart';
 import 'package:questvale/helpers/shared_enums.dart';
@@ -183,8 +184,44 @@ class CharacterRepository {
       activeSkillSlot3: activeSkillSlot3,
       activeSkillSlot4: activeSkillSlot4,
       activeSkillSlot5: activeSkillSlot5,
+      dailyApEarned: map[Character.dailyApEarnedColumnName] as int? ?? 0,
+      dailyApEarnedDate: map[Character.dailyApEarnedDateColumnName] != null
+          ? DateTime.fromMillisecondsSinceEpoch(
+              map[Character.dailyApEarnedDateColumnName] as int)
+          : null,
     );
     return character;
+  }
+
+  // CHARACTER STATS METHODS
+  Future<CharacterStats> getCharacterStats(String characterId) async {
+    final maps = await db.query(
+      CharacterStats.characterStatsTableName,
+      where: '${CharacterStats.characterIdColumnName} = ?',
+      whereArgs: [characterId],
+      limit: 1,
+    );
+    if (maps.isEmpty) {
+      final stats = CharacterStats(characterId: characterId);
+      await db.insert(CharacterStats.characterStatsTableName, stats.toMap());
+      return stats;
+    }
+    final map = maps[0];
+    return CharacterStats(
+      characterId: map[CharacterStats.characterIdColumnName] as String,
+      longestStreakAchieved:
+          map[CharacterStats.longestStreakAchievedColumnName] as int? ?? 0,
+      totalCompleted: map[CharacterStats.totalCompletedColumnName] as int? ?? 0,
+    );
+  }
+
+  Future<void> updateCharacterStats(CharacterStats stats) async {
+    await db.update(
+      CharacterStats.characterStatsTableName,
+      stats.toMap(),
+      where: '${CharacterStats.characterIdColumnName} = ?',
+      whereArgs: [stats.characterId],
+    );
   }
 
   Future<void> insertCharacterSkill(CharacterSkill skill) async {

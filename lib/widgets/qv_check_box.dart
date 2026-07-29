@@ -19,7 +19,9 @@ class QvCheckBox extends StatelessWidget {
       width: width,
       height: height,
       child: Image(
-        color: isChecked ? Colors.black54 : Colors.black87,
+        color: isChecked
+            ? colorScheme.onPrimaryFixedVariant
+            : colorScheme.onPrimaryContainer,
         filterQuality: FilterQuality.none,
         image: isChecked
             ? AssetImage('images/ui/white-checkbox-checked.png')
@@ -27,29 +29,5 @@ class QvCheckBox extends StatelessWidget {
         fit: BoxFit.fill,
       ),
     );
-    // return Container(
-    //   width: width,
-    //   height: height,
-    //   decoration: BoxDecoration(
-    //     color: isChecked ? colorScheme.onPrimaryFixedVariant : null,
-    //     // borderRadius: BorderRadius.circular(4),
-    //     border: Border.all(
-    //       color: isChecked
-    //           ? Colors.transparent
-    //           : outlineColor ?? colorScheme.onPrimaryFixedVariant,
-    //       width: 1.5,
-    //     ),
-    //   ),
-    //   child: isChecked
-    //       ? Center(
-    //           child: Icon(
-    //             Symbols.check,
-    //             color: colorScheme.primaryContainer,
-    //             size: width * 0.9,
-    //             weight: 900,
-    //           ),
-    //         )
-    //       : null,
-    // );
   }
 }

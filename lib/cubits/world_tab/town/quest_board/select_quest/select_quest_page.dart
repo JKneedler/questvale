@@ -9,6 +9,7 @@ import 'package:questvale/cubits/world_tab/town/town_state.dart';
 import 'package:questvale/data/providers/game_data.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
 import 'package:questvale/data/providers/game_data_models/quest_zone.dart';
+import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/widgets/qv_app_bar.dart';
 import 'package:questvale/widgets/qv_enemy_info_modal.dart';
 import 'package:questvale/widgets/qv_gray_filter.dart';
@@ -232,7 +233,7 @@ class SelectQuestZoneCard extends StatelessWidget {
                                 height: 40,
                                 decoration: BoxDecoration(
                                   image: DecorationImage(
-                                    centerSlice: Rect.fromLTWH(16, 16, 32, 32),
+                                    centerSlice: STANDARD_BORDER_SLICE,
                                     image: AssetImage(
                                       'images/ui/buttons/primary-button-2x.png',
                                     ),
@@ -272,7 +273,7 @@ class SelectQuestZoneCard extends StatelessWidget {
                   image: DecorationImage(
                     image:
                         AssetImage('images/ui/borders/primary-border-2x.png'),
-                    centerSlice: Rect.fromLTWH(16, 16, 32, 32),
+                    centerSlice: STANDARD_BORDER_SLICE,
                     fit: BoxFit.fill,
                     filterQuality: FilterQuality.none,
                   ),

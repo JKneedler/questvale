@@ -31,7 +31,10 @@ class NavBar extends StatelessWidget {
             SizedBox(height: 8),
             SizedBox(
               width: MediaQuery.of(context).size.width + 20,
-              height: 6 + bottomPadding,
+              // 50 comfortably fits the icon slot's natural height (28px
+              // icon + 16px QvInsetBackground padding = 44px) above the
+              // centerSlice border's 36px minimum, with a little headroom.
+              height: 50 + bottomPadding,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -55,7 +58,8 @@ class NavBar extends StatelessWidget {
                           child: Image.asset(
                             'images/ui/icons/${items[i].iconName}-icon-${items[i].selected ? 'primary' : 'secondary'}.png',
                             filterQuality: FilterQuality.none,
-                            scale: .1,
+                            width: 28,
+                            height: 28,
                             fit: BoxFit.contain,
                           ),
                         ),

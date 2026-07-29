@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:questvale/cubits/home/home_page.dart';
 import 'package:questvale/data/questvale_db.dart';
+import 'package:questvale/services/notification_service.dart';
 import 'package:sqflite/sqflite.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final Database dbConn = await QuestvaleDB.initializeDB();
+  await NotificationService().init();
 
   runApp(MyApp(
     questvaleDB: dbConn,

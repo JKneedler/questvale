@@ -15,6 +15,9 @@ class EditTodoState extends Equatable {
   final List<Tag> availableTags;
   final List<Tag> selectedTags;
   final List<ReminderType> reminders;
+  final bool isHabit;
+  final HabitTimeframe? timeframe;
+  final bool allowsMultipleCompletions;
 
   const EditTodoState({
     required this.todo,
@@ -28,6 +31,9 @@ class EditTodoState extends Equatable {
     this.availableTags = const [],
     required this.selectedTags,
     required this.reminders,
+    this.isHabit = false,
+    this.timeframe,
+    this.allowsMultipleCompletions = false,
   });
 
   EditTodoState copyWith({
@@ -42,6 +48,9 @@ class EditTodoState extends Equatable {
     List<Tag>? availableTags,
     List<Tag>? selectedTags,
     List<ReminderType>? reminders,
+    bool? isHabit,
+    HabitTimeframe? timeframe,
+    bool? allowsMultipleCompletions,
   }) {
     return EditTodoState(
       todo: todo ?? this.todo,
@@ -55,6 +64,10 @@ class EditTodoState extends Equatable {
       availableTags: availableTags ?? this.availableTags,
       selectedTags: selectedTags ?? this.selectedTags,
       reminders: reminders ?? this.reminders,
+      isHabit: isHabit ?? this.isHabit,
+      timeframe: timeframe ?? this.timeframe,
+      allowsMultipleCompletions:
+          allowsMultipleCompletions ?? this.allowsMultipleCompletions,
     );
   }
 
@@ -70,6 +83,9 @@ class EditTodoState extends Equatable {
         priority,
         availableTags,
         selectedTags,
-        reminders
+        reminders,
+        isHabit,
+        timeframe,
+        allowsMultipleCompletions,
       ];
 }

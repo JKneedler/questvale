@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:questvale/helpers/constants.dart';
 
 class SummarySlice extends StatelessWidget {
   final String title;
@@ -18,7 +19,7 @@ class SummarySlice extends StatelessWidget {
       decoration: BoxDecoration(
         image: DecorationImage(
           image: AssetImage('images/ui/secondary-background-2x.png'),
-          centerSlice: Rect.fromLTWH(16, 16, 32, 32),
+          centerSlice: STANDARD_BORDER_SLICE,
           fit: BoxFit.fill,
           filterQuality: FilterQuality.none,
         ),

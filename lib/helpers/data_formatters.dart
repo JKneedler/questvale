@@ -1,21 +1,22 @@
 class DataFormatters {
+  static const _months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec'
+  ];
+
   static String formatDateTime(DateTime dateTime, bool hasTime) {
     final now = DateTime.now();
-    final months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec'
-    ];
-    final month = months[dateTime.month - 1];
+    final month = _months[dateTime.month - 1];
     final day = dateTime.day;
 
     String formatted = '$month $day';
@@ -29,6 +30,10 @@ class DataFormatters {
     }
 
     return formatted;
+  }
+
+  static String formatMonthYear(DateTime date) {
+    return '${_months[date.month - 1]} ${date.year}';
   }
 
   static String formatTime(DateTime time) {

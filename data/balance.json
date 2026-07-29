@@ -1,0 +1,12 @@
+{
+  "apPerDifficulty": {
+    "trivial": 1,
+    "easy": 3,
+    "medium": 6,
+    "hard": 10
+  },
+  "habitApMultiplier": 0.8,
+  "dailyApSoftCap": 20,
+  "dailyApSoftCapEfficiency": 0.5,
+  "dailyApHardCap": 200
+}

@@ -1,6 +1,7 @@
 import 'package:path/path.dart';
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/character_skill.dart';
+import 'package:questvale/data/models/character_stats.dart';
 import 'package:questvale/data/models/encounter.dart';
 import 'package:questvale/data/models/encounter_reward.dart';
 import 'package:questvale/data/models/enemy.dart';
@@ -26,6 +27,7 @@ class QuestvaleDB {
       await db.execute(TodoReminder.createTableSQL);
       await db.execute(CharacterTag.createTableSQL);
       await db.execute(Character.createTableSQL);
+      await db.execute(CharacterStats.createTableSQL);
       final CharacterRepository characterRepo = CharacterRepository(db: db);
       final characterId = Uuid().v4();
       final activeSkillSlot1 = CharacterSkill(
@@ -56,6 +58,8 @@ class QuestvaleDB {
           activeSkillSlot2: activeSkillSlot2,
         ),
       );
+      await db.insert(CharacterStats.characterStatsTableName,
+          CharacterStats(characterId: characterId).toMap());
       await db.execute(CharacterSkill.createTableSQL);
       characterRepo.insertCharacterSkill(
         activeSkillSlot1,
@@ -72,6 +76,71 @@ class QuestvaleDB {
       await db.execute(StatModifier.createTableSQL);
 
       await db.execute(Enemy.createTableSQL);
-    }, version: 1);
+    }, onUpgrade: (db, oldVersion, newVersion) async {
+      if (oldVersion < 2) {
+        await db.execute(
+            'ALTER TABLE ${Todo.todoTableName} ADD COLUMN ${Todo.isHabitColumnName} BOOLEAN DEFAULT 0');
+        await db.execute(
+            'ALTER TABLE ${Todo.todoTableName} ADD COLUMN ${Todo.timeframeColumnName} INTEGER');
+        await db.execute(
+            'ALTER TABLE ${Todo.todoTableName} ADD COLUMN ${Todo.allowsMultipleCompletionsColumnName} BOOLEAN DEFAULT 0');
+        await db.execute(
+            'ALTER TABLE ${Todo.todoTableName} ADD COLUMN ${Todo.completionsInCurrentPeriodColumnName} INTEGER DEFAULT 0');
+        await db.execute(
+            'ALTER TABLE ${Todo.todoTableName} ADD COLUMN ${Todo.currentStreakColumnName} INTEGER DEFAULT 0');
+        await db.execute(
+            'ALTER TABLE ${Todo.todoTableName} ADD COLUMN ${Todo.currentPeriodStartColumnName} INTEGER');
+      }
+      if (oldVersion < 3) {
+        await db.execute(
+            'ALTER TABLE ${Character.characterTableName} ADD COLUMN ${Character.dailyApEarnedColumnName} INTEGER DEFAULT 0');
+        await db.execute(
+            'ALTER TABLE ${Character.characterTableName} ADD COLUMN ${Character.dailyApEarnedDateColumnName} INTEGER');
+      }
+      if (oldVersion < 4) {
+        // Column was named apAwarded at the time; renamed to
+        // completionAwarded in the version 6 migration below.
+        await db.execute(
+            'ALTER TABLE ${Todo.todoTableName} ADD COLUMN apAwarded BOOLEAN DEFAULT 0');
+      }
+      if (oldVersion < 5) {
+        await db.execute(
+            'ALTER TABLE ${TodoReminder.todoReminderTableName} ADD COLUMN ${TodoReminder.reminderTypeColumnName} INTEGER');
+      }
+      if (oldVersion < 6) {
+        await db.execute(
+            'ALTER TABLE ${Todo.todoTableName} RENAME COLUMN apAwarded TO ${Todo.completionAwardedColumnName}');
+        // Columns were briefly on Characters directly; moved to their own
+        // CharacterStats table in the version 7 migration below.
+        await db.execute(
+            'ALTER TABLE ${Character.characterTableName} ADD COLUMN longestStreakAchieved INTEGER DEFAULT 0');
+        await db.execute(
+            'ALTER TABLE ${Character.characterTableName} ADD COLUMN totalCompleted INTEGER DEFAULT 0');
+      }
+      if (oldVersion < 7) {
+        await db.execute(CharacterStats.createTableSQL);
+        // Backfill from Characters for anyone who already has those columns
+        // (from the version 6 migration above); harmless no-op otherwise
+        // since a fresh version-6 install never had them at all.
+        final hasLegacyColumns = (await db
+                .rawQuery('PRAGMA table_info(${Character.characterTableName})'))
+            .any((column) => column['name'] == 'longestStreakAchieved');
+        if (hasLegacyColumns) {
+          await db.execute('''
+            INSERT INTO ${CharacterStats.characterStatsTableName} (
+              ${CharacterStats.characterIdColumnName},
+              ${CharacterStats.longestStreakAchievedColumnName},
+              ${CharacterStats.totalCompletedColumnName}
+            )
+            SELECT ${Character.idColumnName}, longestStreakAchieved, totalCompleted
+            FROM ${Character.characterTableName}
+          ''');
+          await db.execute(
+              'ALTER TABLE ${Character.characterTableName} DROP COLUMN longestStreakAchieved');
+          await db.execute(
+              'ALTER TABLE ${Character.characterTableName} DROP COLUMN totalCompleted');
+        }
+      }
+    }, version: 7);
   }
 }

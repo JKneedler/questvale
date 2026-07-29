@@ -5,6 +5,8 @@ import 'package:questvale/data/models/todo.dart';
 import 'package:questvale/data/models/todo_reminder.dart';
 import 'package:questvale/data/repositories/todo_repository.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
+import 'package:questvale/services/habit_service.dart';
+import 'package:questvale/services/notification_service.dart';
 import 'package:uuid/uuid.dart';
 
 class AddTodoCubit extends Cubit<AddTodoState> {
@@ -71,6 +73,35 @@ class AddTodoCubit extends Cubit<AddTodoState> {
     emit(state.copyWith(priority: value));
   }
 
+  void habitToggled(bool value) {
+    emit(AddTodoState(
+      id: state.id,
+      characterId: state.characterId,
+      name: state.name,
+      description: state.description,
+      dueDate: state.dueDate,
+      hasTime: state.hasTime,
+      difficulty: state.difficulty,
+      priority: state.priority,
+      availableTags: state.availableTags,
+      selectedTags: state.selectedTags,
+      status: state.status,
+      reminders: state.reminders,
+      isHabit: value,
+      timeframe: value ? (state.timeframe ?? HabitTimeframe.daily) : null,
+      allowsMultipleCompletions:
+          value ? state.allowsMultipleCompletions : false,
+    ));
+  }
+
+  void timeframeChanged(HabitTimeframe value) {
+    emit(state.copyWith(isHabit: true, timeframe: value));
+  }
+
+  void multipleCompletionsToggled(bool value) {
+    emit(state.copyWith(allowsMultipleCompletions: value));
+  }
+
   void toggleTag(Tag tag) {
     if (state.selectedTags.contains(tag)) {
       emit(state.copyWith(
@@ -96,9 +127,19 @@ class AddTodoCubit extends Cubit<AddTodoState> {
         tags: state.selectedTags,
         hasTime: state.hasTime,
         reminders: _createRemindersForTodo(state.id),
+        isHabit: state.isHabit,
+        timeframe: state.timeframe,
+        allowsMultipleCompletions: state.allowsMultipleCompletions,
+        currentPeriodStart: state.isHabit
+            ? HabitService.startOfPeriodContaining(DateTime.now())
+            : null,
       );
 
       await todoRepository.createTodo(todo);
+      for (final reminder in todo.reminders) {
+        await NotificationService()
+            .scheduleReminder(reminder, title: todo.name);
+      }
       emit(AddTodoState(
         status: AddTodoStatus.initial,
         id: const Uuid().v4(),
@@ -111,6 +152,9 @@ class AddTodoCubit extends Cubit<AddTodoState> {
         priority: PriorityLevel.noPriority,
         selectedTags: [],
         reminders: [],
+        isHabit: false,
+        timeframe: null,
+        allowsMultipleCompletions: false,
       ));
     } catch (e) {
       // Handle error
@@ -159,6 +203,7 @@ class AddTodoCubit extends Cubit<AddTodoState> {
           id: const Uuid().v4(),
           todoId: todoId,
           dateTime: reminderDateTime,
+          reminderType: reminder,
         ),
       );
     }

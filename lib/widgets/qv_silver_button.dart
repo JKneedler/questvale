@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:questvale/helpers/constants.dart';
 
 class QvSilverButton extends StatelessWidget {
   const QvSilverButton({
@@ -18,21 +19,27 @@ class QvSilverButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap ?? () {},
-      child: Container(
-        width: width,
-        height: height,
-        padding: padding,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('images/ui/buttons/silver-button-2x.png'),
-            centerSlice: Rect.fromLTWH(16, 16, 32, 32),
-            fit: BoxFit.fill,
-            filterQuality: FilterQuality.none,
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        minWidth: STANDARD_BORDER_MIN_SIZE.width,
+        minHeight: STANDARD_BORDER_MIN_SIZE.height,
+      ),
+      child: GestureDetector(
+        onTap: onTap ?? () {},
+        child: Container(
+          width: width,
+          height: height,
+          padding: padding,
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('images/ui/buttons/silver-button-2x.png'),
+              centerSlice: STANDARD_BORDER_SLICE,
+              fit: BoxFit.fill,
+              filterQuality: FilterQuality.none,
+            ),
           ),
+          child: child,
         ),
-        child: child,
       ),
     );
   }

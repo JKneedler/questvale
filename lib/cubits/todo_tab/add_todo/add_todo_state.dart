@@ -1,46 +1,11 @@
 import 'package:equatable/equatable.dart';
 import 'package:questvale/data/models/tag.dart';
 import 'package:questvale/data/models/todo.dart';
+import 'package:questvale/data/models/todo_reminder.dart';
+
+export 'package:questvale/data/models/todo_reminder.dart' show ReminderType;
 
 enum AddTodoStatus { initial, loading, done }
-
-enum ReminderType {
-  atTimeWithoutTime,
-  oneDayBeforeWithoutTime,
-  twoDaysBeforeWithoutTime,
-  threeDeysBeforeWithoutTime,
-  oneWeekBeforeWithoutTime,
-  atTimeWithTime,
-  fiveMinutesBeforeWithTime,
-  thirtyMinutesBeforeWithTime,
-  oneHourBeforeWithTime,
-  oneDayBeforeWithTime;
-
-  String get name {
-    switch (this) {
-      case ReminderType.atTimeWithoutTime:
-        return 'On time';
-      case ReminderType.oneDayBeforeWithoutTime:
-        return '1 day before';
-      case ReminderType.twoDaysBeforeWithoutTime:
-        return '2 days before';
-      case ReminderType.threeDeysBeforeWithoutTime:
-        return '3 days before';
-      case ReminderType.oneWeekBeforeWithoutTime:
-        return '1 week before';
-      case ReminderType.atTimeWithTime:
-        return 'On time';
-      case ReminderType.fiveMinutesBeforeWithTime:
-        return '5 minutes before';
-      case ReminderType.thirtyMinutesBeforeWithTime:
-        return '30 minutes before';
-      case ReminderType.oneHourBeforeWithTime:
-        return '1 hour before';
-      case ReminderType.oneDayBeforeWithTime:
-        return '1 day before';
-    }
-  }
-}
 
 class AddTodoState extends Equatable {
   final AddTodoStatus status;
@@ -55,6 +20,9 @@ class AddTodoState extends Equatable {
   final List<Tag> availableTags;
   final List<Tag> selectedTags;
   final List<ReminderType> reminders;
+  final bool isHabit;
+  final HabitTimeframe? timeframe;
+  final bool allowsMultipleCompletions;
 
   const AddTodoState({
     this.status = AddTodoStatus.initial,
@@ -69,6 +37,9 @@ class AddTodoState extends Equatable {
     this.availableTags = const [],
     this.selectedTags = const [],
     this.reminders = const [],
+    this.isHabit = false,
+    this.timeframe,
+    this.allowsMultipleCompletions = false,
   });
 
   AddTodoState copyWith({
@@ -84,6 +55,9 @@ class AddTodoState extends Equatable {
     List<Tag>? availableTags,
     List<Tag>? selectedTags,
     List<ReminderType>? reminders,
+    bool? isHabit,
+    HabitTimeframe? timeframe,
+    bool? allowsMultipleCompletions,
   }) {
     return AddTodoState(
       status: status ?? this.status,
@@ -98,6 +72,10 @@ class AddTodoState extends Equatable {
       availableTags: availableTags ?? this.availableTags,
       selectedTags: selectedTags ?? this.selectedTags,
       reminders: reminders ?? this.reminders,
+      isHabit: isHabit ?? this.isHabit,
+      timeframe: timeframe ?? this.timeframe,
+      allowsMultipleCompletions:
+          allowsMultipleCompletions ?? this.allowsMultipleCompletions,
     );
   }
 
@@ -115,5 +93,8 @@ class AddTodoState extends Equatable {
         availableTags,
         selectedTags,
         reminders,
+        isHabit,
+        timeframe,
+        allowsMultipleCompletions,
       ];
 }
