@@ -6,6 +6,7 @@ import 'package:questvale/data/models/todo.dart';
 import 'package:questvale/data/models/todo_reminder.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
 import 'package:questvale/data/repositories/todo_repository.dart';
+import 'package:questvale/services/habit_service.dart';
 import 'package:uuid/uuid.dart';
 
 class EditTodoCubit extends Cubit<EditTodoState> {
@@ -178,7 +179,9 @@ class EditTodoCubit extends Cubit<EditTodoState> {
     final wasHabit = state.todo.isHabit;
     final isNowHabit = state.isHabit;
     final currentPeriodStart = isNowHabit
-        ? (wasHabit ? state.todo.currentPeriodStart : DateTime.now())
+        ? (wasHabit
+            ? state.todo.currentPeriodStart
+            : HabitService.startOfPeriodContaining(DateTime.now()))
         : null;
     final completionsInCurrentPeriod =
         isNowHabit && wasHabit ? state.todo.completionsInCurrentPeriod : 0;

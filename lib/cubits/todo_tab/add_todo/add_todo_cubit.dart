@@ -5,6 +5,7 @@ import 'package:questvale/data/models/todo.dart';
 import 'package:questvale/data/models/todo_reminder.dart';
 import 'package:questvale/data/repositories/todo_repository.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
+import 'package:questvale/services/habit_service.dart';
 import 'package:uuid/uuid.dart';
 
 class AddTodoCubit extends Cubit<AddTodoState> {
@@ -128,7 +129,9 @@ class AddTodoCubit extends Cubit<AddTodoState> {
         isHabit: state.isHabit,
         timeframe: state.timeframe,
         allowsMultipleCompletions: state.allowsMultipleCompletions,
-        currentPeriodStart: state.isHabit ? DateTime.now() : null,
+        currentPeriodStart: state.isHabit
+            ? HabitService.startOfPeriodContaining(DateTime.now())
+            : null,
       );
 
       await todoRepository.createTodo(todo);

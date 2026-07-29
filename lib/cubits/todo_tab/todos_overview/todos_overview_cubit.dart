@@ -26,7 +26,8 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
 
   Future<void> loadCharacter() async {
     final character = await characterRepository.getSingleCharacter();
-    final todos = await todoRepository.getTodosByCharacterId(character.id);
+    var todos = await todoRepository.getTodosByCharacterId(character.id);
+    todos = await Future.wait(todos.map(_advanceHabitPeriodIfNeeded));
     final availableTags =
         await characterRepository.getCharacterTags(character.id);
     if (!isClosed) {
@@ -45,6 +46,16 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
         ),
       );
     }
+  }
+
+  // Checked on every load rather than on a timer/background job — cheap,
+  // idempotent (no-ops if no period has elapsed), and keeps streaks correct
+  // even if the app wasn't opened during the period boundary.
+  Future<Todo> _advanceHabitPeriodIfNeeded(Todo todo) async {
+    final updated = habitService.advancePeriodsIfNeeded(todo);
+    if (identical(updated, todo)) return todo;
+    await todoRepository.updateTodo(updated);
+    return updated;
   }
 
   // Tasks stay freely completable/uncompletable — they just only ever earn
