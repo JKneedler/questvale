@@ -183,6 +183,10 @@ class EditTodoCubit extends Cubit<EditTodoState> {
     final completionsInCurrentPeriod =
         isNowHabit && wasHabit ? state.todo.completionsInCurrentPeriod : 0;
     final currentStreak = isNowHabit && wasHabit ? state.todo.currentStreak : 0;
+    // Preserve whether this item already earned AP (so editing-and-saving
+    // can't reset the lock and let it re-earn AP) — unless the Task/Habit
+    // type just changed, which starts a fresh completion cycle.
+    final apAwarded = isNowHabit == wasHabit ? state.todo.apAwarded : false;
 
     final updatedTodo = Todo(
       id: state.todo.id,
@@ -202,6 +206,7 @@ class EditTodoCubit extends Cubit<EditTodoState> {
       currentPeriodStart: currentPeriodStart,
       completionsInCurrentPeriod: completionsInCurrentPeriod,
       currentStreak: currentStreak,
+      apAwarded: apAwarded,
     );
 
     await todoRepository.updateTodo(updatedTodo);

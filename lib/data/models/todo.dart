@@ -105,6 +105,7 @@ class Todo {
       'completionsInCurrentPeriod';
   static const currentStreakColumnName = 'currentStreak';
   static const currentPeriodStartColumnName = 'currentPeriodStart';
+  static const apAwardedColumnName = 'apAwarded';
 
   static const createTableSQL = '''
 		CREATE TABLE ${Todo.todoTableName}(
@@ -122,7 +123,8 @@ class Todo {
 			${Todo.allowsMultipleCompletionsColumnName} BOOLEAN DEFAULT 0,
 			${Todo.completionsInCurrentPeriodColumnName} INTEGER DEFAULT 0,
 			${Todo.currentStreakColumnName} INTEGER DEFAULT 0,
-			${Todo.currentPeriodStartColumnName} INTEGER
+			${Todo.currentPeriodStartColumnName} INTEGER,
+			${Todo.apAwardedColumnName} BOOLEAN DEFAULT 0
 		);
 	''';
 
@@ -143,6 +145,10 @@ class Todo {
   final int completionsInCurrentPeriod;
   final int currentStreak;
   final DateTime? currentPeriodStart;
+  // Has this item's current single-check completion already earned AP?
+  // Prevents un-completing and re-completing to farm AP repeatedly. Not
+  // used for multi-check habits, where every completion is genuinely new.
+  final bool apAwarded;
 
   const Todo({
     required this.id,
@@ -162,6 +168,7 @@ class Todo {
     this.completionsInCurrentPeriod = 0,
     this.currentStreak = 0,
     this.currentPeriodStart,
+    this.apAwarded = false,
   });
 
   Map<String, Object?> toMap() {
@@ -183,6 +190,7 @@ class Todo {
       Todo.currentStreakColumnName: currentStreak,
       Todo.currentPeriodStartColumnName:
           currentPeriodStart?.millisecondsSinceEpoch,
+      Todo.apAwardedColumnName: apAwarded ? 1 : 0,
     };
   }
 
@@ -217,6 +225,7 @@ class Todo {
     int? completionsInCurrentPeriod,
     int? currentStreak,
     DateTime? currentPeriodStart,
+    bool? apAwarded,
   }) {
     return Todo(
       id: id,
@@ -238,6 +247,7 @@ class Todo {
           completionsInCurrentPeriod ?? this.completionsInCurrentPeriod,
       currentStreak: currentStreak ?? this.currentStreak,
       currentPeriodStart: currentPeriodStart ?? this.currentPeriodStart,
+      apAwarded: apAwarded ?? this.apAwarded,
     );
   }
 }

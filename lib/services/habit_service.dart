@@ -1,28 +1,40 @@
 import 'package:questvale/data/models/todo.dart';
-import 'package:questvale/data/repositories/todo_repository.dart';
+
+class HabitCompletionResult {
+  // Whether this call represents a genuine new completion (as opposed to
+  // un-completing) — the caller uses this to decide whether to award AP.
+  final bool isNewCompletion;
+  final Todo updated;
+
+  const HabitCompletionResult({
+    required this.isNewCompletion,
+    required this.updated,
+  });
+}
 
 class HabitService {
-  final TodoRepository todoRepository;
+  // Multi-check habits just increment; single-check habits toggle like a
+  // Task. Pure computation — doesn't persist, so the caller can merge in
+  // other field changes (e.g. AP-award bookkeeping) into a single write.
+  HabitCompletionResult completeOnce(Todo todo) {
+    if (!todo.isHabit) {
+      return HabitCompletionResult(isNewCompletion: false, updated: todo);
+    }
 
-  HabitService({required this.todoRepository});
-
-  // Multi-check habits just increment; single-check habits toggle like a Task.
-  Future<void> completeOnce(Todo todo) async {
-    if (!todo.isHabit) return;
-
-    final Todo updated;
     if (todo.allowsMultipleCompletions) {
-      updated = todo.copyWith(
+      final updated = todo.copyWith(
         completionsInCurrentPeriod: todo.completionsInCurrentPeriod + 1,
         isCompleted: true,
       );
-    } else {
-      final isCompleting = !todo.isCompleted;
-      updated = todo.copyWith(
-        isCompleted: isCompleting,
-        completionsInCurrentPeriod: isCompleting ? 1 : 0,
-      );
+      return HabitCompletionResult(isNewCompletion: true, updated: updated);
     }
-    await todoRepository.updateTodo(updated);
+
+    final isCompleting = !todo.isCompleted;
+    final updated = todo.copyWith(
+      isCompleted: isCompleting,
+      completionsInCurrentPeriod: isCompleting ? 1 : 0,
+    );
+    return HabitCompletionResult(
+        isNewCompletion: isCompleting, updated: updated);
   }
 }

@@ -16,6 +16,7 @@ class QvAppBar extends StatelessWidget {
     this.insetColor,
     this.onBackButtonPressed,
     this.trailingButton,
+    this.leading,
   });
 
   final String title;
@@ -23,6 +24,7 @@ class QvAppBar extends StatelessWidget {
   final QvInsetBackgroundType? insetColor;
   final VoidCallback? onBackButtonPressed;
   final QvAppBarButton? trailingButton;
+  final Widget? leading;
 
   @override
   Widget build(BuildContext context) {
@@ -35,25 +37,28 @@ class QvAppBar extends StatelessWidget {
       color: color ?? colorScheme.surface,
       child: Row(
         children: [
-          GestureDetector(
-            onTap: onBackButtonPressed ?? () => Navigator.pop(context),
-            child: SizedBox(
-              width: 60,
-              height: 40,
-              child: onBackButtonPressed == null
-                  ? SizedBox.shrink()
-                  : SizedBox(
-                      child: Text(
-                        '<',
-                        style: TextStyle(
-                          fontSize: 26,
-                          color: colorScheme.onSurface,
+          if (leading != null)
+            leading!
+          else
+            GestureDetector(
+              onTap: onBackButtonPressed ?? () => Navigator.pop(context),
+              child: SizedBox(
+                width: 60,
+                height: 40,
+                child: onBackButtonPressed == null
+                    ? SizedBox.shrink()
+                    : SizedBox(
+                        child: Text(
+                          '<',
+                          style: TextStyle(
+                            fontSize: 26,
+                            color: colorScheme.onSurface,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
-                        textAlign: TextAlign.center,
                       ),
-                    ),
+              ),
             ),
-          ),
           Expanded(
             child: Center(
               child: Text(

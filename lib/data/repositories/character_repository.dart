@@ -183,6 +183,11 @@ class CharacterRepository {
       activeSkillSlot3: activeSkillSlot3,
       activeSkillSlot4: activeSkillSlot4,
       activeSkillSlot5: activeSkillSlot5,
+      dailyApEarned: map[Character.dailyApEarnedColumnName] as int? ?? 0,
+      dailyApEarnedDate: map[Character.dailyApEarnedDateColumnName] != null
+          ? DateTime.fromMillisecondsSinceEpoch(
+              map[Character.dailyApEarnedDateColumnName] as int)
+          : null,
     );
     return character;
   }

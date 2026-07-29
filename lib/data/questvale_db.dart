@@ -87,6 +87,16 @@ class QuestvaleDB {
         await db.execute(
             'ALTER TABLE ${Todo.todoTableName} ADD COLUMN ${Todo.currentPeriodStartColumnName} INTEGER');
       }
-    }, version: 2);
+      if (oldVersion < 3) {
+        await db.execute(
+            'ALTER TABLE ${Character.characterTableName} ADD COLUMN ${Character.dailyApEarnedColumnName} INTEGER DEFAULT 0');
+        await db.execute(
+            'ALTER TABLE ${Character.characterTableName} ADD COLUMN ${Character.dailyApEarnedDateColumnName} INTEGER');
+      }
+      if (oldVersion < 4) {
+        await db.execute(
+            'ALTER TABLE ${Todo.todoTableName} ADD COLUMN ${Todo.apAwardedColumnName} BOOLEAN DEFAULT 0');
+      }
+    }, version: 4);
   }
 }

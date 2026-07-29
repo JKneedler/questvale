@@ -28,6 +28,8 @@ class Character extends Equatable {
   static const skillSlot3ColumnName = 'skillSlot3';
   static const skillSlot4ColumnName = 'skillSlot4';
   static const skillSlot5ColumnName = 'skillSlot5';
+  static const dailyApEarnedColumnName = 'dailyApEarned';
+  static const dailyApEarnedDateColumnName = 'dailyApEarnedDate';
 
   static const createTableSQL = '''
 		CREATE TABLE ${Character.characterTableName}(
@@ -52,7 +54,9 @@ class Character extends Equatable {
       ${Character.skillSlot2ColumnName} VARCHAR,
       ${Character.skillSlot3ColumnName} VARCHAR,
       ${Character.skillSlot4ColumnName} VARCHAR,
-      ${Character.skillSlot5ColumnName} VARCHAR
+      ${Character.skillSlot5ColumnName} VARCHAR,
+      ${Character.dailyApEarnedColumnName} INTEGER DEFAULT 0,
+      ${Character.dailyApEarnedDateColumnName} INTEGER
 		);
 	''';
 
@@ -79,6 +83,8 @@ class Character extends Equatable {
   final CharacterSkill? activeSkillSlot3;
   final CharacterSkill? activeSkillSlot4;
   final CharacterSkill? activeSkillSlot5;
+  final int dailyApEarned;
+  final DateTime? dailyApEarnedDate;
 
   const Character({
     required this.id,
@@ -104,6 +110,8 @@ class Character extends Equatable {
     this.activeSkillSlot3,
     this.activeSkillSlot4,
     this.activeSkillSlot5,
+    this.dailyApEarned = 0,
+    this.dailyApEarnedDate,
   });
 
   int get maxHealth {
@@ -187,6 +195,9 @@ class Character extends Equatable {
       Character.skillSlot3ColumnName: activeSkillSlot3?.id,
       Character.skillSlot4ColumnName: activeSkillSlot4?.id,
       Character.skillSlot5ColumnName: activeSkillSlot5?.id,
+      Character.dailyApEarnedColumnName: dailyApEarned,
+      Character.dailyApEarnedDateColumnName:
+          dailyApEarnedDate?.millisecondsSinceEpoch,
     };
   }
 
@@ -218,6 +229,8 @@ class Character extends Equatable {
     CharacterSkill? activeSkillSlot3,
     CharacterSkill? activeSkillSlot4,
     CharacterSkill? activeSkillSlot5,
+    int? dailyApEarned,
+    DateTime? dailyApEarnedDate,
   }) {
     return Character(
       id: id,
@@ -243,6 +256,8 @@ class Character extends Equatable {
       activeSkillSlot3: activeSkillSlot3 ?? this.activeSkillSlot3,
       activeSkillSlot4: activeSkillSlot4 ?? this.activeSkillSlot4,
       activeSkillSlot5: activeSkillSlot5 ?? this.activeSkillSlot5,
+      dailyApEarned: dailyApEarned ?? this.dailyApEarned,
+      dailyApEarnedDate: dailyApEarnedDate ?? this.dailyApEarnedDate,
     );
   }
 
@@ -270,6 +285,8 @@ class Character extends Equatable {
         activeSkillSlot2,
         activeSkillSlot3,
         activeSkillSlot4,
-        activeSkillSlot5
+        activeSkillSlot5,
+        dailyApEarned,
+        dailyApEarnedDate,
       ];
 }
