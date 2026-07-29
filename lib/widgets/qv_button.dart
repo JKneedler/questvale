@@ -29,6 +29,29 @@ enum ButtonColor {
         return ButtonColor.common;
     }
   }
+
+  String get assetPath {
+    switch (this) {
+      case ButtonColor.primary:
+        return 'images/ui/buttons/button-primary.png';
+      case ButtonColor.secondary:
+        return 'images/ui/buttons/button-secondary.png';
+      case ButtonColor.surface:
+        return 'images/ui/buttons/button-surface.png';
+      case ButtonColor.silver:
+        return 'images/ui/buttons/button-silver.png';
+      case ButtonColor.common:
+        return 'images/ui/buttons/button-rarity-common.png';
+      case ButtonColor.uncommon:
+        return 'images/ui/buttons/button-rarity-uncommon.png';
+      case ButtonColor.rare:
+        return 'images/ui/buttons/button-rarity-rare.png';
+      case ButtonColor.legendary:
+        return 'images/ui/buttons/button-rarity-legendary.png';
+      case ButtonColor.epic:
+        return 'images/ui/buttons/button-rarity-epic.png';
+    }
+  }
 }
 
 class QvButton extends StatelessWidget {
@@ -67,8 +90,7 @@ class QvButton extends StatelessWidget {
           padding: padding,
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: AssetImage(
-                  'images/ui/buttons/${buttonColor.name.toString()}-button-2x.png'),
+              image: AssetImage(buttonColor.assetPath),
               centerSlice: STANDARD_BORDER_SLICE,
               fit: BoxFit.fill,
               filterQuality: FilterQuality.none,

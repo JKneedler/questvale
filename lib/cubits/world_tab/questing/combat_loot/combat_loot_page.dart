@@ -114,7 +114,7 @@ class CombatLootView extends StatelessWidget {
                       decoration: BoxDecoration(
                         image: DecorationImage(
                           image: AssetImage(
-                              'images/ui/secondary-background-2x.png'),
+                              'images/ui/backgrounds/background-secondary.png'),
                           centerSlice: STANDARD_BORDER_SLICE,
                           fit: BoxFit.fill,
                           filterQuality: FilterQuality.none,

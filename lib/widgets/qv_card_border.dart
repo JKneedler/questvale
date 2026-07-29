@@ -36,11 +36,11 @@ class QvCardBorder extends StatelessWidget {
     String getBorderImage() {
       switch (type) {
         case QvCardBorderType.rarity:
-          return 'images/ui/borders/${rarity.name.toLowerCase()}-border-mini-2x.png';
+          return rarity.borderAssetPath;
         case QvCardBorderType.primary:
-          return 'images/ui/borders/primary-border-mini-2x.png';
+          return 'images/ui/borders/border-primary-mini.png';
         case QvCardBorderType.surface:
-          return 'images/ui/borders/surface-border-mini-2x.png';
+          return 'images/ui/borders/border-surface-mini.png';
       }
     }
 

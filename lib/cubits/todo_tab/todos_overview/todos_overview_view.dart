@@ -39,7 +39,7 @@ class TodosOverviewView extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             image: DecorationImage(
-              image: AssetImage('images/ui/buttons/primary-button-2x.png'),
+              image: AssetImage('images/ui/buttons/button-primary.png'),
               centerSlice: STANDARD_BORDER_SLICE,
               fit: BoxFit.fill,
               filterQuality: FilterQuality.none,

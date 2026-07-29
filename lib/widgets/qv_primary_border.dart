@@ -44,7 +44,7 @@ class QvPrimaryBorder extends StatelessWidget {
                 foregroundDecoration: BoxDecoration(
                   image: DecorationImage(
                     image:
-                        AssetImage('images/ui/borders/primary-border-2x.png'),
+                        AssetImage('images/ui/borders/border-primary.png'),
                     centerSlice: STANDARD_BORDER_SLICE,
                     fit: BoxFit.fill,
                     filterQuality: FilterQuality.none,

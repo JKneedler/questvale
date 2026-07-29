@@ -45,7 +45,7 @@ class QvMetalCornerBorder extends StatelessWidget {
                 foregroundDecoration: BoxDecoration(
                   image: DecorationImage(
                     image: AssetImage(
-                        'images/ui/borders/primary-metal-edge-border-2x.png'),
+                        'images/ui/borders/border-primary-metal-edge.png'),
                     centerSlice: METAL_CORNER_BORDER_SLICE,
                     fit: BoxFit.fill,
                     filterQuality: FilterQuality.none,

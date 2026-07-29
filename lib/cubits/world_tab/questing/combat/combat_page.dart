@@ -227,7 +227,7 @@ class CombatView extends StatelessWidget {
                       decoration: BoxDecoration(
                         image: DecorationImage(
                           image: AssetImage(
-                              'images/ui/buttons/primary-button-no-bottom-2x.png'),
+                              'images/ui/buttons/button-primary-flat.png'),
                           centerSlice: STANDARD_BORDER_SLICE,
                           fit: BoxFit.fill,
                         ),
@@ -642,7 +642,7 @@ class EnemyInfoBox extends StatelessWidget {
                                   decoration: BoxDecoration(
                                       image: DecorationImage(
                                     image: AssetImage(
-                                        'images/ui/health-border.png'),
+                                        'images/ui/borders/border-health.png'),
                                     centerSlice: HEALTH_BORDER_SLICE,
                                     fit: BoxFit.fill,
                                     filterQuality: FilterQuality.none,
@@ -741,7 +741,7 @@ class EnemyNextAttackSlice extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: AssetImage('images/ui/secondary-background-2x.png'),
+              image: AssetImage('images/ui/backgrounds/background-secondary.png'),
               centerSlice: STANDARD_BORDER_SLICE,
               fit: BoxFit.fill,
               filterQuality: FilterQuality.none,
@@ -789,7 +789,7 @@ class EnemyStatusEffectsSlice extends StatelessWidget {
           height: 40,
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: AssetImage('images/ui/secondary-background-2x.png'),
+              image: AssetImage('images/ui/backgrounds/background-secondary.png'),
               centerSlice: STANDARD_BORDER_SLICE,
               fit: BoxFit.fill,
               filterQuality: FilterQuality.none,

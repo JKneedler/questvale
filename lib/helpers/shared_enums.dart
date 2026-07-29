@@ -40,6 +40,36 @@ enum Rarity {
         return 1;
     }
   }
+
+  String get borderAssetPath {
+    switch (this) {
+      case Rarity.common:
+        return 'images/ui/borders/border-rarity-common-mini.png';
+      case Rarity.uncommon:
+        return 'images/ui/borders/border-rarity-uncommon-mini.png';
+      case Rarity.rare:
+        return 'images/ui/borders/border-rarity-rare-mini.png';
+      case Rarity.epic:
+        return 'images/ui/borders/border-rarity-epic-mini.png';
+      case Rarity.legendary:
+        return 'images/ui/borders/border-rarity-legendary-mini.png';
+    }
+  }
+
+  String get buttonAssetPath {
+    switch (this) {
+      case Rarity.common:
+        return 'images/ui/buttons/button-rarity-common.png';
+      case Rarity.uncommon:
+        return 'images/ui/buttons/button-rarity-uncommon.png';
+      case Rarity.rare:
+        return 'images/ui/buttons/button-rarity-rare.png';
+      case Rarity.epic:
+        return 'images/ui/buttons/button-rarity-epic.png';
+      case Rarity.legendary:
+        return 'images/ui/buttons/button-rarity-legendary.png';
+    }
+  }
 }
 
 enum DamageType {

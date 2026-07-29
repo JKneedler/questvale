@@ -75,8 +75,10 @@ flutter:
     - images/pixel-icons/
     - images/ui/
     - images/ui/borders/
+    - images/ui/borders/nav/
     - images/ui/borders/skills/
     - images/ui/buttons/
+    - images/ui/backgrounds/
     - images/ui/icons/
     - images/characters/
     - images/enemies/
