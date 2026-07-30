@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:questvale/widgets/qv_inset_background.dart';
 
 class NavBar extends StatelessWidget {
   const NavBar({
@@ -31,7 +32,8 @@ class NavBar extends StatelessWidget {
             SizedBox(
               width: MediaQuery.of(context).size.width + 20,
               // 50 comfortably fits the icon slot's natural height (28px
-              // icon + 16px vertical padding = 44px), with a little headroom.
+              // icon + 16px QvInsetBackground padding = 44px) above the
+              // centerSlice border's 36px minimum, with a little headroom.
               height: 50 + bottomPadding,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -44,17 +46,29 @@ class NavBar extends StatelessWidget {
                       behavior: HitTestBehavior.translucent,
                       child: Container(
                         alignment: Alignment.center,
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                        color: items[i].selected
-                            ? colorScheme.primary
-                            : colorScheme.secondary,
-                        child: Image.asset(
-                          'images/ui/icons/${items[i].iconName}-icon.png',
-                          filterQuality: FilterQuality.none,
-                          width: 28,
-                          height: 28,
-                          fit: BoxFit.contain,
+                        decoration: BoxDecoration(
+                          color: colorScheme.surface,
+                        ),
+                        child: QvInsetBackground(
+                          type: QvInsetBackgroundType.secondary,
+                          enabled: items[i].selected,
+                          width: 100,
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          child: Image.asset(
+                            'images/ui/icons/${items[i].iconName}-icon.png',
+                            filterQuality: FilterQuality.none,
+                            width: 28,
+                            height: 28,
+                            fit: BoxFit.contain,
+                            // Icon PNGs are now plain white glyphs — tint
+                            // at runtime to primary/secondary per role
+                            // instead of relying on baked-in color variants.
+                            color: items[i].selected
+                                ? colorScheme.primary
+                                : colorScheme.secondary,
+                            colorBlendMode: BlendMode.srcIn,
+                          ),
                         ),
                       ),
                     ),
