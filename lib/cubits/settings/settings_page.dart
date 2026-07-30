@@ -10,8 +10,6 @@ import 'package:questvale/data/providers/game_data.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/widgets/qv_app_bar.dart';
 import 'package:questvale/widgets/qv_button.dart';
-import 'package:questvale/widgets/qv_popup_menu.dart';
-import 'package:questvale/widgets/qv_popup_menu_item.dart';
 import 'package:sqflite/sqflite.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -244,51 +242,91 @@ class InfoSlice extends StatelessWidget {
 }
 
 class ThemePicker extends StatelessWidget {
-  ThemePicker({super.key});
-
-  final MenuController menuController = MenuController();
+  const ThemePicker({super.key});
 
   @override
   Widget build(BuildContext context) {
     final activeTheme = context.watch<ThemeCubit>().state.theme;
-    return QVPopupMenu(
-      menuController: menuController,
-      offset: const Offset(0, -8),
-      // QvButton has its own internal GestureDetector (a no-op tap handler
-      // when onTap isn't passed), which sits inside QVPopupMenu's own
-      // tap-to-open GestureDetector and wins the gesture arena, swallowing
-      // the tap before it can open the menu. IgnorePointer keeps QvButton's
-      // visuals without letting it intercept the tap.
-      button: IgnorePointer(
-        child: QvButton(
-          width: 180,
-          height: 50,
-          buttonColor: ButtonColor.silver,
-          child: Center(
-            child: Text(activeTheme.displayName,
-                style: TextStyle(
-                    fontSize: 16,
-                    color: Theme.of(context).colorScheme.onPrimary)),
-          ),
+    final settingsCubit = context.read<SettingsCubit>();
+    return QvButton(
+      width: 180,
+      height: 50,
+      buttonColor: ButtonColor.silver,
+      onTap: () => showModalBottomSheet(
+        context: context,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+        builder: (context) => BlocProvider.value(
+          value: settingsCubit,
+          child: const ThemeSelectSheet(),
         ),
       ),
-      menuContents: [
-        for (final theme in APP_THEMES.values)
-          QvPopupMenuItem(
-            text: theme.displayName,
-            icon: Symbols.palette,
-            iconColor: theme.id == activeTheme.id
-                ? Theme.of(context).colorScheme.primary
-                : null,
-            textColor: theme.id == activeTheme.id
-                ? Theme.of(context).colorScheme.primary
-                : null,
-            onPressed: () {
-              menuController.close();
-              context.read<SettingsCubit>().setTheme(theme.id);
-            },
-          ),
-      ],
+      child: Center(
+        child: Text(activeTheme.displayName,
+            style: TextStyle(
+                fontSize: 16, color: Theme.of(context).colorScheme.onPrimary)),
+      ),
+    );
+  }
+}
+
+class ThemeSelectSheet extends StatelessWidget {
+  const ThemeSelectSheet({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final activeTheme = context.watch<ThemeCubit>().state.theme;
+    return SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final theme in APP_THEMES.values)
+            _ThemeRow(
+              theme: theme,
+              isSelected: theme.id == activeTheme.id,
+              onTap: () {
+                context.read<SettingsCubit>().setTheme(theme.id);
+                Navigator.pop(context);
+              },
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ThemeRow extends StatelessWidget {
+  final AppTheme theme;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _ThemeRow({
+    required this.theme,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        child: Row(
+          children: [
+            Icon(Symbols.palette,
+                color: isSelected ? colorScheme.primary : colorScheme.onSurface,
+                size: 20),
+            const SizedBox(width: 14),
+            Text(theme.displayName,
+                style: TextStyle(
+                    color: isSelected
+                        ? colorScheme.primary
+                        : colorScheme.onSurface,
+                    fontSize: 16)),
+          ],
+        ),
+      ),
     );
   }
 }
