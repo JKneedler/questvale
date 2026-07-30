@@ -70,7 +70,7 @@ class TodosOverviewView extends StatelessWidget {
               button: '⋮',
               onTap: () => showModalBottomSheet(
                 context: context,
-                backgroundColor: colorScheme.surface,
+                backgroundColor: colorScheme.surfaceContainer,
                 builder: (context) => BlocProvider.value(
                   value: todoCubit,
                   child: const TodosOverviewMenuSheet(),
@@ -148,7 +148,7 @@ class TodosOverviewMenuSheet extends StatelessWidget {
               label: 'Filter',
               onTap: () => showModalBottomSheet(
                     context: context,
-                    backgroundColor: colorScheme.surface,
+                    backgroundColor: colorScheme.surfaceContainer,
                     builder: (context) => BlocProvider.value(
                       value: cubit,
                       child: const TodosFilterSheet(),
@@ -159,7 +159,7 @@ class TodosOverviewMenuSheet extends StatelessWidget {
               label: 'Sort',
               onTap: () => showModalBottomSheet(
                     context: context,
-                    backgroundColor: colorScheme.surface,
+                    backgroundColor: colorScheme.surfaceContainer,
                     builder: (context) => BlocProvider.value(
                       value: cubit,
                       child: const TodosSortSheet(),
@@ -358,9 +358,7 @@ class _ChoiceChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected
-              ? colorScheme.primary
-              : colorScheme.surfaceContainerHigh,
+          color: isSelected ? colorScheme.primary : colorScheme.surface,
           borderRadius: BorderRadius.circular(100),
         ),
         child: Text(

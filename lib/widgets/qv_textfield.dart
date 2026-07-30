@@ -35,14 +35,15 @@ class QvTextField extends StatelessWidget {
       controller: controller,
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: colorScheme.onPrimaryFixedVariant),
+        hintStyle:
+            TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.5)),
         border: InputBorder.none,
         contentPadding: EdgeInsets.zero,
         isDense: true,
       ),
       style: TextStyle(
         fontSize: textSize,
-        color: colorScheme.onPrimaryContainer,
+        color: colorScheme.onSurface,
         fontWeight: FontWeight.w500,
       ),
       textInputAction: textInputAction,
