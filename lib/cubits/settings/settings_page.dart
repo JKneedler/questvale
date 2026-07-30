@@ -54,7 +54,9 @@ class SettingsPage extends StatelessWidget {
                           children: [
                             Expanded(
                                 child: Text('Generate 10 loot',
-                                    style: TextStyle(fontSize: 20))),
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        color: colorScheme.onSurface))),
                             QvButton(
                               width: 180,
                               height: 50,
@@ -118,11 +120,13 @@ class TableInfoSlice extends StatelessWidget {
         children: [
           Expanded(
               child: Text(tableInfo.tableType.name,
-                  style: TextStyle(fontSize: 16))),
+                  style: TextStyle(
+                      fontSize: 16, color: colorScheme.onSurface))),
           SizedBox(
               width: 40,
               child: Text(tableInfo.numRows.toString(),
-                  style: TextStyle(fontSize: 20))),
+                  style: TextStyle(
+                      fontSize: 20, color: colorScheme.onSurface))),
           QvButton(
             height: 40,
             width: tableInfo.isDeletable ? 60 : 130,
@@ -177,10 +181,15 @@ class InfoSlice extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         SizedBox(
-            width: 120, child: Text(title, style: TextStyle(fontSize: 20))),
+            width: 120,
+            child: Text(title,
+                style:
+                    TextStyle(fontSize: 20, color: colorScheme.onSurface))),
         SizedBox(
             width: 80,
-            child: Text(count.toString(), style: TextStyle(fontSize: 20))),
+            child: Text(count.toString(),
+                style:
+                    TextStyle(fontSize: 20, color: colorScheme.onSurface))),
         Expanded(
           child: QvButton(
             buttonColor: ButtonColor.silver,

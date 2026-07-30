@@ -67,7 +67,7 @@ class EditTodoView extends StatelessWidget {
                             Symbols.check,
                             weight: 500,
                             size: 32,
-                            color: colorScheme.onPrimaryFixedVariant,
+                            color: colorScheme.primary,
                           ),
                         ),
                       ],
@@ -344,7 +344,7 @@ class EditTodoView extends StatelessWidget {
                 label,
                 style: TextStyle(
                   fontSize: 14,
-                  color: colorScheme.onSurfaceVariant,
+                  color: colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
               ),
               Text(

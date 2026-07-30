@@ -20,12 +20,12 @@ class QvCheckBox extends StatelessWidget {
       height: height,
       child: Image(
         color: isChecked
-            ? colorScheme.onPrimaryFixedVariant
-            : colorScheme.onPrimaryContainer,
+            ? colorScheme.onSurface.withValues(alpha: 0.5)
+            : colorScheme.onSurface,
         filterQuality: FilterQuality.none,
         image: isChecked
-            ? AssetImage('images/ui/white-checkbox-checked.png')
-            : AssetImage('images/ui/white-checkbox.png'),
+            ? AssetImage('images/ui/checkbox-checked.png')
+            : AssetImage('images/ui/checkbox-unchecked.png'),
         fit: BoxFit.fill,
       ),
     );

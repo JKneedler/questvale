@@ -18,7 +18,7 @@ class SummarySlice extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         image: DecorationImage(
-          image: AssetImage('images/ui/secondary-background-2x.png'),
+          image: AssetImage('images/ui/backgrounds/background-secondary.png'),
           centerSlice: STANDARD_BORDER_SLICE,
           fit: BoxFit.fill,
           filterQuality: FilterQuality.none,

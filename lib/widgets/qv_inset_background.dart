@@ -3,7 +3,16 @@ import 'package:questvale/helpers/constants.dart';
 
 enum QvInsetBackgroundType {
   surface,
-  secondary,
+  secondary;
+
+  String get assetPath {
+    switch (this) {
+      case QvInsetBackgroundType.surface:
+        return 'images/ui/backgrounds/background-surface.png';
+      case QvInsetBackgroundType.secondary:
+        return 'images/ui/backgrounds/background-secondary.png';
+    }
+  }
 }
 
 class QvInsetBackground extends StatelessWidget {
@@ -37,7 +46,7 @@ class QvInsetBackground extends StatelessWidget {
         decoration: enabled
             ? BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage('images/ui/${type.name}-background-2x.png'),
+                  image: AssetImage(type.assetPath),
                   centerSlice: STANDARD_BORDER_SLICE,
                   fit: BoxFit.fill,
                   filterQuality: FilterQuality.none,

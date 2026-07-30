@@ -45,14 +45,14 @@ class TodosCalendarBody extends StatelessWidget {
                   dueDates: dueDates,
                 ),
                 const SizedBox(height: 8),
-                Container(height: 1, color: colorScheme.surfaceContainerHigh),
+                Container(height: 1, color: colorScheme.secondary),
                 Expanded(
                   child: selectedDayTodos.isEmpty
                       ? Center(
                           child: Text(
                             'Nothing due this day',
                             style: TextStyle(
-                              color: colorScheme.onPrimaryFixedVariant,
+                              color: colorScheme.onSurface.withValues(alpha: 0.5),
                               fontSize: 14,
                             ),
                           ),
@@ -145,7 +145,7 @@ class _MonthGrid extends StatelessWidget {
                       child: Text(
                         label,
                         style: TextStyle(
-                          color: colorScheme.onPrimaryFixedVariant,
+                          color: colorScheme.onSurface.withValues(alpha: 0.5),
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),

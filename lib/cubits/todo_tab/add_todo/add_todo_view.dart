@@ -30,7 +30,7 @@ class AddTodoView extends StatelessWidget {
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
       child: Container(
-        color: colorScheme.surfaceContainerLow,
+        color: colorScheme.surfaceContainer,
         child: BlocBuilder<AddTodoCubit, AddTodoState>(
           builder: (context, state) {
             return Padding(
@@ -196,7 +196,7 @@ class TagChip extends StatelessWidget {
         margin: margin,
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
         decoration: BoxDecoration(
-          color: isSelected ? color : colorScheme.surfaceContainerLow,
+          color: isSelected ? color : colorScheme.surface,
           borderRadius: BorderRadius.circular(100),
           border: isSelected
               ? Border.all(
@@ -204,7 +204,7 @@ class TagChip extends StatelessWidget {
                   width: 1.5,
                 )
               : Border.all(
-                  color: colorScheme.onPrimaryFixedVariant,
+                  color: colorScheme.onSurface.withValues(alpha: 0.5),
                   width: 1.5,
                 ),
         ),
@@ -216,7 +216,7 @@ class TagChip extends StatelessWidget {
               icon,
               color: isSelected
                   ? colorScheme.onPrimary
-                  : colorScheme.onPrimaryFixedVariant,
+                  : colorScheme.onSurface.withValues(alpha: 0.5),
               size: 16,
             ),
             Text(
@@ -224,7 +224,7 @@ class TagChip extends StatelessWidget {
               style: TextStyle(
                 color: isSelected
                     ? colorScheme.onPrimary
-                    : colorScheme.onPrimaryFixedVariant,
+                    : colorScheme.onSurface.withValues(alpha: 0.5),
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
               ),
@@ -266,7 +266,7 @@ class EtcFields extends StatelessWidget {
                 Symbols.calendar_clock,
                 color: state.dueDate != null
                     ? colorScheme.primary
-                    : colorScheme.onPrimaryFixedVariant,
+                    : colorScheme.onSurface.withValues(alpha: 0.5),
                 weight: 600,
               ),
               const SizedBox(width: 4),
@@ -300,7 +300,7 @@ class EtcFields extends StatelessWidget {
         const SizedBox(width: 12),
         Icon(
           Symbols.more_horiz,
-          color: colorScheme.onPrimaryFixedVariant,
+          color: colorScheme.onSurface.withValues(alpha: 0.5),
           weight: 600,
         ),
         Expanded(
@@ -320,7 +320,7 @@ class EtcFields extends StatelessWidget {
                 ),
                 child: Icon(
                   Icons.arrow_upward,
-                  color: colorScheme.surfaceContainerLow,
+                  color: colorScheme.onPrimary,
                   size: 20,
                 ),
               ),
@@ -349,7 +349,7 @@ class HabitMenu extends StatelessWidget {
         Symbols.event_repeat,
         color: state.isHabit
             ? colorScheme.primary
-            : colorScheme.onPrimaryFixedVariant,
+            : colorScheme.onSurface.withValues(alpha: 0.5),
         weight: 600,
       ),
       menuContents: [
@@ -400,7 +400,7 @@ class MultipleCompletionsToggle extends StatelessWidget {
       onTap: onTap,
       child: Icon(
         Symbols.plus_one,
-        color: value ? colorScheme.primary : colorScheme.onPrimaryFixedVariant,
+        color: value ? colorScheme.primary : colorScheme.onSurface.withValues(alpha: 0.5),
         weight: 600,
       ),
     );
@@ -424,7 +424,7 @@ class PriorityMenu extends StatelessWidget {
         PRIORITY_ICON,
         color: priority != PriorityLevel.noPriority
             ? priority.color
-            : colorScheme.onPrimaryFixedVariant,
+            : colorScheme.onSurface.withValues(alpha: 0.5),
         weight: 600,
       ),
       menuContents: [
@@ -462,7 +462,7 @@ class DifficultyMenu extends StatelessWidget {
         DIFFICULTY_ICON,
         color: difficulty != DifficultyLevel.trivial
             ? difficulty.color
-            : colorScheme.onPrimaryFixedVariant,
+            : colorScheme.onSurface.withValues(alpha: 0.5),
         weight: 600,
       ),
       menuContents: [

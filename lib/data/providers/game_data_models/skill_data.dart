@@ -20,11 +20,11 @@ enum SkillButtonColor {
   arcanePurple;
 
   String get borderImagePath => {
-        SkillButtonColor.weaponType: 'images/ui/borders/skills/royal_dusk.png',
-        SkillButtonColor.fireRed: 'images/ui/borders/skills/infernal_ruby.png',
-        SkillButtonColor.iceBlue: 'images/ui/borders/skills/arctic_dawn.png',
+        SkillButtonColor.weaponType: 'images/ui/borders/skills/skill-border-weapon-type.png',
+        SkillButtonColor.fireRed: 'images/ui/borders/skills/skill-border-fire-red.png',
+        SkillButtonColor.iceBlue: 'images/ui/borders/skills/skill-border-ice-blue.png',
         SkillButtonColor.arcanePurple:
-            'images/ui/borders/skills/royal_dusk.png',
+            'images/ui/borders/skills/skill-border-weapon-type.png',
       }[this]!;
 
   Color get backgroundColor => {

@@ -47,7 +47,7 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         child: QvButton(
-          buttonColor: ButtonColor.primary,
+          buttonColor: ButtonColor.surfaceContainer,
           child: GestureDetector(
             behavior: HitTestBehavior.translucent,
             onTap: () async {
@@ -102,8 +102,8 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: widget.todo.isCompleted
-                                  ? colorScheme.onPrimaryFixedVariant
-                                  : colorScheme.onPrimaryContainer,
+                                  ? colorScheme.onSurface.withValues(alpha: 0.5)
+                                  : colorScheme.onSurface,
                             ),
                           ),
                           if (widget.todo.description.isNotEmpty)
@@ -114,7 +114,7 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 14,
-                                color: colorScheme.onPrimaryFixedVariant,
+                                color: colorScheme.onSurface.withValues(alpha: 0.5),
                               ),
                             ),
                           if (widget.todo.tags.isNotEmpty)
@@ -132,7 +132,7 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
                                   children: [
                                     Icon(
                                       Symbols.local_fire_department,
-                                      color: colorScheme.onPrimaryContainer,
+                                      color: colorScheme.primary,
                                       size: 16,
                                     ),
                                     const SizedBox(width: 3),
@@ -141,7 +141,7 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
                                       style: TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
-                                        color: colorScheme.onPrimaryContainer,
+                                        color: colorScheme.primary,
                                       ),
                                     ),
                                     const SizedBox(width: 8),
@@ -164,7 +164,8 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
                                     fontSize: 14,
                                     color: isPastDue
                                         ? colorScheme.error
-                                        : colorScheme.primary,
+                                        : colorScheme.onSurface
+                                            .withValues(alpha: 0.5),
                                   ),
                                 ),
                             ],
@@ -199,14 +200,14 @@ class MultiCheckIndicator extends StatelessWidget {
             Symbols.add,
             size: 20,
             weight: 700,
-            color: colorScheme.onPrimaryContainer,
+            color: colorScheme.onSurface,
           ),
           Text(
             '$count',
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.bold,
-              color: colorScheme.onPrimaryContainer,
+              color: colorScheme.onSurface,
             ),
           ),
         ],
