@@ -25,6 +25,7 @@ class SettingsPage extends StatelessWidget {
           create: (context) => SettingsCubit(
               db: context.read<Database>(),
               gameData: context.read<GameData>(),
+              playerCubit: context.read<PlayerCubit>(),
               character: characterDataState.character!),
           child: BlocBuilder<SettingsCubit, SettingsState>(
               builder: (context, settingsState) {
@@ -65,6 +66,28 @@ class SettingsPage extends StatelessWidget {
                                   context.read<SettingsCubit>().generateLoot(),
                               child: Center(
                                 child: Text('Generate',
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        color: colorScheme.onPrimary)),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                                child: Text('Reset AP + daily AP to 0',
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        color: colorScheme.onSurface))),
+                            QvButton(
+                              width: 180,
+                              height: 50,
+                              buttonColor: ButtonColor.silver,
+                              onTap: () =>
+                                  context.read<SettingsCubit>().resetAp(),
+                              child: Center(
+                                child: Text('Reset',
                                     style: TextStyle(
                                         fontSize: 20,
                                         color: colorScheme.onPrimary)),
@@ -120,13 +143,13 @@ class TableInfoSlice extends StatelessWidget {
         children: [
           Expanded(
               child: Text(tableInfo.tableType.name,
-                  style: TextStyle(
-                      fontSize: 16, color: colorScheme.onSurface))),
+                  style:
+                      TextStyle(fontSize: 16, color: colorScheme.onSurface))),
           SizedBox(
               width: 40,
               child: Text(tableInfo.numRows.toString(),
-                  style: TextStyle(
-                      fontSize: 20, color: colorScheme.onSurface))),
+                  style:
+                      TextStyle(fontSize: 20, color: colorScheme.onSurface))),
           QvButton(
             height: 40,
             width: tableInfo.isDeletable ? 60 : 130,
@@ -183,13 +206,11 @@ class InfoSlice extends StatelessWidget {
         SizedBox(
             width: 120,
             child: Text(title,
-                style:
-                    TextStyle(fontSize: 20, color: colorScheme.onSurface))),
+                style: TextStyle(fontSize: 20, color: colorScheme.onSurface))),
         SizedBox(
             width: 80,
             child: Text(count.toString(),
-                style:
-                    TextStyle(fontSize: 20, color: colorScheme.onSurface))),
+                style: TextStyle(fontSize: 20, color: colorScheme.onSurface))),
         Expanded(
           child: QvButton(
             buttonColor: ButtonColor.silver,
