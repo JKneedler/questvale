@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:questvale/widgets/qv_inset_background.dart';
+import 'package:questvale/widgets/qv_button.dart';
 
 // Shows a transient "+ N AP" pill about a third of the way down the screen.
 // Fire-and-forget: inserts its own OverlayEntry and removes itself once its
@@ -65,15 +65,15 @@ class _ApToastState extends State<_ApToast>
         child: Center(
           child: FadeTransition(
             opacity: _opacity,
-            child: QvInsetBackground(
-              type: QvInsetBackgroundType.secondary,
+            child: QvButton(
+              buttonColor: ButtonColor.primary,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Text(
                 '+ ${widget.amount} AP',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: colorScheme.onSurface,
+                  color: colorScheme.onPrimary,
                 ),
               ),
             ),
