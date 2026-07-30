@@ -10,7 +10,6 @@ import 'package:questvale/data/providers/game_data.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/widgets/qv_app_bar.dart';
 import 'package:questvale/widgets/qv_button.dart';
-import 'package:questvale/widgets/qv_inset_background.dart';
 import 'package:questvale/widgets/qv_popup_menu.dart';
 import 'package:questvale/widgets/qv_popup_menu_item.dart';
 import 'package:sqflite/sqflite.dart';
@@ -115,27 +114,20 @@ class SettingsPage extends StatelessWidget {
                                 ThemePicker(),
                               ],
                             ),
-                            QvInsetBackground(
-                              width: double.infinity,
-                              height: 430,
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 10, horizontal: 10),
-                              child: SingleChildScrollView(
-                                child: Column(
-                                  children: [
-                                    for (var tableInfo
-                                        in settingsState.tableInfos)
-                                      TableInfoSlice(tableInfo: tableInfo),
-                                  ],
-                                ),
-                              ),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text('DB Tables',
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: colorScheme.onSurface)),
                             ),
-                            Center(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [],
-                              ),
-                            )
+                            Column(
+                              children: [
+                                for (var tableInfo in settingsState.tableInfos)
+                                  TableInfoSlice(tableInfo: tableInfo),
+                              ],
+                            ),
                           ],
                         ),
                       ),
