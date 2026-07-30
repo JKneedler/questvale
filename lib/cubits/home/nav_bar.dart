@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:questvale/widgets/qv_inset_background.dart';
 
 class NavBar extends StatelessWidget {
   const NavBar({
@@ -32,8 +31,7 @@ class NavBar extends StatelessWidget {
             SizedBox(
               width: MediaQuery.of(context).size.width + 20,
               // 50 comfortably fits the icon slot's natural height (28px
-              // icon + 16px QvInsetBackground padding = 44px) above the
-              // centerSlice border's 36px minimum, with a little headroom.
+              // icon + 16px vertical padding = 44px), with a little headroom.
               height: 50 + bottomPadding,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -46,32 +44,17 @@ class NavBar extends StatelessWidget {
                       behavior: HitTestBehavior.translucent,
                       child: Container(
                         alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: colorScheme.surface,
-                        ),
-                        child: QvInsetBackground(
-                          type: QvInsetBackgroundType.secondary,
-                          enabled: items[i].selected,
-                          width: 100,
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                          child: Image.asset(
-                            'images/ui/icons/${items[i].iconName}-icon-${items[i].selected ? 'primary' : 'secondary'}.png',
-                            filterQuality: FilterQuality.none,
-                            width: 28,
-                            height: 28,
-                            fit: BoxFit.contain,
-                            // The baked-in secondary glyph color is very
-                            // dark and low-contrast against the surface
-                            // backdrop — override it with a plain light
-                            // gray for the unselected/inactive state.
-                            // Selected icons keep their baked primary color
-                            // untouched.
-                            color:
-                                items[i].selected ? null : Colors.grey.shade700,
-                            colorBlendMode:
-                                items[i].selected ? null : BlendMode.srcIn,
-                          ),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        color: items[i].selected
+                            ? colorScheme.primary
+                            : colorScheme.secondary,
+                        child: Image.asset(
+                          'images/ui/icons/${items[i].iconName}-icon.png',
+                          filterQuality: FilterQuality.none,
+                          width: 28,
+                          height: 28,
+                          fit: BoxFit.contain,
                         ),
                       ),
                     ),
