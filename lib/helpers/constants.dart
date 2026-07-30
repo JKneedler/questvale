@@ -110,6 +110,22 @@ const Map<String, AppTheme> APP_THEMES = {
     surfaceContainerLight: Color(0xff717180),
     surfaceContainerDark: Color(0xff1f1f23),
   ),
+  'sunrise-peach': AppTheme(
+    id: 'sunrise-peach',
+    displayName: 'Sunrise Peach',
+    primaryMain: Color(0xffff9066),
+    primaryLight: Color(0xffffc2a7),
+    primaryDark: Color(0xfff96932),
+    secondaryMain: Color(0xff4a3b45),
+    secondaryLight: Color(0xff886d7f),
+    secondaryDark: Color(0xff281f25),
+    surfaceMain: Color(0xfffaf3ee),
+    surfaceLight: Color(0xffffffff),
+    surfaceDark: Color(0xffe9c9b3),
+    surfaceContainerMain: Color(0xfffefefe),
+    surfaceContainerLight: Color(0xffffffff),
+    surfaceContainerDark: Color(0xffdddddd),
+  ),
 };
 
 const String DEFAULT_THEME_ID = 'charcoal-gold';
