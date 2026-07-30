@@ -114,7 +114,8 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 14,
-                                color: colorScheme.onSurface.withValues(alpha: 0.5),
+                                color: colorScheme.onSurface
+                                    .withValues(alpha: 0.5),
                               ),
                             ),
                           if (widget.todo.tags.isNotEmpty)

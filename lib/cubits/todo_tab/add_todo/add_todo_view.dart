@@ -400,7 +400,9 @@ class MultipleCompletionsToggle extends StatelessWidget {
       onTap: onTap,
       child: Icon(
         Symbols.plus_one,
-        color: value ? colorScheme.primary : colorScheme.onSurface.withValues(alpha: 0.5),
+        color: value
+            ? colorScheme.primary
+            : colorScheme.onSurface.withValues(alpha: 0.5),
         weight: 600,
       ),
     );

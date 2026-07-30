@@ -3,6 +3,7 @@ import 'package:questvale/data/models/character_skill.dart';
 import 'package:questvale/data/models/character_stats.dart';
 import 'package:questvale/data/models/character_tag.dart';
 import 'package:questvale/data/repositories/equipment_repository.dart';
+import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -189,6 +190,7 @@ class CharacterRepository {
           ? DateTime.fromMillisecondsSinceEpoch(
               map[Character.dailyApEarnedDateColumnName] as int)
           : null,
+      themeId: map[Character.themeIdColumnName] as String? ?? DEFAULT_THEME_ID,
     );
     return character;
   }

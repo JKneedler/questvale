@@ -6,6 +6,7 @@ import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_item.dar
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_state.dart';
 import 'package:questvale/cubits/todo_tab/add_todo/add_todo_page.dart';
 import 'package:questvale/cubits/todo_tab/todos_calendar/todos_calendar_view.dart';
+import 'package:questvale/cubits/theme/theme_cubit.dart';
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/tag.dart';
 import 'package:questvale/data/models/todo.dart';
@@ -20,6 +21,7 @@ class TodosOverviewView extends StatelessWidget {
   Widget build(BuildContext context) {
     final todoCubit = context.read<TodosOverviewCubit>();
     ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final themeId = context.watch<ThemeCubit>().state.theme.id;
 
     return Scaffold(
       floatingActionButton: GestureDetector(
@@ -39,7 +41,8 @@ class TodosOverviewView extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             image: DecorationImage(
-              image: AssetImage('images/ui/buttons/button-primary.png'),
+              image:
+                  AssetImage('images/ui/buttons/$themeId/button-primary.png'),
               centerSlice: STANDARD_BORDER_SLICE,
               fit: BoxFit.fill,
               filterQuality: FilterQuality.none,

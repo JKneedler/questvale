@@ -52,7 +52,8 @@ class TodosCalendarBody extends StatelessWidget {
                           child: Text(
                             'Nothing due this day',
                             style: TextStyle(
-                              color: colorScheme.onSurface.withValues(alpha: 0.5),
+                              color:
+                                  colorScheme.onSurface.withValues(alpha: 0.5),
                               fontSize: 14,
                             ),
                           ),

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:questvale/cubits/theme/theme_cubit.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_attack_data.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_drop_data.dart';
@@ -48,6 +50,7 @@ class QvEnemyInfoModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final themeId = context.watch<ThemeCubit>().state.theme.id;
     return Center(
       child: SizedBox(
         width: 360,
@@ -76,8 +79,8 @@ class QvEnemyInfoModal extends StatelessWidget {
                                 padding: const EdgeInsets.only(left: 16),
                                 decoration: BoxDecoration(
                                   image: DecorationImage(
-                                    image:
-                                        AssetImage(enemyData.rarity.buttonAssetPath),
+                                    image: AssetImage(
+                                        enemyData.rarity.buttonAssetPath),
                                     centerSlice: STANDARD_BORDER_SLICE,
                                     fit: BoxFit.fill,
                                     filterQuality: FilterQuality.none,
@@ -288,7 +291,7 @@ class QvEnemyInfoModal extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   image: DecorationImage(
                                     image: AssetImage(
-                                      'images/ui/backgrounds/background-secondary.png',
+                                      'images/ui/backgrounds/$themeId/background-secondary.png',
                                     ),
                                     centerSlice: STANDARD_BORDER_SLICE,
                                     fit: BoxFit.fill,
@@ -360,7 +363,7 @@ class QvEnemyInfoModal extends StatelessWidget {
                   foregroundDecoration: BoxDecoration(
                     image: DecorationImage(
                       image: AssetImage(
-                          'images/ui/borders/border-primary-metal-edge.png'),
+                          'images/ui/borders/$themeId/border-primary-metal-edge.png'),
                       centerSlice: METAL_CORNER_BORDER_SLICE,
                       fit: BoxFit.fill,
                       filterQuality: FilterQuality.none,
@@ -429,6 +432,7 @@ class ElementsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final themeId = context.watch<ThemeCubit>().state.theme.id;
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -442,7 +446,8 @@ class ElementsView extends StatelessWidget {
             height: height,
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('images/ui/backgrounds/background-secondary.png'),
+                image: AssetImage(
+                    'images/ui/backgrounds/$themeId/background-secondary.png'),
                 centerSlice: Rect.fromLTWH(16, 16, 32, 32),
                 fit: BoxFit.fill,
                 filterQuality: FilterQuality.none,
@@ -584,6 +589,7 @@ class EnemyDropView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final themeId = context.watch<ThemeCubit>().state.theme.id;
 
     // TODO: Add discovered logic
     bool discovered = true;
@@ -605,7 +611,8 @@ class EnemyDropView extends StatelessWidget {
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage('images/ui/backgrounds/background-surface.png'),
+                    image: AssetImage(
+                        'images/ui/backgrounds/$themeId/background-surface.png'),
                     centerSlice: STANDARD_BORDER_SLICE,
                     fit: BoxFit.fill,
                     filterQuality: FilterQuality.none,

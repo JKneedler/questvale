@@ -76,8 +76,11 @@ flutter:
     - images/ui/
     - images/ui/borders/
     - images/ui/borders/skills/
+    - images/ui/borders/charcoal-gold/
     - images/ui/buttons/
+    - images/ui/buttons/charcoal-gold/
     - images/ui/backgrounds/
+    - images/ui/backgrounds/charcoal-gold/
     - images/ui/icons/
     - images/characters/
     - images/enemies/

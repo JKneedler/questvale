@@ -14,6 +14,7 @@ import 'package:questvale/data/models/todo_tag.dart';
 import 'package:questvale/data/models/todo_reminder.dart';
 import 'package:questvale/data/models/character_tag.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
+import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
@@ -141,6 +142,10 @@ class QuestvaleDB {
               'ALTER TABLE ${Character.characterTableName} DROP COLUMN totalCompleted');
         }
       }
-    }, version: 7);
+      if (oldVersion < 8) {
+        await db.execute(
+            'ALTER TABLE ${Character.characterTableName} ADD COLUMN ${Character.themeIdColumnName} TEXT NOT NULL DEFAULT \'$DEFAULT_THEME_ID\'');
+      }
+    }, version: 8);
   }
 }

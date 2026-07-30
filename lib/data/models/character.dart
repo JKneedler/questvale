@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:questvale/data/models/character_skill.dart';
 import 'package:questvale/data/models/equipment.dart';
+import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 
 class Character extends Equatable {
@@ -30,6 +31,7 @@ class Character extends Equatable {
   static const skillSlot5ColumnName = 'skillSlot5';
   static const dailyApEarnedColumnName = 'dailyApEarned';
   static const dailyApEarnedDateColumnName = 'dailyApEarnedDate';
+  static const themeIdColumnName = 'themeId';
 
   static const createTableSQL = '''
 		CREATE TABLE ${Character.characterTableName}(
@@ -56,7 +58,8 @@ class Character extends Equatable {
       ${Character.skillSlot4ColumnName} VARCHAR,
       ${Character.skillSlot5ColumnName} VARCHAR,
       ${Character.dailyApEarnedColumnName} INTEGER DEFAULT 0,
-      ${Character.dailyApEarnedDateColumnName} INTEGER
+      ${Character.dailyApEarnedDateColumnName} INTEGER,
+      ${Character.themeIdColumnName} TEXT NOT NULL DEFAULT '$DEFAULT_THEME_ID'
 		);
 	''';
 
@@ -85,6 +88,7 @@ class Character extends Equatable {
   final CharacterSkill? activeSkillSlot5;
   final int dailyApEarned;
   final DateTime? dailyApEarnedDate;
+  final String themeId;
 
   const Character({
     required this.id,
@@ -112,6 +116,7 @@ class Character extends Equatable {
     this.activeSkillSlot5,
     this.dailyApEarned = 0,
     this.dailyApEarnedDate,
+    this.themeId = DEFAULT_THEME_ID,
   });
 
   int get maxHealth {
@@ -198,6 +203,7 @@ class Character extends Equatable {
       Character.dailyApEarnedColumnName: dailyApEarned,
       Character.dailyApEarnedDateColumnName:
           dailyApEarnedDate?.millisecondsSinceEpoch,
+      Character.themeIdColumnName: themeId,
     };
   }
 
@@ -231,6 +237,7 @@ class Character extends Equatable {
     CharacterSkill? activeSkillSlot5,
     int? dailyApEarned,
     DateTime? dailyApEarnedDate,
+    String? themeId,
   }) {
     return Character(
       id: id,
@@ -258,6 +265,7 @@ class Character extends Equatable {
       activeSkillSlot5: activeSkillSlot5 ?? this.activeSkillSlot5,
       dailyApEarned: dailyApEarned ?? this.dailyApEarned,
       dailyApEarnedDate: dailyApEarnedDate ?? this.dailyApEarnedDate,
+      themeId: themeId ?? this.themeId,
     );
   }
 
@@ -288,5 +296,6 @@ class Character extends Equatable {
         activeSkillSlot5,
         dailyApEarned,
         dailyApEarnedDate,
+        themeId,
       ];
 }
