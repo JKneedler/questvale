@@ -211,6 +211,7 @@ class _TodosFilterSheetState extends State<TodosFilterSheet> {
         mainAxisSize: MainAxisSize.min,
         children: [
           for (final f in [
+            TodoFilter.none,
             TodoFilter.today,
             TodoFilter.thisWeek,
             TodoFilter.all,
