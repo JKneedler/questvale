@@ -62,33 +62,21 @@ enum ButtonColor {
     }
   }
 
-  // Pressed-state textures are generated on a per-color/per-theme basis (see
-  // the retheme-color Light/Dark-swap technique) and don't exist for every
-  // combination yet. Return null wherever one hasn't been generated so
-  // QvButton can fall back to the normal texture instead of loading a
-  // nonexistent asset.
+  // Pressed-state textures exist for every registered theme's primary/
+  // secondary/surface/surfaceContainer assets (generated via the
+  // retheme-color Light/Dark-swap technique). Rarity/silver buttons don't
+  // have a pressed variant, so QvButton falls back to the normal texture
+  // for those.
   String? pressedAssetPath(String themeId) {
     switch (this) {
       case ButtonColor.primary:
-        if (themeId == 'charcoal-gold') {
-          return 'images/ui/buttons/$themeId/button-primary-pressed.png';
-        }
-        return null;
+        return 'images/ui/buttons/$themeId/button-primary-pressed.png';
       case ButtonColor.secondary:
-        if (themeId == 'charcoal-gold') {
-          return 'images/ui/buttons/$themeId/button-secondary-pressed.png';
-        }
-        return null;
+        return 'images/ui/buttons/$themeId/button-secondary-pressed.png';
       case ButtonColor.surface:
-        if (themeId == 'charcoal-gold') {
-          return 'images/ui/buttons/$themeId/button-surface-pressed.png';
-        }
-        return null;
+        return 'images/ui/buttons/$themeId/button-surface-pressed.png';
       case ButtonColor.surfaceContainer:
-        if (themeId == 'charcoal-gold') {
-          return 'images/ui/buttons/$themeId/button-surface-container-pressed.png';
-        }
-        return null;
+        return 'images/ui/buttons/$themeId/button-surface-container-pressed.png';
       default:
         return null;
     }
