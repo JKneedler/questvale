@@ -35,25 +35,45 @@ class TodosOverviewView extends StatelessWidget {
             );
           }
         },
-        child: Container(
+        child: SizedBox(
           width: 60,
           height: 60,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            image: DecorationImage(
-              image:
-                  AssetImage('images/ui/buttons/$themeId/button-primary.png'),
-              centerSlice: STANDARD_BORDER_SLICE,
-              fit: BoxFit.fill,
-              filterQuality: FilterQuality.none,
-            ),
-          ),
-          child: Center(
-            child: Image.asset(
-              'images/pixel-icons/plus.png',
-              filterQuality: FilterQuality.none,
-              width: 40,
-              height: 40,
+          // button-primary.png bakes in a low-alpha drop-shadow in its
+          // bottom-most 2 native pixels (rows 62-63 of 64), just below the
+          // button's own border (which ends at row 61) — unwanted here.
+          // Rather than edit the shared asset (used by every other primary
+          // button in the app), render it slightly taller than the visible
+          // slot and clip the overflow, which crops off just that shadow
+          // strip (plus a sliver of the border's very bottom edge).
+          child: ClipRect(
+            child: Align(
+              alignment: Alignment.topCenter,
+              heightFactor: 60 / 64,
+              child: Container(
+                width: 60,
+                height: 64,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  image: DecorationImage(
+                    image: AssetImage(
+                        'images/ui/buttons/$themeId/button-primary.png'),
+                    centerSlice: STANDARD_BORDER_SLICE,
+                    fit: BoxFit.fill,
+                    filterQuality: FilterQuality.none,
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Center(
+                    child: Image.asset(
+                      'images/pixel-icons/plus.png',
+                      filterQuality: FilterQuality.none,
+                      width: 40,
+                      height: 40,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ),
