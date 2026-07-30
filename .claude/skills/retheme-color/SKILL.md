@@ -1,11 +1,13 @@
 ---
 name: retheme-color
-description: Change one of Questvale's three core theme colors (Primary, Secondary, Surface) at will — updates gameScheme in lib/main.dart, any stray hardcoded Color() literals matching the old hex, and pixel-by-pixel remaps every images/ui/ PNG (excluding icons/) that uses that color as its Main/Light Accent/Dark Accent. Trigger whenever the user wants to retune, swap, or experiment with Primary/Secondary/Surface's color.
+description: Change one of Questvale's four core theme colors (Primary, Secondary, Surface, Surface Container) at will — updates gameScheme in lib/main.dart, any stray hardcoded Color() literals matching the old hex, and pixel-by-pixel remaps every images/ui/ PNG (excluding icons/) that uses that color as its Main/Light Accent/Dark Accent. Trigger whenever the user wants to retune, swap, or experiment with Primary/Secondary/Surface/Surface Container's color.
 ---
 
 # Retheme Color
 
-Changes one of the three core theme colors (Primary, Secondary, Surface) everywhere it's expressed — in code and in the pixel-art asset tree — so the user can freely retune the palette without hunting down every place a color is baked in. The user has said they aren't fully committed to the current three colors, so this needs to be a safe, repeatable, low-effort operation, not a one-off manual edit.
+Changes one of the four core theme colors (Primary, Secondary, Surface, Surface Container) everywhere it's expressed — in code and in the pixel-art asset tree — so the user can freely retune the palette without hunting down every place a color is baked in. The user has said they aren't fully committed to the current colors, so this needs to be a safe, repeatable, low-effort operation, not a one-off manual edit.
+
+**Surface Container** (`gameScheme.surfaceContainer`) was promoted to this skill's scope in 2026-07 — it was already independently hardcoded in `gameScheme` before that, coincidentally equal to Metal Corner's Main (`#cbcbcb`), but had no vault documentation, no Light/Dark Accent shades of its own, and no button/border assets. It now has both (`button-surface-container.png`, `border-surface-container-mini.png`) and is meant to be retuned fully independently of Metal Corner going forward — treat any future coincidental match with Metal Corner (or anything else) the same as step 3's cross-field check, not as a reason to couple them.
 
 **Backing script:** `.claude/skills/retheme-color/retheme_color.py` (Pillow-based). Two modes:
 - `derive --old-main --old-light --old-dark --new-main` (hex, no `#`) — prints suggested new Light/Dark Accent shades via an HSL lightness/saturation offset from the old Main, applied to the new Main's hue. Use this when the user gives only a new Main color and hasn't specified accent shades themselves.
@@ -15,7 +17,7 @@ Border is intentionally **not** part of this skill's scope — it was decoupled 
 
 ## Steps
 
-1. **Confirm which role and the new Main hex.** One of Primary/Secondary/Surface, plus the new Main color. If the user hasn't given explicit new Light/Dark Accent values, run `derive` with the role's current Main/Light/Dark (from `lib/main.dart`, not memory — read it fresh) and the new Main, and present the suggested accents for confirmation before proceeding — don't just apply them silently.
+1. **Confirm which role and the new Main hex.** One of Primary/Secondary/Surface/Surface Container, plus the new Main color. If the user hasn't given explicit new Light/Dark Accent values, run `derive` with the role's current Main/Light/Dark (from `lib/main.dart`, not memory — read it fresh) and the new Main, and present the suggested accents for confirmation before proceeding — don't just apply them silently.
 
 2. **Read current values fresh from `lib/main.dart`'s `gameScheme`** (not the vault, not memory — code is the runtime source of truth) and cross-check against the vault's `02_Design_System/Color Palette.md` row for that role. If they disagree, stop and ask which is correct rather than picking one.
 
@@ -25,7 +27,7 @@ Border is intentionally **not** part of this skill's scope — it was decoupled 
 
 5. **Dry-run the asset pass.** Run `retheme_color.py apply --pair OLDMAIN:NEWMAIN --pair OLDLIGHT:NEWLIGHT --pair OLDDARK:NEWDARK --dir images/ui --dry-run` (excludes `icons/` automatically). Show the user the per-file changed-pixel-count summary. A file expected to use this color family that comes back with 0 changed pixels is a red flag — investigate before proceeding (likely means the hex assumption was wrong for that file, e.g. the Surface family's asset-specific quirks). Confirm with the user, then re-run without `--dry-run`.
 
-6. **Update `lib/main.dart`'s `gameScheme`** (the role's `primary`/`secondary`/`surface` field and its paired `on*` field if it's meant to track Main) plus any confirmed cross-field duplicates from step 3, and any confirmed stray literals from step 4.
+6. **Update `lib/main.dart`'s `gameScheme`** (the role's `primary`/`secondary`/`surface`/`surfaceContainer` field and its paired `on*` field if it's meant to track Main — note Surface Container has no dedicated `on*` field of its own today) plus any confirmed cross-field duplicates from step 3, and any confirmed stray literals from step 4.
 
 7. **Update the vault**, in the vault's own repo (never this repo's git history — same rule `capture-decision` follows):
    - `02_Design_System/Color Palette.md`'s row for this role (Light Accent/Main/Dark Accent hex columns).

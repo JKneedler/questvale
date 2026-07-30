@@ -6,6 +6,7 @@ enum QvCardBorderType {
   rarity,
   primary,
   surface,
+  surfaceContainer,
 }
 
 class QvCardBorder extends StatelessWidget {
@@ -41,6 +42,8 @@ class QvCardBorder extends StatelessWidget {
           return 'images/ui/borders/border-primary-mini.png';
         case QvCardBorderType.surface:
           return 'images/ui/borders/border-surface-mini.png';
+        case QvCardBorderType.surfaceContainer:
+          return 'images/ui/borders/border-surface-container-mini.png';
       }
     }
 

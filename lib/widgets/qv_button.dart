@@ -6,6 +6,7 @@ enum ButtonColor {
   primary,
   secondary,
   surface,
+  surfaceContainer,
   silver,
   common,
   uncommon,
@@ -38,6 +39,8 @@ enum ButtonColor {
         return 'images/ui/buttons/button-secondary.png';
       case ButtonColor.surface:
         return 'images/ui/buttons/button-surface.png';
+      case ButtonColor.surfaceContainer:
+        return 'images/ui/buttons/button-surface-container.png';
       case ButtonColor.silver:
         return 'images/ui/buttons/button-silver.png';
       case ButtonColor.common:
