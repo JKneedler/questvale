@@ -58,7 +58,7 @@ class _ApToastState extends State<_ApToast>
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Positioned(
-      bottom: screenHeight / 3,
+      bottom: screenHeight / 5,
       left: 0,
       right: 0,
       child: IgnorePointer(
