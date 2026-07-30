@@ -9,8 +9,8 @@ import 'package:questvale/cubits/todo_tab/todos_calendar/todos_calendar_view.dar
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/tag.dart';
 import 'package:questvale/data/models/todo.dart';
-import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/widgets/qv_app_bar.dart';
+import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
 
 class TodosOverviewView extends StatelessWidget {
@@ -22,7 +22,9 @@ class TodosOverviewView extends StatelessWidget {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      floatingActionButton: GestureDetector(
+      floatingActionButton: QvButton(
+        width: 60,
+        height: 60,
         onTap: () async {
           Character? character = todoCubit.state.character;
           if (character != null) {
@@ -33,25 +35,12 @@ class TodosOverviewView extends StatelessWidget {
             );
           }
         },
-        child: Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            image: DecorationImage(
-              image: AssetImage('images/ui/buttons/button-primary.png'),
-              centerSlice: STANDARD_BORDER_SLICE,
-              fit: BoxFit.fill,
-              filterQuality: FilterQuality.none,
-            ),
-          ),
-          child: Center(
-            child: Image.asset(
-              'images/pixel-icons/plus.png',
-              filterQuality: FilterQuality.none,
-              width: 40,
-              height: 40,
-            ),
+        child: Center(
+          child: Image.asset(
+            'images/pixel-icons/plus.png',
+            filterQuality: FilterQuality.none,
+            width: 40,
+            height: 40,
           ),
         ),
       ),
@@ -95,7 +84,9 @@ class TodosOverviewView extends StatelessWidget {
                     padding: const EdgeInsets.only(
                         left: 6, right: 6, top: 10, bottom: 10),
                     itemBuilder: (context, index) {
-                      return TodosOverviewItem(todo: visibleTodos[index]);
+                      final todo = visibleTodos[index];
+                      return TodosOverviewItem(
+                          key: ValueKey(todo.id), todo: todo);
                     });
               }),
             ),
@@ -211,6 +202,7 @@ class _TodosFilterSheetState extends State<TodosFilterSheet> {
         mainAxisSize: MainAxisSize.min,
         children: [
           for (final f in [
+            TodoFilter.none,
             TodoFilter.today,
             TodoFilter.thisWeek,
             TodoFilter.all,

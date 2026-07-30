@@ -46,9 +46,11 @@ class PlayerCubit extends Cubit<PlayerState> {
       playerLevel: character.level,
       equipments: equipments,
     );
-    emit(state.copyWith(
-        character: character,
-        playerSkills: playerSkills,
-        playerCombatStats: playerCombatStats));
+    if (!isClosed) {
+      emit(state.copyWith(
+          character: character,
+          playerSkills: playerSkills,
+          playerCombatStats: playerCombatStats));
+    }
   }
 }

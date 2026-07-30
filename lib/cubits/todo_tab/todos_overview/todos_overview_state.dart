@@ -5,6 +5,7 @@ import 'package:questvale/data/models/todo.dart';
 import 'package:questvale/data/models/tag.dart';
 
 enum TodoFilter {
+  none,
   today,
   thisWeek,
   all,
@@ -14,6 +15,8 @@ enum TodoFilter {
 
   String get name {
     switch (this) {
+      case TodoFilter.none:
+        return 'None';
       case TodoFilter.today:
         return 'Today';
       case TodoFilter.thisWeek:
@@ -68,7 +71,7 @@ class TodosOverviewState extends Equatable {
     this.characterStats,
     this.todos = const [],
     this.availableTags = const [],
-    this.filter = TodoFilter.today,
+    this.filter = TodoFilter.none,
     this.filterTag,
     this.filterPriority,
     this.sort = TodoSort.dueDate,
@@ -114,6 +117,9 @@ class TodosOverviewState extends Equatable {
 
     Iterable<Todo> filtered;
     switch (filter) {
+      case TodoFilter.none:
+        filtered = todos.where((t) => !t.isCompleted);
+        break;
       case TodoFilter.today:
         filtered = todos.where((t) => isDueWithin(t, startOfToday, endOfToday));
         break;

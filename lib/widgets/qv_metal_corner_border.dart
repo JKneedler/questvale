@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:questvale/cubits/theme/theme_cubit.dart';
 import 'package:questvale/helpers/constants.dart';
 
 class QvMetalCornerBorder extends StatelessWidget {
@@ -20,6 +22,7 @@ class QvMetalCornerBorder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final themeId = context.watch<ThemeCubit>().state.theme.id;
 
     return ConstrainedBox(
       constraints: BoxConstraints(
@@ -45,7 +48,7 @@ class QvMetalCornerBorder extends StatelessWidget {
                 foregroundDecoration: BoxDecoration(
                   image: DecorationImage(
                     image: AssetImage(
-                        'images/ui/borders/border-primary-metal-edge.png'),
+                        'images/ui/borders/$themeId/border-primary-metal-edge.png'),
                     centerSlice: METAL_CORNER_BORDER_SLICE,
                     fit: BoxFit.fill,
                     filterQuality: FilterQuality.none,

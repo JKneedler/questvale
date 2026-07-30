@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:questvale/cubits/theme/theme_cubit.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 
@@ -34,16 +36,18 @@ class QvCardBorder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeId = context.watch<ThemeCubit>().state.theme.id;
+
     String getBorderImage() {
       switch (type) {
         case QvCardBorderType.rarity:
           return rarity.borderAssetPath;
         case QvCardBorderType.primary:
-          return 'images/ui/borders/border-primary-mini.png';
+          return 'images/ui/borders/$themeId/border-primary-mini.png';
         case QvCardBorderType.surface:
-          return 'images/ui/borders/border-surface-mini.png';
+          return 'images/ui/borders/$themeId/border-surface-mini.png';
         case QvCardBorderType.surfaceContainer:
-          return 'images/ui/borders/border-surface-container-mini.png';
+          return 'images/ui/borders/$themeId/border-surface-container-mini.png';
       }
     }
 

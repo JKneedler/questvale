@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:questvale/cubits/theme/theme_cubit.dart';
 import 'package:questvale/helpers/constants.dart';
 
 class QVWhiteCard extends StatelessWidget {
@@ -19,6 +21,7 @@ class QVWhiteCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final themeId = context.watch<ThemeCubit>().state.theme.id;
 
     return ConstrainedBox(
       constraints: BoxConstraints(
@@ -53,8 +56,8 @@ class QVWhiteCard extends StatelessWidget {
                 padding: padding,
                 foregroundDecoration: BoxDecoration(
                   image: DecorationImage(
-                    image:
-                        AssetImage('images/ui/borders/border-primary.png'),
+                    image: AssetImage(
+                        'images/ui/borders/$themeId/border-primary.png'),
                     centerSlice: STANDARD_BORDER_SLICE,
                     fit: BoxFit.fill,
                     filterQuality: FilterQuality.none,

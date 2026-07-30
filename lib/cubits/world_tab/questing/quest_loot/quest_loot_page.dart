@@ -4,6 +4,7 @@ import 'package:questvale/cubits/world_tab/questing/quest_loot/quest_loot_cubit.
 import 'package:questvale/cubits/world_tab/questing/quest_loot/quest_loot_state.dart';
 import 'package:questvale/cubits/world_tab/questing/simple_equipment_slice.dart';
 import 'package:questvale/cubits/world_tab/questing/loot_summary_slice.dart';
+import 'package:questvale/cubits/theme/theme_cubit.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_metal_corner_border.dart';
@@ -41,6 +42,7 @@ class QuestLootView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final themeId = context.watch<ThemeCubit>().state.theme.id;
     return BlocBuilder<QuestLootCubit, QuestLootState>(
         builder: (context, questLootState) {
       return SizedBox(
@@ -114,7 +116,7 @@ class QuestLootView extends StatelessWidget {
                         decoration: BoxDecoration(
                           image: DecorationImage(
                             image: AssetImage(
-                                'images/ui/backgrounds/background-secondary.png'),
+                                'images/ui/backgrounds/$themeId/background-secondary.png'),
                             centerSlice: STANDARD_BORDER_SLICE,
                             fit: BoxFit.fill,
                             filterQuality: FilterQuality.none,

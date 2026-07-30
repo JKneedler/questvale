@@ -52,7 +52,8 @@ class TodosCalendarBody extends StatelessWidget {
                           child: Text(
                             'Nothing due this day',
                             style: TextStyle(
-                              color: colorScheme.onSurface.withValues(alpha: 0.5),
+                              color:
+                                  colorScheme.onSurface.withValues(alpha: 0.5),
                               fontSize: 14,
                             ),
                           ),
@@ -61,8 +62,9 @@ class TodosCalendarBody extends StatelessWidget {
                           padding: const EdgeInsets.only(
                               left: 6, right: 6, top: 10, bottom: 10),
                           itemCount: selectedDayTodos.length,
-                          itemBuilder: (context, index) =>
-                              TodosOverviewItem(todo: selectedDayTodos[index]),
+                          itemBuilder: (context, index) => TodosOverviewItem(
+                              key: ValueKey(selectedDayTodos[index].id),
+                              todo: selectedDayTodos[index]),
                         ),
                 ),
               ],

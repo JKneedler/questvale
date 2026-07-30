@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:questvale/cubits/theme/theme_cubit.dart';
 import 'package:questvale/helpers/constants.dart';
 
 class SummarySlice extends StatelessWidget {
@@ -14,11 +16,13 @@ class SummarySlice extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final themeId = context.watch<ThemeCubit>().state.theme.id;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         image: DecorationImage(
-          image: AssetImage('images/ui/backgrounds/background-secondary.png'),
+          image: AssetImage(
+              'images/ui/backgrounds/$themeId/background-secondary.png'),
           centerSlice: STANDARD_BORDER_SLICE,
           fit: BoxFit.fill,
           filterQuality: FilterQuality.none,

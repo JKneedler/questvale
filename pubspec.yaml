@@ -42,7 +42,7 @@ dependencies:
   provider: ^6.1.2
   equatable: ^2.0.7
   intl: ^0.20.2
-  material_symbols_icons: ^4.2805.1
+  material_symbols_icons: ^4.2960.0
   google_fonts: ^6.3.0
   collection: ^1.19.0
   flutter_local_notifications: ^19.5.0
@@ -76,8 +76,17 @@ flutter:
     - images/ui/
     - images/ui/borders/
     - images/ui/borders/skills/
+    - images/ui/borders/charcoal-gold/
+    - images/ui/borders/sunrise-peach/
+    - images/ui/borders/violet-dusk/
     - images/ui/buttons/
+    - images/ui/buttons/charcoal-gold/
+    - images/ui/buttons/sunrise-peach/
+    - images/ui/buttons/violet-dusk/
     - images/ui/backgrounds/
+    - images/ui/backgrounds/charcoal-gold/
+    - images/ui/backgrounds/sunrise-peach/
+    - images/ui/backgrounds/violet-dusk/
     - images/ui/icons/
     - images/characters/
     - images/enemies/

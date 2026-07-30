@@ -6,6 +6,7 @@ import 'package:questvale/cubits/world_tab/questing/combat/combat_cubit.dart';
 import 'package:questvale/cubits/world_tab/questing/combat/combat_state.dart';
 import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_encounter_cubit.dart';
 import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_flee_confirmation_modal.dart';
+import 'package:questvale/cubits/theme/theme_cubit.dart';
 import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/providers/game_data_models/skill_data.dart';
 import 'package:questvale/data/skills/base_active_skill.dart';
@@ -44,6 +45,7 @@ class CombatView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final themeId = context.watch<ThemeCubit>().state.theme.id;
     return BlocBuilder<CombatCubit, CombatState>(
         builder: (context, combatState) {
       return BlocListener<CombatCubit, CombatState>(
@@ -227,7 +229,7 @@ class CombatView extends StatelessWidget {
                       decoration: BoxDecoration(
                         image: DecorationImage(
                           image: AssetImage(
-                              'images/ui/buttons/button-primary-flat.png'),
+                              'images/ui/buttons/$themeId/button-primary-flat.png'),
                           centerSlice: STANDARD_BORDER_SLICE,
                           fit: BoxFit.fill,
                         ),
@@ -722,6 +724,7 @@ class EnemyNextAttackSlice extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final themeId = context.watch<ThemeCubit>().state.theme.id;
     return Column(
       children: [
         Align(
@@ -741,7 +744,8 @@ class EnemyNextAttackSlice extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: AssetImage('images/ui/backgrounds/background-secondary.png'),
+              image: AssetImage(
+                  'images/ui/backgrounds/$themeId/background-secondary.png'),
               centerSlice: STANDARD_BORDER_SLICE,
               fit: BoxFit.fill,
               filterQuality: FilterQuality.none,
@@ -782,6 +786,7 @@ class EnemyStatusEffectsSlice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeId = context.watch<ThemeCubit>().state.theme.id;
     return Column(
       children: [
         Text('Status Effects'),
@@ -789,7 +794,8 @@ class EnemyStatusEffectsSlice extends StatelessWidget {
           height: 40,
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: AssetImage('images/ui/backgrounds/background-secondary.png'),
+              image: AssetImage(
+                  'images/ui/backgrounds/$themeId/background-secondary.png'),
               centerSlice: STANDARD_BORDER_SLICE,
               fit: BoxFit.fill,
               filterQuality: FilterQuality.none,

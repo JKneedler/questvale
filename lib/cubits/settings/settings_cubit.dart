@@ -1,8 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/settings/settings_state.dart';
+import 'package:questvale/cubits/theme/theme_cubit.dart';
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/encounter.dart';
 import 'package:questvale/data/providers/game_data.dart';
+import 'package:questvale/data/repositories/character_repository.dart';
 import 'package:questvale/data/repositories/equipment_repository.dart';
 import 'package:questvale/services/equipment_service.dart';
 import 'package:sqflite/sqflite.dart';
@@ -10,10 +13,17 @@ import 'package:sqflite/sqflite.dart';
 class SettingsCubit extends Cubit<SettingsState> {
   final Database db;
   final GameData gameData;
+  final PlayerCubit playerCubit;
+  final ThemeCubit themeCubit;
   late EquipmentRepository equipmentRepository;
+  late CharacterRepository characterRepository;
 
   SettingsCubit(
-      {required this.db, required this.gameData, required Character character})
+      {required this.db,
+      required this.gameData,
+      required this.playerCubit,
+      required this.themeCubit,
+      required Character character})
       : super(SettingsState(
             character: character,
             questsNum: 0,
@@ -22,7 +32,10 @@ class SettingsCubit extends Cubit<SettingsState> {
             tableInfos: [])) {
     loadSettings();
     equipmentRepository = EquipmentRepository(db: db);
+    characterRepository = CharacterRepository(db: db);
   }
+
+  void setTheme(String themeId) => themeCubit.setTheme(themeId);
 
   Future<void> loadSettings() async {
     final tableInfos = [
@@ -96,5 +109,15 @@ class SettingsCubit extends Cubit<SettingsState> {
           state.character, questZones[0], EncounterType.genericCombat);
       await equipmentRepository.insertEquipment(equipment);
     }
+  }
+
+  Future<void> resetAp() async {
+    final updated = await characterRepository.updateCharacter(
+      state.character.copyWith(actionPoints: 0, dailyApEarned: 0),
+    );
+    emit(state.copyWith(character: updated));
+    // PlayerCubit holds the canonical Character used elsewhere (world_tab,
+    // todo_tab's AP display) — it won't pick up this change until reloaded.
+    await playerCubit.loadCharacter();
   }
 }

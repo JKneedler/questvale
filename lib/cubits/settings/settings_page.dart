@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/home/player_state.dart';
 import 'package:questvale/cubits/settings/settings_cubit.dart';
 import 'package:questvale/cubits/settings/settings_state.dart';
+import 'package:questvale/cubits/theme/theme_cubit.dart';
 import 'package:questvale/data/providers/game_data.dart';
+import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/widgets/qv_app_bar.dart';
 import 'package:questvale/widgets/qv_button.dart';
-import 'package:questvale/widgets/qv_inset_background.dart';
 import 'package:sqflite/sqflite.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -25,6 +27,8 @@ class SettingsPage extends StatelessWidget {
           create: (context) => SettingsCubit(
               db: context.read<Database>(),
               gameData: context.read<GameData>(),
+              playerCubit: context.read<PlayerCubit>(),
+              themeCubit: context.read<ThemeCubit>(),
               character: characterDataState.character!),
           child: BlocBuilder<SettingsCubit, SettingsState>(
               builder: (context, settingsState) {
@@ -33,66 +37,98 @@ class SettingsPage extends StatelessWidget {
               child: Column(
                 children: [
                   QvAppBar(title: 'Settings'),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Column(
-                      spacing: 10,
-                      children: [
-                        InfoSlice(
-                          title: 'Quests',
-                          count: settingsState.questsNum,
-                          onTap: settingsState.questsNum > 0
-                              ? () => context
-                                  .read<SettingsCubit>()
-                                  .deleteTableContents(settingsState.tableInfos
-                                      .firstWhere((tableInfo) =>
-                                          tableInfo.tableType ==
-                                          TableType.quests))
-                              : () => {},
-                        ),
-                        Row(
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: Column(
+                          spacing: 10,
                           children: [
-                            Expanded(
-                                child: Text('Generate 10 loot',
-                                    style: TextStyle(
-                                        fontSize: 20,
-                                        color: colorScheme.onSurface))),
-                            QvButton(
-                              width: 180,
-                              height: 50,
-                              buttonColor: ButtonColor.silver,
-                              onTap: () =>
-                                  context.read<SettingsCubit>().generateLoot(),
-                              child: Center(
-                                child: Text('Generate',
-                                    style: TextStyle(
-                                        fontSize: 20,
-                                        color: colorScheme.onPrimary)),
-                              ),
+                            InfoSlice(
+                              title: 'Quests',
+                              count: settingsState.questsNum,
+                              onTap: settingsState.questsNum > 0
+                                  ? () => context
+                                      .read<SettingsCubit>()
+                                      .deleteTableContents(settingsState
+                                          .tableInfos
+                                          .firstWhere((tableInfo) =>
+                                              tableInfo.tableType ==
+                                              TableType.quests))
+                                  : () => {},
                             ),
-                          ],
-                        ),
-                        QvInsetBackground(
-                          width: double.infinity,
-                          height: 430,
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 10),
-                          child: SingleChildScrollView(
-                            child: Column(
+                            Row(
+                              children: [
+                                Expanded(
+                                    child: Text('Generate 10 loot',
+                                        style: TextStyle(
+                                            fontSize: 20,
+                                            color: colorScheme.onSurface))),
+                                QvButton(
+                                  width: 180,
+                                  height: 50,
+                                  buttonColor: ButtonColor.silver,
+                                  onTap: () => context
+                                      .read<SettingsCubit>()
+                                      .generateLoot(),
+                                  child: Center(
+                                    child: Text('Generate',
+                                        style: TextStyle(
+                                            fontSize: 20,
+                                            color: colorScheme.onPrimary)),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Expanded(
+                                    child: Text('Reset AP + daily AP to 0',
+                                        style: TextStyle(
+                                            fontSize: 20,
+                                            color: colorScheme.onSurface))),
+                                QvButton(
+                                  width: 180,
+                                  height: 50,
+                                  buttonColor: ButtonColor.silver,
+                                  onTap: () =>
+                                      context.read<SettingsCubit>().resetAp(),
+                                  child: Center(
+                                    child: Text('Reset',
+                                        style: TextStyle(
+                                            fontSize: 20,
+                                            color: colorScheme.onPrimary)),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Expanded(
+                                    child: Text('Theme',
+                                        style: TextStyle(
+                                            fontSize: 20,
+                                            color: colorScheme.onSurface))),
+                                ThemePicker(),
+                              ],
+                            ),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text('DB Tables',
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: colorScheme.onSurface)),
+                            ),
+                            Column(
                               children: [
                                 for (var tableInfo in settingsState.tableInfos)
                                   TableInfoSlice(tableInfo: tableInfo),
                               ],
                             ),
-                          ),
+                          ],
                         ),
-                        Center(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [],
-                          ),
-                        )
-                      ],
+                      ),
                     ),
                   ),
                 ],
@@ -120,13 +156,13 @@ class TableInfoSlice extends StatelessWidget {
         children: [
           Expanded(
               child: Text(tableInfo.tableType.name,
-                  style: TextStyle(
-                      fontSize: 16, color: colorScheme.onSurface))),
+                  style:
+                      TextStyle(fontSize: 16, color: colorScheme.onSurface))),
           SizedBox(
               width: 40,
               child: Text(tableInfo.numRows.toString(),
-                  style: TextStyle(
-                      fontSize: 20, color: colorScheme.onSurface))),
+                  style:
+                      TextStyle(fontSize: 20, color: colorScheme.onSurface))),
           QvButton(
             height: 40,
             width: tableInfo.isDeletable ? 60 : 130,
@@ -183,13 +219,11 @@ class InfoSlice extends StatelessWidget {
         SizedBox(
             width: 120,
             child: Text(title,
-                style:
-                    TextStyle(fontSize: 20, color: colorScheme.onSurface))),
+                style: TextStyle(fontSize: 20, color: colorScheme.onSurface))),
         SizedBox(
             width: 80,
             child: Text(count.toString(),
-                style:
-                    TextStyle(fontSize: 20, color: colorScheme.onSurface))),
+                style: TextStyle(fontSize: 20, color: colorScheme.onSurface))),
         Expanded(
           child: QvButton(
             buttonColor: ButtonColor.silver,
@@ -203,6 +237,96 @@ class InfoSlice extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class ThemePicker extends StatelessWidget {
+  const ThemePicker({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final activeTheme = context.watch<ThemeCubit>().state.theme;
+    final settingsCubit = context.read<SettingsCubit>();
+    return QvButton(
+      width: 180,
+      height: 50,
+      buttonColor: ButtonColor.silver,
+      onTap: () => showModalBottomSheet(
+        context: context,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+        builder: (context) => BlocProvider.value(
+          value: settingsCubit,
+          child: const ThemeSelectSheet(),
+        ),
+      ),
+      child: Center(
+        child: Text(activeTheme.displayName,
+            style: TextStyle(
+                fontSize: 16, color: Theme.of(context).colorScheme.onPrimary)),
+      ),
+    );
+  }
+}
+
+class ThemeSelectSheet extends StatelessWidget {
+  const ThemeSelectSheet({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final activeTheme = context.watch<ThemeCubit>().state.theme;
+    return SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final theme in APP_THEMES.values)
+            _ThemeRow(
+              theme: theme,
+              isSelected: theme.id == activeTheme.id,
+              onTap: () {
+                context.read<SettingsCubit>().setTheme(theme.id);
+                Navigator.pop(context);
+              },
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ThemeRow extends StatelessWidget {
+  final AppTheme theme;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _ThemeRow({
+    required this.theme,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        child: Row(
+          children: [
+            Icon(Symbols.palette,
+                color: isSelected ? colorScheme.primary : colorScheme.onSurface,
+                size: 20),
+            const SizedBox(width: 14),
+            Text(theme.displayName,
+                style: TextStyle(
+                    color: isSelected
+                        ? colorScheme.primary
+                        : colorScheme.onSurface,
+                    fontSize: 16)),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -15,6 +15,12 @@ class NavBar extends StatelessWidget {
   final ValueChanged<int> onTap;
   final bool showSeparator;
 
+  // Width of the sliding QvInsetBackground highlight and the height of the
+  // band it (and the icons) sit in — matches the old per-item
+  // QvInsetBackground's own width and its 28px icon + 16px padding.
+  static const double _highlightWidth = 100;
+  static const double _bandHeight = 44;
+
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
@@ -35,38 +41,76 @@ class NavBar extends StatelessWidget {
               // icon + 16px QvInsetBackground padding = 44px) above the
               // centerSlice border's 36px minimum, with a little headroom.
               height: 50 + bottomPadding,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisSize: MainAxisSize.max,
-                children: List.generate(items.length, (i) {
-                  return Expanded(
-                    child: GestureDetector(
-                      onTap: () => onTap(i),
-                      behavior: HitTestBehavior.translucent,
-                      child: Container(
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: colorScheme.surface,
-                        ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final itemWidth = constraints.maxWidth / items.length;
+                  return Stack(
+                    children: [
+                      // Matches the original per-item background bounds
+                      // (each item's Container was only as tall as its
+                      // content, ~44px, bottom-aligned) as one shared band.
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        height: _bandHeight,
+                        child: Container(color: colorScheme.surface),
+                      ),
+                      // The highlight is now a single shared widget that
+                      // slides between slots (via AnimatedPositioned)
+                      // instead of each item toggling its own copy on/off.
+                      AnimatedPositioned(
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeInOut,
+                        left: itemWidth * currentIndex +
+                            (itemWidth - _highlightWidth) / 2,
+                        bottom: 0,
+                        width: _highlightWidth,
+                        height: _bandHeight,
                         child: QvInsetBackground(
                           type: QvInsetBackgroundType.secondary,
-                          enabled: items[i].selected,
-                          width: 100,
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                          child: Image.asset(
-                            'images/ui/icons/${items[i].iconName}-icon-${items[i].selected ? 'primary' : 'secondary'}.png',
-                            filterQuality: FilterQuality.none,
-                            width: 28,
-                            height: 28,
-                            fit: BoxFit.contain,
-                          ),
+                          width: _highlightWidth,
+                          height: _bandHeight,
+                          padding: EdgeInsets.zero,
+                          child: const SizedBox.shrink(),
                         ),
                       ),
-                    ),
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        height: _bandHeight,
+                        child: Row(
+                          children: List.generate(items.length, (i) {
+                            return Expanded(
+                              child: GestureDetector(
+                                onTap: () => onTap(i),
+                                behavior: HitTestBehavior.translucent,
+                                child: Center(
+                                  child: Image.asset(
+                                    'images/ui/icons/${items[i].iconName}-icon.png',
+                                    filterQuality: FilterQuality.none,
+                                    width: 28,
+                                    height: 28,
+                                    fit: BoxFit.contain,
+                                    // Icon PNGs are now plain white glyphs —
+                                    // tint at runtime to primary/secondary
+                                    // per role instead of relying on
+                                    // baked-in color variants.
+                                    color: items[i].selected
+                                        ? colorScheme.primary
+                                        : colorScheme.secondary,
+                                    colorBlendMode: BlendMode.srcIn,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
+                      ),
+                    ],
                   );
-                }),
+                },
               ),
             ),
           ],
