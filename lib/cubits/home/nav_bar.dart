@@ -61,6 +61,16 @@ class NavBar extends StatelessWidget {
                             width: 28,
                             height: 28,
                             fit: BoxFit.contain,
+                            // The baked-in secondary glyph color is very
+                            // dark and low-contrast against the surface
+                            // backdrop — override it with a plain light
+                            // gray for the unselected/inactive state.
+                            // Selected icons keep their baked primary color
+                            // untouched.
+                            color:
+                                items[i].selected ? null : Colors.grey.shade300,
+                            colorBlendMode:
+                                items[i].selected ? null : BlendMode.srcIn,
                           ),
                         ),
                       ),
