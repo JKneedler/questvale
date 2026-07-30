@@ -68,7 +68,7 @@ class NavBar extends StatelessWidget {
                             // Selected icons keep their baked primary color
                             // untouched.
                             color:
-                                items[i].selected ? null : Colors.grey.shade300,
+                                items[i].selected ? null : Colors.grey.shade700,
                             colorBlendMode:
                                 items[i].selected ? null : BlendMode.srcIn,
                           ),
