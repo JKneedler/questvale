@@ -53,23 +53,21 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
           margin: const EdgeInsets.only(bottom: 10),
           child: QvButton(
             buttonColor: ButtonColor.surfaceContainer,
-            child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onTap: () async {
+            onTap: () async {
+              setState(() {
+                isHighlighted = true;
+              });
+              await Future.delayed(const Duration(milliseconds: 150));
+              if (mounted) {
                 setState(() {
-                  isHighlighted = true;
+                  isHighlighted = false;
                 });
-                await Future.delayed(const Duration(milliseconds: 150));
-                if (mounted) {
-                  setState(() {
-                    isHighlighted = false;
-                  });
-                  EditTodoPage.show(context, widget.todo);
-                }
-              },
-              child: Material(
-                color: Colors.transparent,
-                child: Row(
+                EditTodoPage.show(context, widget.todo);
+              }
+            },
+            child: Material(
+              color: Colors.transparent,
+              child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     GestureDetector(
@@ -201,8 +199,7 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 }
 

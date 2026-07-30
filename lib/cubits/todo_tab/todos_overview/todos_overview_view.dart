@@ -6,12 +6,11 @@ import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_item.dar
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_state.dart';
 import 'package:questvale/cubits/todo_tab/add_todo/add_todo_page.dart';
 import 'package:questvale/cubits/todo_tab/todos_calendar/todos_calendar_view.dart';
-import 'package:questvale/cubits/theme/theme_cubit.dart';
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/tag.dart';
 import 'package:questvale/data/models/todo.dart';
-import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/widgets/qv_app_bar.dart';
+import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
 
 class TodosOverviewView extends StatelessWidget {
@@ -21,10 +20,11 @@ class TodosOverviewView extends StatelessWidget {
   Widget build(BuildContext context) {
     final todoCubit = context.read<TodosOverviewCubit>();
     ColorScheme colorScheme = Theme.of(context).colorScheme;
-    final themeId = context.watch<ThemeCubit>().state.theme.id;
 
     return Scaffold(
-      floatingActionButton: GestureDetector(
+      floatingActionButton: QvButton(
+        width: 60,
+        height: 60,
         onTap: () async {
           Character? character = todoCubit.state.character;
           if (character != null) {
@@ -35,25 +35,12 @@ class TodosOverviewView extends StatelessWidget {
             );
           }
         },
-        child: Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image:
-                  AssetImage('images/ui/buttons/$themeId/button-primary.png'),
-              centerSlice: STANDARD_BORDER_SLICE,
-              fit: BoxFit.fill,
-              filterQuality: FilterQuality.none,
-            ),
-          ),
-          child: Center(
-            child: Image.asset(
-              'images/pixel-icons/plus.png',
-              filterQuality: FilterQuality.none,
-              width: 40,
-              height: 40,
-            ),
+        child: Center(
+          child: Image.asset(
+            'images/pixel-icons/plus.png',
+            filterQuality: FilterQuality.none,
+            width: 40,
+            height: 40,
           ),
         ),
       ),

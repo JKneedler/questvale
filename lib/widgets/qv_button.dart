@@ -61,9 +61,41 @@ enum ButtonColor {
         return 'images/ui/buttons/button-rarity-epic.png';
     }
   }
+
+  // Pressed-state textures are generated on a per-color/per-theme basis (see
+  // the retheme-color Light/Dark-swap technique) and don't exist for every
+  // combination yet. Return null wherever one hasn't been generated so
+  // QvButton can fall back to the normal texture instead of loading a
+  // nonexistent asset.
+  String? pressedAssetPath(String themeId) {
+    switch (this) {
+      case ButtonColor.primary:
+        if (themeId == 'charcoal-gold') {
+          return 'images/ui/buttons/$themeId/button-primary-pressed.png';
+        }
+        return null;
+      case ButtonColor.secondary:
+        if (themeId == 'charcoal-gold') {
+          return 'images/ui/buttons/$themeId/button-secondary-pressed.png';
+        }
+        return null;
+      case ButtonColor.surface:
+        if (themeId == 'charcoal-gold') {
+          return 'images/ui/buttons/$themeId/button-surface-pressed.png';
+        }
+        return null;
+      case ButtonColor.surfaceContainer:
+        if (themeId == 'charcoal-gold') {
+          return 'images/ui/buttons/$themeId/button-surface-container-pressed.png';
+        }
+        return null;
+      default:
+        return null;
+    }
+  }
 }
 
-class QvButton extends StatelessWidget {
+class QvButton extends StatefulWidget {
   const QvButton({
     super.key,
     this.onTap,
@@ -84,34 +116,60 @@ class QvButton extends StatelessWidget {
   final ButtonColor buttonColor;
   final bool darkened;
   final List<BoxShadow>? shadow;
+
+  @override
+  State<QvButton> createState() => _QvButtonState();
+}
+
+class _QvButtonState extends State<QvButton> {
+  bool _isPressed = false;
+
+  void _setPressed(bool pressed) {
+    if (_isPressed != pressed) {
+      setState(() => _isPressed = pressed);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final themeId = context.watch<ThemeCubit>().state.theme.id;
+    final pressedAssetPath = widget.buttonColor.pressedAssetPath(themeId);
+    final showPressed = _isPressed && pressedAssetPath != null;
     return ConstrainedBox(
       constraints: BoxConstraints(
         minWidth: STANDARD_BORDER_MIN_SIZE.width,
         minHeight: STANDARD_BORDER_MIN_SIZE.height,
       ),
       child: GestureDetector(
-        onTap: onTap ?? () {},
-        child: Container(
-          width: width,
-          height: height,
-          padding: padding,
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage(buttonColor.assetPath(themeId)),
-              centerSlice: STANDARD_BORDER_SLICE,
-              fit: BoxFit.fill,
-              filterQuality: FilterQuality.none,
-              colorFilter: darkened
-                  ? ColorFilter.mode(
-                      Colors.black.withValues(alpha: 0.5), BlendMode.srcATop)
-                  : null,
+        onTap: widget.onTap ?? () {},
+        onTapDown: widget.onTap == null ? null : (_) => _setPressed(true),
+        onTapUp: widget.onTap == null ? null : (_) => _setPressed(false),
+        onTapCancel: widget.onTap == null ? null : () => _setPressed(false),
+        child: AnimatedScale(
+          scale: _isPressed ? 0.98 : 1.0,
+          duration: const Duration(milliseconds: 100),
+          curve: Curves.easeOut,
+          child: Container(
+            width: widget.width,
+            height: widget.height,
+            padding: widget.padding,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage(showPressed
+                    ? pressedAssetPath
+                    : widget.buttonColor.assetPath(themeId)),
+                centerSlice: STANDARD_BORDER_SLICE,
+                fit: BoxFit.fill,
+                filterQuality: FilterQuality.none,
+                colorFilter: widget.darkened
+                    ? ColorFilter.mode(
+                        Colors.black.withValues(alpha: 0.5), BlendMode.srcATop)
+                    : null,
+              ),
+              boxShadow: widget.shadow,
             ),
-            boxShadow: shadow,
+            child: widget.child,
           ),
-          child: child,
         ),
       ),
     );
