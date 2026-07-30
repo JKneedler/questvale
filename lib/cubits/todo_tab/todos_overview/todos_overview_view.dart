@@ -95,7 +95,9 @@ class TodosOverviewView extends StatelessWidget {
                     padding: const EdgeInsets.only(
                         left: 6, right: 6, top: 10, bottom: 10),
                     itemBuilder: (context, index) {
-                      return TodosOverviewItem(todo: visibleTodos[index]);
+                      final todo = visibleTodos[index];
+                      return TodosOverviewItem(
+                          key: ValueKey(todo.id), todo: todo);
                     });
               }),
             ),
