@@ -254,15 +254,22 @@ class ThemePicker extends StatelessWidget {
     return QVPopupMenu(
       menuController: menuController,
       offset: const Offset(0, -8),
-      button: QvButton(
-        width: 180,
-        height: 50,
-        buttonColor: ButtonColor.silver,
-        child: Center(
-          child: Text(activeTheme.displayName,
-              style: TextStyle(
-                  fontSize: 16,
-                  color: Theme.of(context).colorScheme.onPrimary)),
+      // QvButton has its own internal GestureDetector (a no-op tap handler
+      // when onTap isn't passed), which sits inside QVPopupMenu's own
+      // tap-to-open GestureDetector and wins the gesture arena, swallowing
+      // the tap before it can open the menu. IgnorePointer keeps QvButton's
+      // visuals without letting it intercept the tap.
+      button: IgnorePointer(
+        child: QvButton(
+          width: 180,
+          height: 50,
+          buttonColor: ButtonColor.silver,
+          child: Center(
+            child: Text(activeTheme.displayName,
+                style: TextStyle(
+                    fontSize: 16,
+                    color: Theme.of(context).colorScheme.onPrimary)),
+          ),
         ),
       ),
       menuContents: [
