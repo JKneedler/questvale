@@ -126,6 +126,22 @@ const Map<String, AppTheme> APP_THEMES = {
     surfaceContainerLight: Color(0xffffffff),
     surfaceContainerDark: Color(0xffdddddd),
   ),
+  'violet-dusk': AppTheme(
+    id: 'violet-dusk',
+    displayName: 'Violet Dusk',
+    primaryMain: Color(0xffa66cff),
+    primaryLight: Color(0xffd1adff),
+    primaryDark: Color(0xff8438f9),
+    secondaryMain: Color(0xff432b6e),
+    secondaryLight: Color(0xff754fba),
+    secondaryDark: Color(0xff281a41),
+    surfaceMain: Color(0xff1c1330),
+    surfaceLight: Color(0xff4b3380),
+    surfaceDark: Color(0xff110c1e),
+    surfaceContainerMain: Color(0xff3f3456),
+    surfaceContainerLight: Color(0xff735f9c),
+    surfaceContainerDark: Color(0xff231d2f),
+  ),
 };
 
 const String DEFAULT_THEME_ID = 'charcoal-gold';

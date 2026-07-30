@@ -78,12 +78,15 @@ flutter:
     - images/ui/borders/skills/
     - images/ui/borders/charcoal-gold/
     - images/ui/borders/sunrise-peach/
+    - images/ui/borders/violet-dusk/
     - images/ui/buttons/
     - images/ui/buttons/charcoal-gold/
     - images/ui/buttons/sunrise-peach/
+    - images/ui/buttons/violet-dusk/
     - images/ui/backgrounds/
     - images/ui/backgrounds/charcoal-gold/
     - images/ui/backgrounds/sunrise-peach/
+    - images/ui/backgrounds/violet-dusk/
     - images/ui/icons/
     - images/characters/
     - images/enemies/
