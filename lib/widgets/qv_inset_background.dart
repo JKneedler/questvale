@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:questvale/cubits/theme/theme_cubit.dart';
 import 'package:questvale/helpers/constants.dart';
 
 enum QvInsetBackgroundType {
   surface,
   secondary;
 
-  String get assetPath {
+  String assetPath(String themeId) {
     switch (this) {
       case QvInsetBackgroundType.surface:
-        return 'images/ui/backgrounds/background-surface.png';
+        return 'images/ui/backgrounds/$themeId/background-surface.png';
       case QvInsetBackgroundType.secondary:
-        return 'images/ui/backgrounds/background-secondary.png';
+        return 'images/ui/backgrounds/$themeId/background-secondary.png';
     }
   }
 }
@@ -34,6 +36,7 @@ class QvInsetBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeId = context.watch<ThemeCubit>().state.theme.id;
     return ConstrainedBox(
       constraints: BoxConstraints(
         minWidth: STANDARD_BORDER_MIN_SIZE.width,
@@ -46,7 +49,7 @@ class QvInsetBackground extends StatelessWidget {
         decoration: enabled
             ? BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage(type.assetPath),
+                  image: AssetImage(type.assetPath(themeId)),
                   centerSlice: STANDARD_BORDER_SLICE,
                   fit: BoxFit.fill,
                   filterQuality: FilterQuality.none,

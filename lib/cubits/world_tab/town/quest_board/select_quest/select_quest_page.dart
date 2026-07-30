@@ -4,6 +4,7 @@ import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/quest_board/quest_board_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/quest_board/select_quest/select_quest_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/quest_board/select_quest/select_quest_state.dart';
+import 'package:questvale/cubits/theme/theme_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/town_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/town_state.dart';
 import 'package:questvale/data/providers/game_data.dart';
@@ -95,6 +96,7 @@ class SelectQuestZoneCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final themeId = context.watch<ThemeCubit>().state.theme.id;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeInOut,
@@ -235,7 +237,7 @@ class SelectQuestZoneCard extends StatelessWidget {
                                   image: DecorationImage(
                                     centerSlice: STANDARD_BORDER_SLICE,
                                     image: AssetImage(
-                                      'images/ui/buttons/button-primary.png',
+                                      'images/ui/buttons/$themeId/button-primary.png',
                                     ),
                                   ),
                                 ),
@@ -271,8 +273,8 @@ class SelectQuestZoneCard extends StatelessWidget {
                 ),
                 foregroundDecoration: BoxDecoration(
                   image: DecorationImage(
-                    image:
-                        AssetImage('images/ui/borders/border-primary.png'),
+                    image: AssetImage(
+                        'images/ui/borders/$themeId/border-primary.png'),
                     centerSlice: STANDARD_BORDER_SLICE,
                     fit: BoxFit.fill,
                     filterQuality: FilterQuality.none,

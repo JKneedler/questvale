@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/home/player_state.dart';
 import 'package:questvale/cubits/settings/settings_cubit.dart';
 import 'package:questvale/cubits/settings/settings_state.dart';
+import 'package:questvale/cubits/theme/theme_cubit.dart';
 import 'package:questvale/data/providers/game_data.dart';
+import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/widgets/qv_app_bar.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
+import 'package:questvale/widgets/qv_popup_menu.dart';
+import 'package:questvale/widgets/qv_popup_menu_item.dart';
 import 'package:sqflite/sqflite.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -26,6 +31,7 @@ class SettingsPage extends StatelessWidget {
               db: context.read<Database>(),
               gameData: context.read<GameData>(),
               playerCubit: context.read<PlayerCubit>(),
+              themeCubit: context.read<ThemeCubit>(),
               character: characterDataState.character!),
           child: BlocBuilder<SettingsCubit, SettingsState>(
               builder: (context, settingsState) {
@@ -93,6 +99,16 @@ class SettingsPage extends StatelessWidget {
                                         color: colorScheme.onPrimary)),
                               ),
                             ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                                child: Text('Theme',
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        color: colorScheme.onSurface))),
+                            ThemePicker(),
                           ],
                         ),
                         QvInsetBackground(
@@ -223,6 +239,49 @@ class InfoSlice extends StatelessWidget {
             ),
           ),
         ),
+      ],
+    );
+  }
+}
+
+class ThemePicker extends StatelessWidget {
+  ThemePicker({super.key});
+
+  final MenuController menuController = MenuController();
+
+  @override
+  Widget build(BuildContext context) {
+    final activeTheme = context.watch<ThemeCubit>().state.theme;
+    return QVPopupMenu(
+      menuController: menuController,
+      offset: const Offset(0, -8),
+      button: QvButton(
+        width: 180,
+        height: 50,
+        buttonColor: ButtonColor.silver,
+        child: Center(
+          child: Text(activeTheme.displayName,
+              style: TextStyle(
+                  fontSize: 16,
+                  color: Theme.of(context).colorScheme.onPrimary)),
+        ),
+      ),
+      menuContents: [
+        for (final theme in APP_THEMES.values)
+          QvPopupMenuItem(
+            text: theme.displayName,
+            icon: Symbols.palette,
+            iconColor: theme.id == activeTheme.id
+                ? Theme.of(context).colorScheme.primary
+                : null,
+            textColor: theme.id == activeTheme.id
+                ? Theme.of(context).colorScheme.primary
+                : null,
+            onPressed: () {
+              menuController.close();
+              context.read<SettingsCubit>().setTheme(theme.id);
+            },
+          ),
       ],
     );
   }

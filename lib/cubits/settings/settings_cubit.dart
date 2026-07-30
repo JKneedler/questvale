@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/settings/settings_state.dart';
+import 'package:questvale/cubits/theme/theme_cubit.dart';
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/encounter.dart';
 import 'package:questvale/data/providers/game_data.dart';
@@ -13,6 +14,7 @@ class SettingsCubit extends Cubit<SettingsState> {
   final Database db;
   final GameData gameData;
   final PlayerCubit playerCubit;
+  final ThemeCubit themeCubit;
   late EquipmentRepository equipmentRepository;
   late CharacterRepository characterRepository;
 
@@ -20,6 +22,7 @@ class SettingsCubit extends Cubit<SettingsState> {
       {required this.db,
       required this.gameData,
       required this.playerCubit,
+      required this.themeCubit,
       required Character character})
       : super(SettingsState(
             character: character,
@@ -31,6 +34,8 @@ class SettingsCubit extends Cubit<SettingsState> {
     equipmentRepository = EquipmentRepository(db: db);
     characterRepository = CharacterRepository(db: db);
   }
+
+  void setTheme(String themeId) => themeCubit.setTheme(themeId);
 
   Future<void> loadSettings() async {
     final tableInfos = [

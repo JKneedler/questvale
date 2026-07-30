@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:questvale/cubits/theme/theme_cubit.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 
@@ -31,16 +33,20 @@ enum ButtonColor {
     }
   }
 
-  String get assetPath {
+  // Primary/secondary/surface/surfaceContainer are theme-dependent — each
+  // registered theme (constants.dart's APP_THEMES) has its own asset folder
+  // under images/ui/buttons/{themeId}/. Rarity/silver assets are shared
+  // across every theme, so they stay in the flat buttons/ directory.
+  String assetPath(String themeId) {
     switch (this) {
       case ButtonColor.primary:
-        return 'images/ui/buttons/button-primary.png';
+        return 'images/ui/buttons/$themeId/button-primary.png';
       case ButtonColor.secondary:
-        return 'images/ui/buttons/button-secondary.png';
+        return 'images/ui/buttons/$themeId/button-secondary.png';
       case ButtonColor.surface:
-        return 'images/ui/buttons/button-surface.png';
+        return 'images/ui/buttons/$themeId/button-surface.png';
       case ButtonColor.surfaceContainer:
-        return 'images/ui/buttons/button-surface-container.png';
+        return 'images/ui/buttons/$themeId/button-surface-container.png';
       case ButtonColor.silver:
         return 'images/ui/buttons/button-silver.png';
       case ButtonColor.common:
@@ -80,6 +86,7 @@ class QvButton extends StatelessWidget {
   final List<BoxShadow>? shadow;
   @override
   Widget build(BuildContext context) {
+    final themeId = context.watch<ThemeCubit>().state.theme.id;
     return ConstrainedBox(
       constraints: BoxConstraints(
         minWidth: STANDARD_BORDER_MIN_SIZE.width,
@@ -93,7 +100,7 @@ class QvButton extends StatelessWidget {
           padding: padding,
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: AssetImage(buttonColor.assetPath),
+              image: AssetImage(buttonColor.assetPath(themeId)),
               centerSlice: STANDARD_BORDER_SLICE,
               fit: BoxFit.fill,
               filterQuality: FilterQuality.none,
