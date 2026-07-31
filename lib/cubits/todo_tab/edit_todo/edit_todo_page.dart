@@ -8,8 +8,8 @@ import 'package:questvale/data/repositories/todo_repository.dart';
 import 'package:sqflite/sqflite.dart';
 
 class EditTodoPage {
-  static void show(BuildContext context, Todo todo) {
-    showModalBottomSheet<dynamic>(
+  static Future<void> show(BuildContext context, Todo todo) {
+    return showModalBottomSheet<dynamic>(
       context: context,
       builder: (context) => BlocProvider(
         create: (context) => EditTodoCubit(

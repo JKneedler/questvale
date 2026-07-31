@@ -47,7 +47,11 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
               setState(() {
                 isHighlighted = false;
               });
-              EditTodoPage.show(context, widget.todo);
+              await EditTodoPage.show(context, widget.todo);
+              // The edit sheet can change fields (difficulty, due date,
+              // habit/streak state, etc.) that this list needs to reflect
+              // immediately, not just completion toggling.
+              todoCubit.loadCharacter();
             }
           },
           child: Material(

@@ -13,16 +13,45 @@ import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/data_formatters.dart';
 import 'package:questvale/widgets/qv_background.dart';
 import 'package:questvale/widgets/qv_check_box.dart';
+import 'package:questvale/widgets/qv_inset_background.dart';
 import 'package:questvale/widgets/qv_segmented_control.dart';
 import 'package:questvale/widgets/qv_textfield.dart';
 
-class EditTodoView extends StatelessWidget {
+class EditTodoView extends StatefulWidget {
   final Todo todo;
 
   const EditTodoView({
     super.key,
     required this.todo,
   });
+
+  @override
+  State<EditTodoView> createState() => _EditTodoViewState();
+}
+
+class _EditTodoViewState extends State<EditTodoView> {
+  // Owned by this State (rather than built inline in `build`) so they keep
+  // their live text/cursor/focus across every BlocBuilder rebuild — an
+  // inline `TextEditingController(text: state.name)` gets recreated on
+  // every keystroke, which tears down the field's editing session mid-type
+  // and was scrambling input between the two fields.
+  late final TextEditingController _nameController;
+  late final TextEditingController _descriptionController;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.todo.name);
+    _descriptionController =
+        TextEditingController(text: widget.todo.description);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,38 +117,48 @@ class EditTodoView extends StatelessWidget {
                                 .read<EditTodoCubit>()
                                 .toggleCompletion(),
                             child: QvCheckBox(
-                              width: 20,
-                              height: 20,
+                              width: 32,
+                              height: 32,
                               isChecked: state.isCompleted,
                             ),
                           ),
-                          SizedBox(
-                            width: 300,
-                            child: QvTextField(
-                              controller:
-                                  TextEditingController(text: state.name),
-                              onChanged: (value) => context
-                                  .read<EditTodoCubit>()
-                                  .nameChanged(value),
-                              textInputAction: TextInputAction.done,
-                              maxLines: 1,
-                              textSize: 24,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: QvInsetBackground(
+                              type: QvInsetBackgroundType.secondary,
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                              child: QvTextField(
+                                controller: _nameController,
+                                onChanged: (value) => context
+                                    .read<EditTodoCubit>()
+                                    .nameChanged(value),
+                                textInputAction: TextInputAction.done,
+                                maxLines: 1,
+                                textSize: 24,
+                              ),
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 16),
                       // Description section
-                      SizedBox(
-                        height: 100,
-                        child: QvTextField(
-                          controller:
-                              TextEditingController(text: state.description),
-                          onChanged: (value) => context
-                              .read<EditTodoCubit>()
-                              .descriptionChanged(value),
-                          textInputAction: TextInputAction.done,
-                          maxLines: null,
+                      QvInsetBackground(
+                        type: QvInsetBackgroundType.secondary,
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        child: SizedBox(
+                          height: 100,
+                          child: QvTextField(
+                            controller: _descriptionController,
+                            onChanged: (value) => context
+                                .read<EditTodoCubit>()
+                                .descriptionChanged(value),
+                            textInputAction: TextInputAction.done,
+                            maxLines: null,
+                          ),
                         ),
                       ),
 
