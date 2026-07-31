@@ -37,7 +37,9 @@ class DataFormatters {
   }
 
   static String formatTime(DateTime time) {
-    final hour = time.hour > 12 ? time.hour - 12 : time.hour;
+    // 24h -> 12h: hour 0 (midnight) and hour 12 (noon) both display as 12,
+    // not 0 — time.hour % 12 alone maps both to 0.
+    final hour = time.hour % 12 == 0 ? 12 : time.hour % 12;
     final minute = time.minute.toString().padLeft(2, '0');
     final period = time.hour >= 12 ? 'PM' : 'AM';
     return '$hour:$minute$period';

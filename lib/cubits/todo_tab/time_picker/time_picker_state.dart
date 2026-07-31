@@ -31,7 +31,10 @@ class TimePickerState extends Equatable {
   }
 
   TimeOfDay get selectedTime {
-    final hour = isAM ? selectedHour : selectedHour + 12;
+    // selectedHour is a 1-12 clock face; convert the 12 o'clock boundary
+    // back to 0 before applying the AM/PM offset (12AM -> 0, 12PM -> 12).
+    final hourOfPeriod = selectedHour == 12 ? 0 : selectedHour;
+    final hour = isAM ? hourOfPeriod : hourOfPeriod + 12;
     return TimeOfDay(hour: hour, minute: selectedMinute);
   }
 

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/todo_tab/add_todo/add_todo_state.dart';
 import 'package:questvale/data/models/tag.dart';
@@ -47,21 +48,66 @@ class AddTodoCubit extends Cubit<AddTodoState> {
     emit(state.copyWith(description: value));
   }
 
-  void dueDateChanged(
-      DateTime? date, bool hasTime, List<ReminderType> reminders) {
+  // Mirrors DueDateCubit.updateSelectedDate: a bare calendar day (from a
+  // quick-select shortcut or the calendar grid) keeps the existing
+  // time-of-day if one is already set, rather than clobbering it back to
+  // midnight.
+  void dueDateDaySelected(DateTime date) {
+    final merged = state.hasTime && state.dueDate != null
+        ? state.dueDate!.copyWith(
+            year: date.year, month: date.month, day: date.day)
+        : date;
+    emit(state.copyWith(dueDate: merged));
+  }
+
+  // Mirrors DueDateCubit.updateSelectedTime: resets reminders when time is
+  // being turned on for the first time, since the without-time and
+  // with-time ReminderType sets are disjoint.
+  void dueDateTimeSelected(TimeOfDay time) {
+    final date = state.dueDate ?? DateTime.now();
+    emit(state.copyWith(
+      dueDate: date.copyWith(hour: time.hour, minute: time.minute),
+      hasTime: true,
+      reminders: state.hasTime ? state.reminders : [],
+    ));
+  }
+
+  void dueDateTimeCleared() {
+    emit(state.copyWith(hasTime: false, reminders: const []));
+  }
+
+  void toggleReminder(ReminderType reminder) {
+    emit(state.copyWith(
+      reminders: state.reminders.contains(reminder)
+          ? state.reminders.where((e) => e != reminder).toList()
+          : [...state.reminders, reminder],
+    ));
+  }
+
+  void remindersCleared() {
+    emit(state.copyWith(reminders: const []));
+  }
+
+  // state.copyWith can't null out dueDate (its `?? this.dueDate` fallback
+  // treats an explicit null as "unchanged"), so this constructs the state
+  // directly instead — same workaround habitToggled uses for timeframe.
+  void dueDateCleared() {
     emit(AddTodoState(
-      id: state.id,
+      status: state.status,
       characterId: state.characterId,
+      id: state.id,
       name: state.name,
       description: state.description,
-      dueDate: date,
-      hasTime: hasTime,
+      dueDate: null,
+      hasTime: false,
       difficulty: state.difficulty,
       priority: state.priority,
       availableTags: state.availableTags,
       selectedTags: state.selectedTags,
-      status: AddTodoStatus.initial,
-      reminders: reminders,
+      reminders: const [],
+      isHabit: state.isHabit,
+      timeframe: state.timeframe,
+      allowsMultipleCompletions: state.allowsMultipleCompletions,
     ));
   }
 
@@ -112,6 +158,9 @@ class AddTodoCubit extends Cubit<AddTodoState> {
   }
 
   Future<void> submit() async {
+    if (state.name.isEmpty) {
+      return; // Don't submit if name is empty
+    }
     emit(state.copyWith(status: AddTodoStatus.loading));
 
     try {

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/todo_tab/add_todo/add_todo_state.dart';
 import 'package:questvale/cubits/todo_tab/due_date/due_date_state.dart';
@@ -30,7 +31,7 @@ class DueDateCubit extends Cubit<DueDateState> {
     emit(state.copyWith(selectedDate: selectedDate));
   }
 
-  void updateSelectedTime(DateTime time) {
+  void updateSelectedTime(TimeOfDay time) {
     DateTime selectedDate = state.selectedDate ?? DateTime.now();
     emit(state.copyWith(
       selectedDate: selectedDate.copyWith(

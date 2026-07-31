@@ -6,17 +6,14 @@ import 'package:questvale/data/repositories/todo_repository.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
 import 'package:sqflite/sqflite.dart';
 
-class AddTodoPage extends StatelessWidget {
-  const AddTodoPage({super.key});
-
+class AddTodoPage {
   static Future<void> showModal(
     BuildContext context,
     VoidCallback onTodoAdded,
     String characterId,
   ) {
-    return showModalBottomSheet(
+    return showModalBottomSheet<dynamic>(
       context: context,
-      isScrollControlled: true,
       builder: (context) => BlocProvider(
         create: (context) => AddTodoCubit(
           TodoRepository(db: context.read<Database>()),
@@ -27,11 +24,13 @@ class AddTodoPage extends StatelessWidget {
           onTodoAdded: onTodoAdded,
         ),
       ),
+      isScrollControlled: true,
+      isDismissible: true,
+      // The Home page's bottom nav bar lives outside the tab's own nested
+      // Navigator, so the default (nearest) Navigator's overlay stops above
+      // it. Route through the root Navigator instead so the sheet's overlay
+      // spans the full screen and its bottom covers the nav bar.
+      useRootNavigator: true,
     );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AddTodoView(onTodoAdded: () {});
   }
 }
