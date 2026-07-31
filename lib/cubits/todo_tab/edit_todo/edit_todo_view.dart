@@ -30,14 +30,26 @@ class EditTodoView extends StatelessWidget {
 
     return BlocBuilder<EditTodoCubit, EditTodoState>(
       builder: (context, state) {
-        return Wrap(
-          children: [
-            QvBackground(
+        // DraggableScrollableSheet (rather than a fixed-height scroll view)
+        // so that dragging down from the top of the content shrinks the
+        // sheet and hands off to the modal's own dismiss animation via
+        // shouldCloseOnMinExtent, instead of the drag being swallowed by the
+        // scroll view and going nowhere.
+        return DraggableScrollableSheet(
+          initialChildSize: 0.92,
+          maxChildSize: 0.92,
+          minChildSize: 0.1,
+          expand: false,
+          snap: true,
+          builder: (context, scrollController) {
+            return QvBackground(
               width: double.infinity,
-              height: MediaQuery.of(context).size.height * 5 / 6,
+              height: double.infinity,
               child: SafeArea(
                 top: false,
                 child: SingleChildScrollView(
+                  controller: scrollController,
+                  physics: const _CalmSnapScrollPhysics(),
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -188,8 +200,8 @@ class EditTodoView extends StatelessWidget {
                   ),
                 ),
               ),
-            ),
-          ],
+            );
+          },
         );
       },
     );
@@ -278,9 +290,8 @@ class EditTodoView extends StatelessWidget {
               icon: Symbols.event_repeat,
             ),
         ],
-        selectedValue: state.isHabit
-            ? (state.timeframe ?? HabitTimeframe.daily)
-            : null,
+        selectedValue:
+            state.isHabit ? (state.timeframe ?? HabitTimeframe.daily) : null,
         onChanged: (tf) {
           if (tf == null) {
             context.read<EditTodoCubit>().habitToggled(false);
@@ -442,5 +453,33 @@ class EditTodoView extends StatelessWidget {
       default:
         return 'Unknown';
     }
+  }
+}
+
+/// DraggableScrollableSheet's snap-on-release only picks the *nearest* snap
+/// size (min or max) when the release velocity is within tolerance;
+/// otherwise it jumps to the next size in the fling's direction, however far
+/// that is. The default tolerance is only a few px/s, so almost any
+/// perceptible release velocity counts as a fling and can send a small drag
+/// near the top of the content all the way down to the dismiss size.
+/// Widening the velocity tolerance means only a deliberate fast flick
+/// triggers that directional jump; slower releases settle on whichever size
+/// (open or dismiss) is actually closer.
+class _CalmSnapScrollPhysics extends ScrollPhysics {
+  const _CalmSnapScrollPhysics({super.parent});
+
+  @override
+  _CalmSnapScrollPhysics applyTo(ScrollPhysics? ancestor) {
+    return _CalmSnapScrollPhysics(parent: buildParent(ancestor));
+  }
+
+  @override
+  Tolerance toleranceFor(ScrollMetrics metrics) {
+    final defaultTolerance = super.toleranceFor(metrics);
+    return Tolerance(
+      velocity: 1000,
+      distance: defaultTolerance.distance,
+      time: defaultTolerance.time,
+    );
   }
 }
