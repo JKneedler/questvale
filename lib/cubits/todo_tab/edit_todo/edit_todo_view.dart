@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:material_symbols_icons/symbols.dart';
 import 'package:questvale/cubits/todo_tab/edit_todo/edit_todo_cubit.dart';
 import 'package:questvale/cubits/todo_tab/edit_todo/edit_todo_state.dart';
 import 'package:questvale/cubits/todo_tab/todo_form/todo_form_body.dart';
@@ -17,38 +16,17 @@ class EditTodoView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-
     return BlocBuilder<EditTodoCubit, EditTodoState>(
       builder: (context, state) {
         final cubit = context.read<EditTodoCubit>();
 
         return TodoFormSheet(
-          header: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                onPressed: () => Navigator.of(context).pop(),
-                icon: Icon(
-                  Symbols.keyboard_arrow_down,
-                  weight: 500,
-                  size: 32,
-                  color: colorScheme.onSurface,
-                ),
-              ),
-              IconButton(
-                onPressed: () {
-                  cubit.submit();
-                  Navigator.of(context).pop();
-                },
-                icon: Icon(
-                  Symbols.check,
-                  weight: 500,
-                  size: 32,
-                  color: colorScheme.primary,
-                ),
-              ),
-            ],
+          header: TodoFormHeader(
+            onCancel: () => Navigator.of(context).pop(),
+            onConfirm: () {
+              cubit.submit();
+              Navigator.of(context).pop();
+            },
           ),
           body: TodoFormBody(
             characterId: state.todo.characterId,
@@ -88,8 +66,43 @@ class EditTodoView extends StatelessWidget {
               onMultipleCompletionsToggled: cubit.multipleCompletionsToggled,
             ),
           ),
+          footer: TodoFormDeleteButton(
+            onTap: () => _confirmDelete(context, cubit),
+          ),
         );
       },
     );
+  }
+
+  Future<void> _confirmDelete(BuildContext context, EditTodoCubit cubit) async {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: colorScheme.surfaceContainer,
+        title: Text(
+          'Delete Todo?',
+          style: TextStyle(color: colorScheme.onSurface),
+        ),
+        content: Text(
+          'This can\'t be undone.',
+          style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.7)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text('Cancel', style: TextStyle(color: colorScheme.onSurface)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text('Delete', style: TextStyle(color: colorScheme.error)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await cubit.deleteTodo();
+      if (context.mounted) Navigator.of(context).pop();
+    }
   }
 }

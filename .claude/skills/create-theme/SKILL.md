@@ -9,10 +9,10 @@ Adds a brand-new theme to Questvale's multi-theme system: a new named palette (P
 
 This is the counterpart to the **`retheme-color`** skill: `retheme-color` retunes a *named existing* theme's colors in place; this skill produces a *new, additional* theme by copying an existing theme's assets and recoloring the copies. Both are built on the same `.claude/skills/retheme-color/retheme_color.py` script (reused here as-is, no script changes needed).
 
-**The 12 theme-dependent files**, present in every theme's folder (confirmed via the 2026-07 multi-theme migration — everything else under `images/ui/` is shared and theme-independent, untouched by this skill):
+**The 13 theme-dependent files**, present in every theme's folder (confirmed via the 2026-07 multi-theme migration — everything else under `images/ui/` is shared and theme-independent, untouched by this skill):
 - `buttons/{themeId}/`: `button-primary.png`, `button-primary-flat.png`, `button-secondary.png`, `button-surface.png`, `button-surface-container.png`
 - `borders/{themeId}/`: `border-primary.png`, `border-primary-mini.png`, `border-surface-mini.png`, `border-surface-container-mini.png`, `border-primary-metal-edge.png` (a hybrid — also contains Metal Corner's own colors, which must NOT change; only its Primary-derived pixels do)
-- `backgrounds/{themeId}/`: `background-secondary.png`, `background-surface.png`
+- `backgrounds/{themeId}/`: `background-secondary.png`, `background-surface.png`, `button-surface-container-no-bottom.png` (Surface Container role, despite living in `backgrounds/` and being named like a button asset — used by `QvBackground`, `lib/widgets/qv_background.dart`)
 
 Border stays a fixed universal `#000000` in every theme, including the new one — never part of the color set being generated here.
 
@@ -42,7 +42,7 @@ Border stays a fixed universal `#000000` in every theme, including the new one �
 
 - Never modify the *source* theme's colors or assets — this skill only ever writes to the brand-new theme's folder and its own `AppTheme` entry.
 - Never touch Border — every theme, including the new one, uses the fixed universal `#000000`; don't generate or register a per-theme border color.
-- Never scan or copy `images/ui/icons/` or any other shared, theme-independent asset (rarity buttons/borders, skill borders, health border, checkboxes, nav) — only the 12 theme-dependent files listed above.
+- Never scan or copy `images/ui/icons/` or any other shared, theme-independent asset (rarity buttons/borders, skill borders, health border, checkboxes, nav) — only the 13 theme-dependent files listed above.
 - Never skip the 4 pressed-state button variants (step 5) — `QvButton.pressedAssetPath` assumes every registered theme has all 4, and a missing file would throw an asset-loading error the first time that button color is pressed in that theme, not just look wrong.
 - Always dry-run the substitution pass and show the summary before writing for real.
 - Always confirm the derived or hand-computed Light/Dark accents with the user before baking them into the new theme's assets and `AppTheme` entry — never apply a suggestion silently.

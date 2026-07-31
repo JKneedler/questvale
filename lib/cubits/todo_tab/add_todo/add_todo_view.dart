@@ -16,44 +16,22 @@ class AddTodoView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-
     return BlocBuilder<AddTodoCubit, AddTodoState>(
       builder: (context, state) {
         final cubit = context.read<AddTodoCubit>();
         final canSubmit = state.name.isNotEmpty;
 
         return TodoFormSheet(
-          header: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                onPressed: () => Navigator.of(context).pop(),
-                icon: Icon(
-                  Symbols.keyboard_arrow_down,
-                  weight: 500,
-                  size: 32,
-                  color: colorScheme.onSurface,
-                ),
-              ),
-              IconButton(
-                onPressed: !canSubmit
-                    ? null
-                    : () async {
-                        await cubit.submit();
-                        onTodoAdded();
-                        if (context.mounted) Navigator.of(context).pop();
-                      },
-                icon: Icon(
-                  Symbols.check,
-                  weight: 500,
-                  size: 32,
-                  color: canSubmit
-                      ? colorScheme.primary
-                      : colorScheme.onSurface.withValues(alpha: 0.3),
-                ),
-              ),
-            ],
+          header: TodoFormHeader(
+            onCancel: () => Navigator.of(context).pop(),
+            confirmIcon: Symbols.add,
+            onConfirm: !canSubmit
+                ? null
+                : () async {
+                    await cubit.submit();
+                    onTodoAdded();
+                    if (context.mounted) Navigator.of(context).pop();
+                  },
           ),
           body: TodoFormBody(
             characterId: state.characterId,

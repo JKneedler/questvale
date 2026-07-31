@@ -240,6 +240,13 @@ class EditTodoCubit extends Cubit<EditTodoState> {
     }
   }
 
+  Future<void> deleteTodo() async {
+    await todoRepository.deleteTodo(state.todo);
+    for (final reminder in state.todo.reminders) {
+      await NotificationService().cancelReminder(reminder.id);
+    }
+  }
+
   // Create TodoReminders from ReminderTypes
   List<TodoReminder> _createRemindersForTodo(String todoId) {
     final reminders = state.reminders;
