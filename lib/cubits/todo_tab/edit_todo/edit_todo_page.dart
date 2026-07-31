@@ -22,7 +22,11 @@ class EditTodoPage {
       ),
       isScrollControlled: true,
       isDismissible: true,
-      barrierColor: Colors.transparent,
+      // The Home page's bottom nav bar lives outside the tab's own nested
+      // Navigator, so the default (nearest) Navigator's overlay stops above
+      // it. Route through the root Navigator instead so the sheet's overlay
+      // spans the full screen and its bottom covers the nav bar.
+      useRootNavigator: true,
     );
   }
 }

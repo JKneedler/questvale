@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:questvale/data/models/tag.dart';
 import 'package:questvale/data/models/todo_reminder.dart';
+import 'package:questvale/helpers/constants.dart';
 
 enum DifficultyLevel {
   trivial,
@@ -24,13 +25,13 @@ enum DifficultyLevel {
   Color get color {
     switch (this) {
       case DifficultyLevel.trivial:
-        return Colors.grey;
+        return DIFFICULTY_TRIVIAL_COLOR;
       case DifficultyLevel.easy:
-        return Color(0xFFCD7F32); // Bronze
+        return DIFFICULTY_EASY_COLOR;
       case DifficultyLevel.medium:
-        return Color(0xFFC0C0C0); // Silver
+        return DIFFICULTY_MEDIUM_COLOR;
       case DifficultyLevel.hard:
-        return Color(0xFFFFD700); // Gold
+        return DIFFICULTY_HARD_COLOR;
     }
   }
 }
@@ -74,13 +75,13 @@ enum PriorityLevel {
   Color get color {
     switch (this) {
       case PriorityLevel.noPriority:
-        return Colors.grey;
+        return PRIORITY_NONE_COLOR;
       case PriorityLevel.low:
-        return Color(0xFF00BFFF); // Light Blue
+        return PRIORITY_LOW_COLOR;
       case PriorityLevel.medium:
-        return Color(0xFFFFA500); // Orange
+        return PRIORITY_MEDIUM_COLOR;
       case PriorityLevel.high:
-        return Color(0xFFDC143C); // Red
+        return PRIORITY_HIGH_COLOR;
     }
   }
 }

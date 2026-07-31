@@ -135,7 +135,7 @@ class _QvButtonState extends State<QvButton> {
         onTapCancel: widget.onTap == null ? null : () => _setPressed(false),
         child: AnimatedScale(
           scale: _isPressed ? 0.98 : 1.0,
-          duration: const Duration(milliseconds: 100),
+          duration: const Duration(milliseconds: 60),
           curve: Curves.easeOut,
           child: Container(
             width: widget.width,
