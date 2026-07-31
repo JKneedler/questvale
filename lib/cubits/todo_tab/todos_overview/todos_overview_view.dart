@@ -45,8 +45,7 @@ class TodosOverviewView extends StatelessWidget {
         ),
       ),
 
-      // 2️⃣ Position it in the bottom center
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       body: Column(
         children: [
           QvAppBar(

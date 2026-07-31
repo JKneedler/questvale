@@ -24,7 +24,6 @@ class NavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Material(
       child: SafeArea(
@@ -40,7 +39,11 @@ class NavBar extends StatelessWidget {
               // 50 comfortably fits the icon slot's natural height (28px
               // icon + 16px QvInsetBackground padding = 44px) above the
               // centerSlice border's 36px minimum, with a little headroom.
-              height: 50 + bottomPadding,
+              // The device's bottom safe-area inset (home indicator etc.)
+              // is already handled by the SafeArea above — adding it here
+              // too just pushed the row up with dead space above it rather
+              // than clearance below it.
+              height: 50,
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   final itemWidth = constraints.maxWidth / items.length;
