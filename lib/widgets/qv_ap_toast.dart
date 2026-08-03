@@ -30,18 +30,31 @@ class _ApToastState extends State<_ApToast>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _opacity;
+  late final Animation<double> _translateY;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1400),
+      duration: const Duration(milliseconds: 1750),
     );
+    // Fade-in and hold keep their original ~210ms/~840ms pace; fade-out is
+    // stretched to ~700ms (was ~350ms) so the sink-and-fade reads as a slow
+    // drift rather than a quick disappear.
     _opacity = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 15),
-      TweenSequenceItem(tween: ConstantTween(1.0), weight: 60),
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 25),
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 12),
+      TweenSequenceItem(tween: ConstantTween(1.0), weight: 48),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 40),
+    ]).animate(_controller);
+    // Holds in place through the fade-in and hold phases, then sinks
+    // downward as it fades out — like a game's floating EXP indicator.
+    _translateY = TweenSequence<double>([
+      TweenSequenceItem(tween: ConstantTween(0.0), weight: 60),
+      TweenSequenceItem(
+        tween: Tween(begin: 0.0, end: 30.0).chain(CurveTween(curve: Curves.easeIn)),
+        weight: 40,
+      ),
     ]).animate(_controller);
     _controller.forward().whenComplete(widget.onDone);
   }
@@ -63,8 +76,12 @@ class _ApToastState extends State<_ApToast>
       right: 0,
       child: IgnorePointer(
         child: Center(
-          child: FadeTransition(
-            opacity: _opacity,
+          child: AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) => Transform.translate(
+              offset: Offset(0, _translateY.value),
+              child: Opacity(opacity: _opacity.value, child: child),
+            ),
             child: QvButton(
               buttonColor: ButtonColor.primary,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),

@@ -160,6 +160,7 @@ class TodosOverviewMenuSheet extends StatelessWidget {
                         child: const TodosFilterSheet(),
                       ),
                     )),
+            const _MenuDivider(),
             _MenuRow(
                 icon: Symbols.sort,
                 label: 'Sort',
@@ -174,6 +175,7 @@ class TodosOverviewMenuSheet extends StatelessWidget {
                         child: const TodosSortSheet(),
                       ),
                     )),
+            const _MenuDivider(),
             _MenuRow(
                 icon: cubit.state.viewMode == TodosViewMode.calendar
                     ? Symbols.list
@@ -230,12 +232,15 @@ class _TodosFilterSheetState extends State<TodosFilterSheet> {
               TodoFilter.thisWeek,
               TodoFilter.all,
               TodoFilter.completed,
-            ])
+            ]) ...[
+              if (f != TodoFilter.none) const _MenuDivider(),
               _FilterOptionRow(
                 label: f.name,
                 isSelected: state.filter == f,
                 onTap: () => apply(f),
               ),
+            ],
+            const _MenuDivider(),
             _FilterOptionRow(
               label: TodoFilter.byTag.name,
               isSelected: state.filter == TodoFilter.byTag,
@@ -259,6 +264,7 @@ class _TodosFilterSheetState extends State<TodosFilterSheet> {
                       .toList(),
                 ),
               ),
+            const _MenuDivider(),
             _FilterOptionRow(
               label: TodoFilter.byPriority.name,
               isSelected: state.filter == TodoFilter.byPriority,
@@ -306,7 +312,8 @@ class TodosSortSheet extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            for (final s in TodoSort.values)
+            for (final s in TodoSort.values) ...[
+              if (s != TodoSort.values.first) const _MenuDivider(),
               _FilterOptionRow(
                 label: s.name,
                 isSelected: state.sort == s,
@@ -315,9 +322,25 @@ class TodosSortSheet extends StatelessWidget {
                   Navigator.of(context).popUntil((route) => route.isFirst);
                 },
               ),
+            ],
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Thin hairline separating adjacent rows within a 3-dot menu sheet
+/// (TodosOverviewMenuSheet, TodosFilterSheet, TodosSortSheet).
+class _MenuDivider extends StatelessWidget {
+  const _MenuDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 1,
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12),
     );
   }
 }
