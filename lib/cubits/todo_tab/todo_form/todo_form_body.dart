@@ -234,9 +234,11 @@ class _TodoFormBodyState extends State<TodoFormBody> {
     // when a habit is freshly turned on and when the timeframe is switched
     // (e.g. Daily -> Weekly reveals the weekday selector that Daily doesn't
     // have).
-    final wasUnset = !oldWidget.fields.isHabit || oldWidget.fields.timeframe == null;
+    final wasUnset =
+        !oldWidget.fields.isHabit || oldWidget.fields.timeframe == null;
     final isNowSet = widget.fields.isHabit && widget.fields.timeframe != null;
-    final timeframeChanged = oldWidget.fields.timeframe != widget.fields.timeframe;
+    final timeframeChanged =
+        oldWidget.fields.timeframe != widget.fields.timeframe;
     if (isNowSet && (wasUnset || timeframeChanged)) {
       _scrollExpandedSectionIntoView(_repeatsSectionKey);
     }
@@ -361,12 +363,12 @@ class _TodoFormBodyState extends State<TodoFormBody> {
           _buildTimeRow(context, fields, callbacks),
           _buildReminderRow(context, fields, callbacks),
         ],
-        _buildDifficultyRow(context, fields, callbacks),
-        _buildPriorityRow(context, fields, callbacks),
         KeyedSubtree(
           key: _repeatsSectionKey,
           child: _buildHabitRow(context, fields, callbacks),
         ),
+        _buildDifficultyRow(context, fields, callbacks),
+        _buildPriorityRow(context, fields, callbacks),
       ],
     );
   }
@@ -407,10 +409,7 @@ class _TodoFormBodyState extends State<TodoFormBody> {
                   displayedMonth: _displayedMonth,
                   selectedDate: fields.dueDate,
                   onMonthChanged: _changeMonth,
-                  onDateSelected: (date) {
-                    callbacks.onDueDateDaySelected(date);
-                    setState(() => _dateExpanded = false);
-                  },
+                  onDateSelected: callbacks.onDueDateDaySelected,
                 ),
               ),
           ],
@@ -516,8 +515,10 @@ class _TodoFormBodyState extends State<TodoFormBody> {
     );
   }
 
-  Widget _buildReminderOptionRow(BuildContext context,
-      ReminderType reminderType, TodoFormFields fields,
+  Widget _buildReminderOptionRow(
+      BuildContext context,
+      ReminderType reminderType,
+      TodoFormFields fields,
       TodoFormCallbacks callbacks) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     final isChecked = fields.reminders.contains(reminderType);
@@ -785,8 +786,8 @@ class _TodoFormBodyState extends State<TodoFormBody> {
     );
   }
 
-  Widget _buildMonthlyRepeatModeRow(BuildContext context,
-      TodoFormFields fields, TodoFormCallbacks callbacks) {
+  Widget _buildMonthlyRepeatModeRow(BuildContext context, TodoFormFields fields,
+      TodoFormCallbacks callbacks) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     final reference = fields.dueDate ?? DateTime.now();
     final ordinalInMonth = ((reference.day - 1) ~/ 7) + 1;
@@ -876,7 +877,7 @@ class _TodoFormBodyState extends State<TodoFormBody> {
           ),
           const SizedBox(width: 12),
           Text(
-            'Multiple completions',
+            'Allow multiple completions',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
