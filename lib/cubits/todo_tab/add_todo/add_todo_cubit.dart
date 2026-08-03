@@ -113,6 +113,9 @@ class AddTodoCubit extends Cubit<AddTodoState> {
       isHabit: state.isHabit,
       timeframe: state.timeframe,
       allowsMultipleCompletions: state.allowsMultipleCompletions,
+      repeatInterval: state.repeatInterval,
+      repeatWeekdays: state.repeatWeekdays,
+      monthlyRepeatMode: state.monthlyRepeatMode,
     ));
   }
 
@@ -142,15 +145,57 @@ class AddTodoCubit extends Cubit<AddTodoState> {
       timeframe: value ? (state.timeframe ?? HabitTimeframe.daily) : null,
       allowsMultipleCompletions:
           value ? state.allowsMultipleCompletions : false,
+      repeatInterval: value ? state.repeatInterval : 1,
+      repeatWeekdays: value ? state.repeatWeekdays : const {},
+      monthlyRepeatMode:
+          value ? state.monthlyRepeatMode : MonthlyRepeatMode.dayOfMonth,
     ));
   }
 
+  // Resets repeatInterval to 1 on every timeframe switch — a stale value
+  // could otherwise sit out of range for the new unit's wheel (e.g. a
+  // weekly "every 45" carried into Daily, where the max is 30). Seeds
+  // repeatWeekdays with the due date's (or today's) weekday when
+  // switching INTO Weekly with nothing chosen yet, so the user never
+  // lands on an invalid "Weekly with zero days" state; clears it when
+  // switching away from Weekly, since it's meaningless elsewhere.
   void timeframeChanged(HabitTimeframe value) {
-    emit(state.copyWith(isHabit: true, timeframe: value));
+    Set<int> weekdays = state.repeatWeekdays;
+    if (value == HabitTimeframe.weekly) {
+      if (weekdays.isEmpty) {
+        weekdays = {(state.dueDate ?? DateTime.now()).weekday};
+      }
+    } else {
+      weekdays = const {};
+    }
+    emit(state.copyWith(
+      isHabit: true,
+      timeframe: value,
+      repeatInterval: 1,
+      repeatWeekdays: weekdays,
+    ));
   }
 
   void multipleCompletionsToggled(bool value) {
     emit(state.copyWith(allowsMultipleCompletions: value));
+  }
+
+  void repeatIntervalChanged(int value) {
+    emit(state.copyWith(repeatInterval: value));
+  }
+
+  void repeatWeekdayToggled(int weekday) {
+    final updated = Set<int>.from(state.repeatWeekdays);
+    if (updated.contains(weekday)) {
+      updated.remove(weekday);
+    } else {
+      updated.add(weekday);
+    }
+    emit(state.copyWith(repeatWeekdays: updated));
+  }
+
+  void monthlyRepeatModeChanged(MonthlyRepeatMode value) {
+    emit(state.copyWith(monthlyRepeatMode: value));
   }
 
   void toggleTag(Tag tag) {
@@ -169,6 +214,19 @@ class AddTodoCubit extends Cubit<AddTodoState> {
     emit(state.copyWith(status: AddTodoStatus.loading));
 
     try {
+      // Monthly "Day of Week" mode derives its weekday+ordinal pattern
+      // from currentPeriodStart itself (see HabitService), so a brand-new
+      // habit in that mode must anchor to the selected due date for the
+      // derivation to be correct. Every other configuration anchors to
+      // "now" exactly as before — a due-dated daily habit is still
+      // available immediately, not deferred to its due date.
+      final anchorReference = (state.isHabit &&
+              state.timeframe == HabitTimeframe.monthly &&
+              state.monthlyRepeatMode == MonthlyRepeatMode.dayOfWeek &&
+              state.dueDate != null)
+          ? state.dueDate!
+          : DateTime.now();
+
       final todo = Todo(
         id: state.id,
         characterId: characterId,
@@ -185,8 +243,15 @@ class AddTodoCubit extends Cubit<AddTodoState> {
         timeframe: state.timeframe,
         allowsMultipleCompletions: state.allowsMultipleCompletions,
         currentPeriodStart: state.isHabit
-            ? HabitService.startOfPeriodContaining(DateTime.now())
+            ? HabitService.anchorPeriodStart(
+                timeframe: state.timeframe!,
+                repeatWeekdays: state.repeatWeekdays,
+                referenceDate: anchorReference,
+              )
             : null,
+        repeatInterval: state.repeatInterval,
+        repeatWeekdays: state.repeatWeekdays,
+        monthlyRepeatMode: state.monthlyRepeatMode,
       );
 
       await todoRepository.createTodo(todo);
@@ -209,6 +274,9 @@ class AddTodoCubit extends Cubit<AddTodoState> {
         isHabit: false,
         timeframe: null,
         allowsMultipleCompletions: false,
+        repeatInterval: 1,
+        repeatWeekdays: const {},
+        monthlyRepeatMode: MonthlyRepeatMode.dayOfMonth,
       ));
     } catch (e) {
       // Handle error

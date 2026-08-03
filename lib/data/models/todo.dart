@@ -53,6 +53,24 @@ enum HabitTimeframe {
   }
 }
 
+// Only meaningful when timeframe == HabitTimeframe.monthly: whether the
+// habit repeats on a fixed day-of-month (e.g. "the 3rd") or a fixed
+// weekday-within-month (e.g. "the 1st Monday") — the latter derived from
+// whatever due date is selected, not stored separately.
+enum MonthlyRepeatMode {
+  dayOfMonth,
+  dayOfWeek;
+
+  String get name {
+    switch (this) {
+      case MonthlyRepeatMode.dayOfMonth:
+        return 'Day of Month';
+      case MonthlyRepeatMode.dayOfWeek:
+        return 'Day of Week';
+    }
+  }
+}
+
 enum PriorityLevel {
   noPriority,
   low,
@@ -107,6 +125,9 @@ class Todo {
   static const currentStreakColumnName = 'currentStreak';
   static const currentPeriodStartColumnName = 'currentPeriodStart';
   static const completionAwardedColumnName = 'completionAwarded';
+  static const repeatIntervalColumnName = 'repeatInterval';
+  static const repeatWeekdaysColumnName = 'repeatWeekdays';
+  static const monthlyRepeatModeColumnName = 'monthlyRepeatMode';
 
   static const createTableSQL = '''
 		CREATE TABLE ${Todo.todoTableName}(
@@ -125,9 +146,24 @@ class Todo {
 			${Todo.completionsInCurrentPeriodColumnName} INTEGER DEFAULT 0,
 			${Todo.currentStreakColumnName} INTEGER DEFAULT 0,
 			${Todo.currentPeriodStartColumnName} INTEGER,
-			${Todo.completionAwardedColumnName} BOOLEAN DEFAULT 0
+			${Todo.completionAwardedColumnName} BOOLEAN DEFAULT 0,
+			${Todo.repeatIntervalColumnName} INTEGER DEFAULT 1,
+			${Todo.repeatWeekdaysColumnName} INTEGER DEFAULT 0,
+			${Todo.monthlyRepeatModeColumnName} INTEGER DEFAULT 0
 		);
 	''';
+
+  // repeatWeekdays is stored as a 7-bit mask (bit (weekday-1) per
+  // DateTime.weekday value 1=Mon..7=Sun) rather than a join table or CSV —
+  // the domain is fixed and tiny, and it's never queried independently of
+  // its owning Todo.
+  static int weekdaysToBitmask(Set<int> weekdays) =>
+      weekdays.fold(0, (mask, weekday) => mask | (1 << (weekday - 1)));
+
+  static Set<int> bitmaskToWeekdays(int mask) => {
+        for (var weekday = 1; weekday <= 7; weekday++)
+          if (mask & (1 << (weekday - 1)) != 0) weekday,
+      };
 
   final String id;
   final String characterId;
@@ -151,6 +187,15 @@ class Todo {
   // either one repeatedly. Not used for multi-check habits, where every
   // completion is genuinely new.
   final bool completionAwarded;
+  // "Every N days/weeks/months" — meaningful whenever isHabit, applies to
+  // whichever timeframe is set.
+  final int repeatInterval;
+  // Only meaningful when timeframe == weekly: which weekdays (DateTime.
+  // weekday values, 1=Mon..7=Sun) the habit repeats on. Empty means "not
+  // day-specific" — falls back to a plain rolling weekly period.
+  final Set<int> repeatWeekdays;
+  // Only meaningful when timeframe == monthly.
+  final MonthlyRepeatMode monthlyRepeatMode;
 
   const Todo({
     required this.id,
@@ -171,6 +216,9 @@ class Todo {
     this.currentStreak = 0,
     this.currentPeriodStart,
     this.completionAwarded = false,
+    this.repeatInterval = 1,
+    this.repeatWeekdays = const {},
+    this.monthlyRepeatMode = MonthlyRepeatMode.dayOfMonth,
   });
 
   Map<String, Object?> toMap() {
@@ -193,6 +241,9 @@ class Todo {
       Todo.currentPeriodStartColumnName:
           currentPeriodStart?.millisecondsSinceEpoch,
       Todo.completionAwardedColumnName: completionAwarded ? 1 : 0,
+      Todo.repeatIntervalColumnName: repeatInterval,
+      Todo.repeatWeekdaysColumnName: Todo.weekdaysToBitmask(repeatWeekdays),
+      Todo.monthlyRepeatModeColumnName: monthlyRepeatMode.index,
     };
   }
 
@@ -228,6 +279,9 @@ class Todo {
     int? currentStreak,
     DateTime? currentPeriodStart,
     bool? completionAwarded,
+    int? repeatInterval,
+    Set<int>? repeatWeekdays,
+    MonthlyRepeatMode? monthlyRepeatMode,
   }) {
     return Todo(
       id: id,
@@ -250,6 +304,9 @@ class Todo {
       currentStreak: currentStreak ?? this.currentStreak,
       currentPeriodStart: currentPeriodStart ?? this.currentPeriodStart,
       completionAwarded: completionAwarded ?? this.completionAwarded,
+      repeatInterval: repeatInterval ?? this.repeatInterval,
+      repeatWeekdays: repeatWeekdays ?? this.repeatWeekdays,
+      monthlyRepeatMode: monthlyRepeatMode ?? this.monthlyRepeatMode,
     );
   }
 }

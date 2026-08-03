@@ -110,7 +110,26 @@ class TodosOverviewState extends Equatable {
     final endOfWeek = startOfToday.add(const Duration(days: 7));
 
     bool isDueWithin(Todo todo, DateTime start, DateTime end) {
-      if (todo.isHabit || todo.dueDate == null) return true;
+      if (todo.isHabit) {
+        // A weekly habit with specific weekdays selected only shows on
+        // its actual occurrence days — but only under a single-day
+        // window ("Today"). currentPeriodStart is the CURRENT (possibly
+        // already-past-but-not-yet-elapsed) occurrence, so comparing it
+        // against a week-long window here would incorrectly hide the
+        // habit for the rest of the week the moment its day passes;
+        // "This Week" instead keeps today's original always-visible
+        // behavior for every habit configuration.
+        final isSingleDayWindow = end.difference(start).inDays <= 1;
+        if (isSingleDayWindow &&
+            todo.timeframe == HabitTimeframe.weekly &&
+            todo.repeatWeekdays.isNotEmpty) {
+          final periodStart = todo.currentPeriodStart;
+          if (periodStart == null) return true;
+          return !periodStart.isBefore(start) && periodStart.isBefore(end);
+        }
+        return true;
+      }
+      if (todo.dueDate == null) return true;
       final dueDate = todo.dueDate!;
       return !dueDate.isBefore(start) && dueDate.isBefore(end);
     }

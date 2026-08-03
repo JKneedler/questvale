@@ -146,6 +146,14 @@ class QuestvaleDB {
         await db.execute(
             'ALTER TABLE ${Character.characterTableName} ADD COLUMN ${Character.themeIdColumnName} TEXT NOT NULL DEFAULT \'$DEFAULT_THEME_ID\'');
       }
-    }, version: 8);
+      if (oldVersion < 9) {
+        await db.execute(
+            'ALTER TABLE ${Todo.todoTableName} ADD COLUMN ${Todo.repeatIntervalColumnName} INTEGER DEFAULT 1');
+        await db.execute(
+            'ALTER TABLE ${Todo.todoTableName} ADD COLUMN ${Todo.repeatWeekdaysColumnName} INTEGER DEFAULT 0');
+        await db.execute(
+            'ALTER TABLE ${Todo.todoTableName} ADD COLUMN ${Todo.monthlyRepeatModeColumnName} INTEGER DEFAULT 0');
+      }
+    }, version: 9);
   }
 }

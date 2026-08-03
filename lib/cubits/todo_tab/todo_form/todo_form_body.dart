@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:questvale/cubits/todo_tab/character_tag/create_character_tag_page.dart';
@@ -15,9 +16,11 @@ import 'package:questvale/widgets/qv_check_box.dart';
 import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
 import 'package:questvale/widgets/qv_month_calendar.dart';
+import 'package:questvale/widgets/qv_number_wheel_picker.dart';
 import 'package:questvale/widgets/qv_segmented_control.dart';
 import 'package:questvale/widgets/qv_tag_chip.dart';
 import 'package:questvale/widgets/qv_textfield.dart';
+import 'package:questvale/widgets/qv_weekday_selector.dart';
 
 /// The mutable todo fields the shared form body renders — everything below
 /// the title/description text fields. Both AddTodoState and EditTodoState
@@ -34,6 +37,9 @@ class TodoFormFields {
     required this.isHabit,
     required this.timeframe,
     required this.allowsMultipleCompletions,
+    this.repeatInterval = 1,
+    this.repeatWeekdays = const {},
+    this.monthlyRepeatMode = MonthlyRepeatMode.dayOfMonth,
     required this.availableTags,
     required this.selectedTags,
     this.isCompleted = false,
@@ -50,6 +56,9 @@ class TodoFormFields {
   final bool isHabit;
   final HabitTimeframe? timeframe;
   final bool allowsMultipleCompletions;
+  final int repeatInterval;
+  final Set<int> repeatWeekdays;
+  final MonthlyRepeatMode monthlyRepeatMode;
   final List<Tag> availableTags;
   final List<Tag> selectedTags;
   final bool isCompleted;
@@ -76,6 +85,9 @@ class TodoFormCallbacks {
     required this.onHabitToggled,
     required this.onTimeframeChanged,
     required this.onMultipleCompletionsToggled,
+    required this.onRepeatIntervalChanged,
+    required this.onRepeatWeekdayToggled,
+    required this.onMonthlyRepeatModeChanged,
   });
 
   final ValueChanged<String> onNameChanged;
@@ -93,6 +105,9 @@ class TodoFormCallbacks {
   final ValueChanged<bool> onHabitToggled;
   final ValueChanged<HabitTimeframe> onTimeframeChanged;
   final ValueChanged<bool> onMultipleCompletionsToggled;
+  final ValueChanged<int> onRepeatIntervalChanged;
+  final ValueChanged<int> onRepeatWeekdayToggled;
+  final ValueChanged<MonthlyRepeatMode> onMonthlyRepeatModeChanged;
 }
 
 /// Shared body content for the add-todo and edit-todo sheets: title +
@@ -141,7 +156,55 @@ class _TodoFormBodyState extends State<TodoFormBody> {
   bool _dateExpanded = false;
   bool _timeExpanded = false;
   bool _remindersExpanded = false;
+  bool _intervalExpanded = false;
   late DateTime _displayedMonth;
+
+  // Keys on each expandable section's outer container, so that expanding one
+  // can scroll the sheet's outer SingleChildScrollView (from TodoFormSheet)
+  // just far enough that the whole newly-expanded section — not just the
+  // sliver of it that happened to already be on screen — ends up visible.
+  final GlobalKey _dueDateSectionKey = GlobalKey();
+  final GlobalKey _timeSectionKey = GlobalKey();
+  final GlobalKey _remindersSectionKey = GlobalKey();
+  final GlobalKey _intervalSectionKey = GlobalKey();
+
+  // Covers the whole Repeats section (segmented control + interval row +
+  // weekday selector / monthly toggle), so picking any timeframe other than
+  // None can reveal everything that unlocks below it, not just the row that
+  // was tapped.
+  final GlobalKey _repeatsSectionKey = GlobalKey();
+
+  // Scrolling has to wait until the frame after the state change that grows
+  // a section — only then does its RenderBox reflect the new, taller size.
+  // Computes the same target offset Scrollable.ensureVisible(alignment: 1.0)
+  // would (pins the section's bottom edge to the viewport's bottom edge),
+  // but only animates there when that offset is further down than the
+  // current scroll position — so a section that's already fully visible
+  // (e.g. collapsing a row further down freed up space above it) never gets
+  // yanked upward to satisfy the alignment.
+  void _scrollExpandedSectionIntoView(GlobalKey key) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final sectionContext = key.currentContext;
+      if (sectionContext == null) return;
+      final renderObject = sectionContext.findRenderObject();
+      if (renderObject == null) return;
+      final scrollable = Scrollable.maybeOf(sectionContext);
+      if (scrollable == null) return;
+      final position = scrollable.position;
+      final viewport = RenderAbstractViewport.of(renderObject);
+      final targetOffset = viewport
+          .getOffsetToReveal(renderObject, 1.0)
+          .offset
+          .clamp(position.minScrollExtent, position.maxScrollExtent);
+      if (targetOffset > position.pixels) {
+        position.animateTo(
+          targetOffset,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
 
   @override
   void initState() {
@@ -163,6 +226,19 @@ class _TodoFormBodyState extends State<TodoFormBody> {
         (date.year != oldWidget.fields.dueDate?.year ||
             date.month != oldWidget.fields.dueDate?.month)) {
       _displayedMonth = DateTime(date.year, date.month);
+    }
+
+    // Picking any Repeats option other than None should reveal everything
+    // that choice unlocks (interval wheel, weekday selector, monthly
+    // toggle) — not just whatever row the user happened to tap. Fires both
+    // when a habit is freshly turned on and when the timeframe is switched
+    // (e.g. Daily -> Weekly reveals the weekday selector that Daily doesn't
+    // have).
+    final wasUnset = !oldWidget.fields.isHabit || oldWidget.fields.timeframe == null;
+    final isNowSet = widget.fields.isHabit && widget.fields.timeframe != null;
+    final timeframeChanged = oldWidget.fields.timeframe != widget.fields.timeframe;
+    if (isNowSet && (wasUnset || timeframeChanged)) {
+      _scrollExpandedSectionIntoView(_repeatsSectionKey);
     }
   }
 
@@ -287,9 +363,10 @@ class _TodoFormBodyState extends State<TodoFormBody> {
         ],
         _buildDifficultyRow(context, fields, callbacks),
         _buildPriorityRow(context, fields, callbacks),
-        _buildHabitRow(context, fields, callbacks),
-        if (fields.isHabit)
-          _buildMultipleCompletionsRow(context, fields, callbacks),
+        KeyedSubtree(
+          key: _repeatsSectionKey,
+          child: _buildHabitRow(context, fields, callbacks),
+        ),
       ],
     );
   }
@@ -302,6 +379,7 @@ class _TodoFormBodyState extends State<TodoFormBody> {
       context,
       label: 'Due Date',
       child: QvInsetBackground(
+        key: _dueDateSectionKey,
         type: QvInsetBackgroundType.secondary,
         width: double.infinity,
         padding: EdgeInsets.zero,
@@ -314,7 +392,12 @@ class _TodoFormBodyState extends State<TodoFormBody> {
                   : 'None',
               isSet: hasDueDate,
               expanded: _dateExpanded,
-              onTap: () => setState(() => _dateExpanded = !_dateExpanded),
+              onTap: () => setState(() {
+                _dateExpanded = !_dateExpanded;
+                if (_dateExpanded) {
+                  _scrollExpandedSectionIntoView(_dueDateSectionKey);
+                }
+              }),
               onClear: hasDueDate ? callbacks.onDueDateCleared : null,
             ),
             if (_dateExpanded)
@@ -342,6 +425,7 @@ class _TodoFormBodyState extends State<TodoFormBody> {
       context,
       label: 'Time',
       child: QvInsetBackground(
+        key: _timeSectionKey,
         type: QvInsetBackgroundType.secondary,
         width: double.infinity,
         padding: EdgeInsets.zero,
@@ -354,7 +438,12 @@ class _TodoFormBodyState extends State<TodoFormBody> {
                   : 'None',
               isSet: fields.hasTime,
               expanded: _timeExpanded,
-              onTap: () => setState(() => _timeExpanded = !_timeExpanded),
+              onTap: () => setState(() {
+                _timeExpanded = !_timeExpanded;
+                if (_timeExpanded) {
+                  _scrollExpandedSectionIntoView(_timeSectionKey);
+                }
+              }),
               onClear: fields.hasTime ? callbacks.onDueDateTimeCleared : null,
             ),
             if (_timeExpanded)
@@ -389,6 +478,7 @@ class _TodoFormBodyState extends State<TodoFormBody> {
       context,
       label: 'Reminders',
       child: QvInsetBackground(
+        key: _remindersSectionKey,
         type: QvInsetBackgroundType.secondary,
         width: double.infinity,
         padding: EdgeInsets.zero,
@@ -401,8 +491,12 @@ class _TodoFormBodyState extends State<TodoFormBody> {
                   : 'None',
               isSet: hasReminders,
               expanded: _remindersExpanded,
-              onTap: () =>
-                  setState(() => _remindersExpanded = !_remindersExpanded),
+              onTap: () => setState(() {
+                _remindersExpanded = !_remindersExpanded;
+                if (_remindersExpanded) {
+                  _scrollExpandedSectionIntoView(_remindersSectionKey);
+                }
+              }),
               onClear: hasReminders ? callbacks.onRemindersCleared : null,
             ),
             if (_remindersExpanded)
@@ -586,30 +680,146 @@ class _TodoFormBodyState extends State<TodoFormBody> {
               ],
             )
           : null,
-      child: QvSegmentedControl<HabitTimeframe?>(
-        itemSize: 40,
-        highlightWidthFraction: 0.9,
-        items: [
-          const QvSegmentedControlItem(
-            value: null,
-            label: 'None',
+      child: Column(
+        children: [
+          QvSegmentedControl<HabitTimeframe?>(
+            itemSize: 40,
+            highlightWidthFraction: 0.9,
+            items: [
+              const QvSegmentedControlItem(
+                value: null,
+                label: 'None',
+              ),
+              for (final tf in HabitTimeframe.values)
+                QvSegmentedControlItem(
+                  value: tf,
+                  label: tf.name,
+                ),
+            ],
+            selectedValue: fields.isHabit
+                ? (fields.timeframe ?? HabitTimeframe.daily)
+                : null,
+            onChanged: (tf) {
+              if (tf == null) {
+                callbacks.onHabitToggled(false);
+              } else {
+                callbacks.onTimeframeChanged(tf);
+              }
+            },
           ),
-          for (final tf in HabitTimeframe.values)
-            QvSegmentedControlItem(
-              value: tf,
-              label: tf.name,
+          if (fields.isHabit && fields.timeframe != null) ...[
+            const SizedBox(height: 10),
+            _buildRepeatIntervalRow(context, fields, callbacks),
+            if (fields.timeframe == HabitTimeframe.weekly) ...[
+              const SizedBox(height: 10),
+              QvWeekdaySelector(
+                selectedWeekdays: fields.repeatWeekdays,
+                onToggled: callbacks.onRepeatWeekdayToggled,
+              ),
+            ],
+            if (fields.timeframe == HabitTimeframe.monthly) ...[
+              const SizedBox(height: 10),
+              _buildMonthlyRepeatModeRow(context, fields, callbacks),
+            ],
+            const SizedBox(height: 14),
+            _buildMultipleCompletionsRow(context, fields, callbacks),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRepeatIntervalRow(BuildContext context, TodoFormFields fields,
+      TodoFormCallbacks callbacks) {
+    final timeframe = fields.timeframe!;
+    final int min;
+    final int max;
+    switch (timeframe) {
+      case HabitTimeframe.daily:
+        min = 1;
+        max = 30;
+        break;
+      case HabitTimeframe.weekly:
+        min = 1;
+        max = 52;
+        break;
+      case HabitTimeframe.monthly:
+        min = 1;
+        max = 12;
+        break;
+    }
+
+    return QvInsetBackground(
+      key: _intervalSectionKey,
+      type: QvInsetBackgroundType.secondary,
+      width: double.infinity,
+      padding: EdgeInsets.zero,
+      child: Column(
+        children: [
+          _buildExpandableValueRow(
+            context,
+            value: DataFormatters.formatRepeatInterval(
+                fields.repeatInterval, timeframe),
+            isSet: true,
+            expanded: _intervalExpanded,
+            onTap: () => setState(() {
+              _intervalExpanded = !_intervalExpanded;
+              if (_intervalExpanded) {
+                _scrollExpandedSectionIntoView(_intervalSectionKey);
+              }
+            }),
+          ),
+          if (_intervalExpanded)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: QvNumberWheelPicker(
+                min: min,
+                max: max,
+                selectedValue: fields.repeatInterval.clamp(min, max),
+                onChanged: callbacks.onRepeatIntervalChanged,
+                wheelHeight: 120,
+              ),
             ),
         ],
-        selectedValue:
-            fields.isHabit ? (fields.timeframe ?? HabitTimeframe.daily) : null,
-        onChanged: (tf) {
-          if (tf == null) {
-            callbacks.onHabitToggled(false);
-          } else {
-            callbacks.onTimeframeChanged(tf);
-          }
-        },
       ),
+    );
+  }
+
+  Widget _buildMonthlyRepeatModeRow(BuildContext context,
+      TodoFormFields fields, TodoFormCallbacks callbacks) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final reference = fields.dueDate ?? DateTime.now();
+    final ordinalInMonth = ((reference.day - 1) ~/ 7) + 1;
+    final description = fields.monthlyRepeatMode == MonthlyRepeatMode.dayOfMonth
+        ? 'Repeats on the ${DataFormatters.ordinal(reference.day)}'
+        : 'Repeats on the ${DataFormatters.ordinal(ordinalInMonth)} '
+            '${DataFormatters.weekdayName(reference.weekday)}';
+
+    return Column(
+      children: [
+        QvSegmentedControl<MonthlyRepeatMode>(
+          itemSize: 40,
+          highlightWidthFraction: 0.9,
+          items: [
+            for (final mode in MonthlyRepeatMode.values)
+              QvSegmentedControlItem(
+                value: mode,
+                label: mode.name,
+              ),
+          ],
+          selectedValue: fields.monthlyRepeatMode,
+          onChanged: callbacks.onMonthlyRepeatModeChanged,
+        ),
+        const SizedBox(height: 6),
+        Text(
+          description,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: colorScheme.onSurface.withValues(alpha: 0.6),
+          ),
+        ),
+      ],
     );
   }
 
@@ -653,30 +863,27 @@ class _TodoFormBodyState extends State<TodoFormBody> {
       TodoFormFields fields, TodoFormCallbacks callbacks) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: GestureDetector(
-        onTap: () => callbacks
-            .onMultipleCompletionsToggled(!fields.allowsMultipleCompletions),
-        behavior: HitTestBehavior.translucent,
-        child: Row(
-          children: [
-            QvCheckBox(
-              width: 20,
-              height: 20,
-              isChecked: fields.allowsMultipleCompletions,
+    return GestureDetector(
+      onTap: () => callbacks
+          .onMultipleCompletionsToggled(!fields.allowsMultipleCompletions),
+      behavior: HitTestBehavior.translucent,
+      child: Row(
+        children: [
+          QvCheckBox(
+            width: 20,
+            height: 20,
+            isChecked: fields.allowsMultipleCompletions,
+          ),
+          const SizedBox(width: 12),
+          Text(
+            'Multiple completions',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: colorScheme.onSurface,
             ),
-            const SizedBox(width: 12),
-            Text(
-              'Multiple completions',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: colorScheme.onSurface,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

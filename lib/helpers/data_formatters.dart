@@ -1,3 +1,5 @@
+import 'package:questvale/data/models/todo.dart';
+
 class DataFormatters {
   static const _months = [
     'Jan',
@@ -43,5 +45,52 @@ class DataFormatters {
     final minute = time.minute.toString().padLeft(2, '0');
     final period = time.hour >= 12 ? 'PM' : 'AM';
     return '$hour:$minute$period';
+  }
+
+  // Scoped to 1-5 — the only possible occurrence-within-month ordinals —
+  // rather than a fully general ordinal formatter.
+  static String ordinal(int n) {
+    switch (n) {
+      case 1:
+        return '1st';
+      case 2:
+        return '2nd';
+      case 3:
+        return '3rd';
+      case 4:
+        return '4th';
+      case 5:
+        return '5th';
+      default:
+        return '${n}th';
+    }
+  }
+
+  static const _weekdayNames = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
+
+  static String weekdayName(int weekday) => _weekdayNames[weekday - 1];
+
+  static String formatRepeatInterval(int interval, HabitTimeframe timeframe) {
+    String unit;
+    switch (timeframe) {
+      case HabitTimeframe.daily:
+        unit = 'day';
+        break;
+      case HabitTimeframe.weekly:
+        unit = 'week';
+        break;
+      case HabitTimeframe.monthly:
+        unit = 'month';
+        break;
+    }
+    return 'Every $interval ${interval == 1 ? unit : '${unit}s'}';
   }
 }

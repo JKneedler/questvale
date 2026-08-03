@@ -117,6 +117,12 @@ class TodoRepository {
               map[Todo.currentPeriodStartColumnName] as int)
           : null,
       completionAwarded: map[Todo.completionAwardedColumnName] == 1,
+      repeatInterval: map[Todo.repeatIntervalColumnName] as int? ?? 1,
+      repeatWeekdays: Todo.bitmaskToWeekdays(
+          map[Todo.repeatWeekdaysColumnName] as int? ?? 0),
+      monthlyRepeatMode: map[Todo.monthlyRepeatModeColumnName] != null
+          ? MonthlyRepeatMode.values[map[Todo.monthlyRepeatModeColumnName] as int]
+          : MonthlyRepeatMode.dayOfMonth,
     );
   }
 

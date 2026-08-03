@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/todo_tab/edit_todo/edit_todo_state.dart';
@@ -36,6 +37,9 @@ class EditTodoCubit extends Cubit<EditTodoState> {
             isHabit: todo.isHabit,
             timeframe: todo.timeframe,
             allowsMultipleCompletions: todo.allowsMultipleCompletions,
+            repeatInterval: todo.repeatInterval,
+            repeatWeekdays: todo.repeatWeekdays,
+            monthlyRepeatMode: todo.monthlyRepeatMode,
           ),
         ) {
     loadTags();
@@ -119,6 +123,9 @@ class EditTodoCubit extends Cubit<EditTodoState> {
       isHabit: state.isHabit,
       timeframe: state.timeframe,
       allowsMultipleCompletions: state.allowsMultipleCompletions,
+      repeatInterval: state.repeatInterval,
+      repeatWeekdays: state.repeatWeekdays,
+      monthlyRepeatMode: state.monthlyRepeatMode,
     ));
   }
 
@@ -139,15 +146,52 @@ class EditTodoCubit extends Cubit<EditTodoState> {
       timeframe: value ? (state.timeframe ?? HabitTimeframe.daily) : null,
       allowsMultipleCompletions:
           value ? state.allowsMultipleCompletions : false,
+      repeatInterval: value ? state.repeatInterval : 1,
+      repeatWeekdays: value ? state.repeatWeekdays : const {},
+      monthlyRepeatMode:
+          value ? state.monthlyRepeatMode : MonthlyRepeatMode.dayOfMonth,
     ));
   }
 
+  // See AddTodoCubit.timeframeChanged for why repeatInterval always resets
+  // and repeatWeekdays is seeded/cleared on entering/leaving Weekly.
   void timeframeChanged(HabitTimeframe value) {
-    emit(state.copyWith(isHabit: true, timeframe: value));
+    Set<int> weekdays = state.repeatWeekdays;
+    if (value == HabitTimeframe.weekly) {
+      if (weekdays.isEmpty) {
+        weekdays = {(state.dueDate ?? DateTime.now()).weekday};
+      }
+    } else {
+      weekdays = const {};
+    }
+    emit(state.copyWith(
+      isHabit: true,
+      timeframe: value,
+      repeatInterval: 1,
+      repeatWeekdays: weekdays,
+    ));
   }
 
   void multipleCompletionsToggled(bool value) {
     emit(state.copyWith(allowsMultipleCompletions: value));
+  }
+
+  void repeatIntervalChanged(int value) {
+    emit(state.copyWith(repeatInterval: value));
+  }
+
+  void repeatWeekdayToggled(int weekday) {
+    final updated = Set<int>.from(state.repeatWeekdays);
+    if (updated.contains(weekday)) {
+      updated.remove(weekday);
+    } else {
+      updated.add(weekday);
+    }
+    emit(state.copyWith(repeatWeekdays: updated));
+  }
+
+  void monthlyRepeatModeChanged(MonthlyRepeatMode value) {
+    emit(state.copyWith(monthlyRepeatMode: value));
   }
 
   void difficultyChanged(DifficultyLevel difficulty) {
@@ -187,23 +231,54 @@ class EditTodoCubit extends Cubit<EditTodoState> {
     final todoReminders = _createRemindersForTodo(state.todo.id);
 
     // Habit fields (streak/completion count) reset if a Task just became a
-    // Habit, carry over untouched if it was already a Habit, and clear if a
-    // Habit just became a one-time Task again.
+    // Habit, carry over untouched if it was already a Habit and its
+    // repeat config didn't change, and clear if a Habit just became a
+    // one-time Task again. A repeat-config-only change (interval,
+    // weekdays, or monthly mode, on an already-existing habit) also needs
+    // to re-anchor currentPeriodStart — otherwise day-gating or the
+    // monthly "day of week" derivation could reflect the OLD config for
+    // up to one full period after the edit.
     final wasHabit = state.todo.isHabit;
     final isNowHabit = state.isHabit;
-    final currentPeriodStart = isNowHabit
-        ? (wasHabit
-            ? state.todo.currentPeriodStart
-            : HabitService.startOfPeriodContaining(DateTime.now()))
-        : null;
-    final completionsInCurrentPeriod =
-        isNowHabit && wasHabit ? state.todo.completionsInCurrentPeriod : 0;
-    final currentStreak = isNowHabit && wasHabit ? state.todo.currentStreak : 0;
-    // Preserve whether this item already earned its AP + stats credit (so
-    // editing-and-saving can't reset the lock and let it re-earn either) —
-    // unless the Task/Habit type just changed, which starts a fresh cycle.
-    final completionAwarded =
-        isNowHabit == wasHabit ? state.todo.completionAwarded : false;
+    final repeatConfigChanged = state.timeframe != state.todo.timeframe ||
+        state.repeatInterval != state.todo.repeatInterval ||
+        !const SetEquality<int>()
+            .equals(state.repeatWeekdays, state.todo.repeatWeekdays) ||
+        state.monthlyRepeatMode != state.todo.monthlyRepeatMode;
+
+    DateTime? currentPeriodStart;
+    int completionsInCurrentPeriod;
+    int currentStreak;
+    bool completionAwarded;
+
+    if (!isNowHabit) {
+      currentPeriodStart = null;
+      completionsInCurrentPeriod = 0;
+      currentStreak = 0;
+      completionAwarded = false;
+    } else if (!wasHabit || repeatConfigChanged) {
+      final anchorReference = (state.timeframe == HabitTimeframe.monthly &&
+              state.monthlyRepeatMode == MonthlyRepeatMode.dayOfWeek &&
+              state.dueDate != null)
+          ? state.dueDate!
+          : DateTime.now();
+      currentPeriodStart = HabitService.anchorPeriodStart(
+        timeframe: state.timeframe!,
+        repeatWeekdays: state.repeatWeekdays,
+        referenceDate: anchorReference,
+      );
+      completionsInCurrentPeriod = 0;
+      // Preserved across a repeat-config tweak (only zeroed on a genuine
+      // Task->Habit transition) — editing repeat settings shouldn't wipe
+      // an earned streak.
+      currentStreak = wasHabit ? state.todo.currentStreak : 0;
+      completionAwarded = false;
+    } else {
+      currentPeriodStart = state.todo.currentPeriodStart;
+      completionsInCurrentPeriod = state.todo.completionsInCurrentPeriod;
+      currentStreak = state.todo.currentStreak;
+      completionAwarded = state.todo.completionAwarded;
+    }
 
     final updatedTodo = Todo(
       id: state.todo.id,
@@ -224,6 +299,9 @@ class EditTodoCubit extends Cubit<EditTodoState> {
       completionsInCurrentPeriod: completionsInCurrentPeriod,
       currentStreak: currentStreak,
       completionAwarded: completionAwarded,
+      repeatInterval: state.repeatInterval,
+      repeatWeekdays: state.repeatWeekdays,
+      monthlyRepeatMode: state.monthlyRepeatMode,
     );
 
     await todoRepository.updateTodo(updatedTodo);
