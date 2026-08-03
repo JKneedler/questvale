@@ -198,10 +198,17 @@ class AddTodoCubit extends Cubit<AddTodoState> {
     emit(state.copyWith(monthlyRepeatMode: value));
   }
 
+  // Compares by characterTagId rather than Tag equality (Tag has no ==
+  // override, so it'd fall back to reference identity) — availableTags is
+  // rebuilt with brand-new Tag instances on every reload (e.g. creating a
+  // tag via the inline "+ Tag" button), which would otherwise orphan an
+  // already-selected tag's old instance and make it un-toggleable.
   void toggleTag(Tag tag) {
-    if (state.selectedTags.contains(tag)) {
+    if (state.selectedTags.any((t) => t.characterTagId == tag.characterTagId)) {
       emit(state.copyWith(
-          selectedTags: state.selectedTags.where((t) => t != tag).toList()));
+          selectedTags: state.selectedTags
+              .where((t) => t.characterTagId != tag.characterTagId)
+              .toList()));
     } else {
       emit(state.copyWith(selectedTags: [...state.selectedTags, tag]));
     }

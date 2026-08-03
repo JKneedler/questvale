@@ -78,6 +78,17 @@ class QuestvaleDB {
 
       await db.execute(Enemy.createTableSQL);
     }, onUpgrade: (db, oldVersion, newVersion) async {
+      // TodoTag/CharacterTag were never added to a version-gated migration
+      // block when the tags feature shipped, so any install that upgraded
+      // through that point instead of a fresh install never got these
+      // tables — every tag-related insert then silently failed. Run
+      // unconditionally (IF NOT EXISTS) on every upgrade rather than
+      // guessing which version boundary they should have belonged to.
+      await db.execute(
+          TodoTag.createTableSQL.replaceFirst('CREATE TABLE', 'CREATE TABLE IF NOT EXISTS'));
+      await db.execute(
+          CharacterTag.createTableSQL.replaceFirst('CREATE TABLE', 'CREATE TABLE IF NOT EXISTS'));
+
       if (oldVersion < 2) {
         await db.execute(
             'ALTER TABLE ${Todo.todoTableName} ADD COLUMN ${Todo.isHabitColumnName} BOOLEAN DEFAULT 0');

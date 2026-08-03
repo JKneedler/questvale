@@ -30,9 +30,9 @@ class TodoRepository {
   }
 
   // UPDATE todo
-  // Also reconciles reminders (replace-all) — the edit flow always rebuilds
-  // its full reminders list from scratch with fresh ids, so this was
-  // previously a silent no-op for reminder changes made via editing.
+  // Also reconciles reminders and tags (replace-all) — the edit flow always
+  // rebuilds its full reminders/tags lists from scratch, so this was
+  // previously a silent no-op for reminder/tag changes made via editing.
   Future<void> updateTodo(Todo updateTodo) async {
     await db.update(Todo.todoTableName, updateTodo.toMap(),
         where: '${Todo.idColumnName} = ?', whereArgs: [updateTodo.id]);
@@ -42,6 +42,19 @@ class TodoRepository {
         whereArgs: [updateTodo.id]);
     for (final reminder in updateTodo.reminders) {
       await db.insert(TodoReminder.todoReminderTableName, reminder.toMap());
+    }
+
+    await db.delete(TodoTag.todoTagTableName,
+        where: '${TodoTag.todoIdColumnName} = ?', whereArgs: [updateTodo.id]);
+    for (final tag in updateTodo.tags) {
+      await db.insert(
+        TodoTag.todoTagTableName,
+        {
+          TodoTag.idColumnName: const Uuid().v4(),
+          TodoTag.todoIdColumnName: updateTodo.id,
+          TodoTag.characterTagIdColumnName: tag.characterTagId,
+        },
+      );
     }
   }
 
