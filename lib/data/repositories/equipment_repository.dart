@@ -77,6 +77,16 @@ class EquipmentRepository {
     await statModifiersRepository.deleteStatModifiersByEquipmentId(equipmentId);
   }
 
+  // DELETE ALL EQUIPMENT FOR CHARACTER
+  // Loops through deleteEquipment per row (rather than a bulk SQL delete)
+  // so each item's StatModifiers cascade-delete still fires.
+  Future<void> deleteAllEquipmentForCharacter(String characterId) async {
+    final equipment = await getEquipmentByCharacterId(characterId);
+    for (final item in equipment) {
+      await deleteEquipment(item.id);
+    }
+  }
+
   // map method for equipment
   Future<Equipment> _getEquipmentFromMap(Map<String, Object?> map) async {
     final statModifiers = await statModifiersRepository

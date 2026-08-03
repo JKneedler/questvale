@@ -2,6 +2,7 @@ import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/character_skill.dart';
 import 'package:questvale/data/models/character_stats.dart';
 import 'package:questvale/data/models/character_tag.dart';
+import 'package:questvale/data/models/todo_tag.dart';
 import 'package:questvale/data/repositories/equipment_repository.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/shared_enums.dart';
@@ -98,6 +99,25 @@ class CharacterRepository {
       CharacterTag.characterTagTableName,
       where: '${CharacterTag.idColumnName} = ?',
       whereArgs: [tag.id],
+    );
+  }
+
+  // Deletes every tag the character owns, and any TodoTags rows
+  // referencing them so no todo is left pointing at a deleted tag.
+  Future<void> deleteAllTags(String characterId) async {
+    final tags = await getCharacterTags(characterId);
+    if (tags.isEmpty) return;
+    final tagIds = tags.map((tag) => tag.id).toList();
+    await db.delete(
+      TodoTag.todoTagTableName,
+      where:
+          '${TodoTag.characterTagIdColumnName} IN (${List.filled(tagIds.length, '?').join(',')})',
+      whereArgs: tagIds,
+    );
+    await db.delete(
+      CharacterTag.characterTagTableName,
+      where: '${CharacterTag.characterIdColumnName} = ?',
+      whereArgs: [characterId],
     );
   }
 
@@ -236,6 +256,14 @@ class CharacterRepository {
       whereArgs: [characterId],
     );
     return skillMaps.map((skillMap) => _getSkillFromMap(skillMap)).toList();
+  }
+
+  Future<void> deleteAllSkillsForCharacter(String characterId) async {
+    await db.delete(
+      CharacterSkill.characterSkillTableName,
+      where: '${CharacterSkill.characterIdColumnName} = ?',
+      whereArgs: [characterId],
+    );
   }
 
   Future<CharacterSkill?> getSkillById(String? skillId) async {
