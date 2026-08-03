@@ -40,22 +40,41 @@ class TodoFormSheet extends StatelessWidget {
           padding: EdgeInsets.all(16),
           child: SafeArea(
             top: false,
-            child: QvFadingScrollable(
-              child: SingleChildScrollView(
-                controller: scrollController,
-                physics: const CalmSnapScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    header,
-                    body,
-                    if (footer != null) ...[
-                      const SizedBox(height: 8),
-                      footer!,
-                    ],
-                  ],
+            // Stack instead of Column+Expanded: as the sheet shrinks toward
+            // its dismiss size, the available height briefly drops below the
+            // fixed header's natural height. A Column would report that as a
+            // RenderFlex overflow (an assertion Flutter always logs/paints
+            // regardless of any ancestor ClipRect — clipping the canvas
+            // doesn't stop the layout-time overflow check from firing).
+            // Stack has no such check: it clips out-of-bounds children by
+            // default (Clip.hardEdge) with no warning, so the same brief
+            // shrink-past-header moment is just silently clipped instead.
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.only(top: TodoFormHeader.totalHeight),
+                    child: QvFadingScrollable(
+                      child: SingleChildScrollView(
+                        controller: scrollController,
+                        physics: const CalmSnapScrollPhysics(),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            body,
+                            if (footer != null) ...[
+                              const SizedBox(height: 8),
+                              footer!,
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                Positioned(top: 0, left: 0, right: 0, child: header),
+              ],
             ),
           ),
         );
@@ -83,13 +102,19 @@ class TodoFormHeader extends StatelessWidget {
   static const double _buttonHeight = 44;
   static const double _buttonWidth = _buttonHeight * 2;
   static const double _iconSize = 22;
+  static const double _bottomSpacing = 12;
+
+  /// Total rendered height (buttons + trailing spacing) — TodoFormSheet
+  /// renders this header as a fixed overlay above the scrollable body, so it
+  /// needs to know how much room to reserve for it.
+  static const double totalHeight = _buttonHeight + _bottomSpacing;
 
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: _bottomSpacing),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
