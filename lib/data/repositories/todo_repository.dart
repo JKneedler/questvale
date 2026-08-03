@@ -67,6 +67,26 @@ class TodoRepository {
     );
   }
 
+  // DELETE ALL TODOS FOR CHARACTER
+  // Also cleans up TodoTags/TodoReminders for those todos — deleteTodo
+  // above only removes the Todos row itself, which would otherwise leave
+  // orphaned join/reminder rows behind for every deleted todo.
+  Future<void> deleteAllTodosForCharacter(String characterId) async {
+    final todoMaps = await db.query(Todo.todoTableName,
+        where: '${Todo.characterIdColumnName} = ?', whereArgs: [characterId]);
+    final todoIds = todoMaps.map((map) => map[Todo.idColumnName] as String).toList();
+    if (todoIds.isEmpty) return;
+    final placeholders = List.filled(todoIds.length, '?').join(',');
+    await db.delete(TodoReminder.todoReminderTableName,
+        where: '${TodoReminder.todoIdColumnName} IN ($placeholders)',
+        whereArgs: todoIds);
+    await db.delete(TodoTag.todoTagTableName,
+        where: '${TodoTag.todoIdColumnName} IN ($placeholders)',
+        whereArgs: todoIds);
+    await db.delete(Todo.todoTableName,
+        where: '${Todo.characterIdColumnName} = ?', whereArgs: [characterId]);
+  }
+
   // INSERT todo
   Future<void> createTodo(Todo todo) async {
     await db.insert(

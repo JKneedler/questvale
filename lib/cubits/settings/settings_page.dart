@@ -10,6 +10,7 @@ import 'package:questvale/data/providers/game_data.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/widgets/qv_app_bar.dart';
 import 'package:questvale/widgets/qv_button.dart';
+import 'package:questvale/widgets/qv_confirmation_modal.dart';
 import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -46,19 +47,6 @@ class SettingsPage extends StatelessWidget {
                           child: Column(
                             spacing: 10,
                             children: [
-                              InfoSlice(
-                                title: 'Quests',
-                                count: settingsState.questsNum,
-                                onTap: settingsState.questsNum > 0
-                                    ? () => context
-                                        .read<SettingsCubit>()
-                                        .deleteTableContents(settingsState
-                                            .tableInfos
-                                            .firstWhere((tableInfo) =>
-                                                tableInfo.tableType ==
-                                                TableType.quests))
-                                    : () => {},
-                              ),
                               Row(
                                 children: [
                                   Expanded(
@@ -116,18 +104,91 @@ class SettingsPage extends StatelessWidget {
                               ),
                               Align(
                                 alignment: Alignment.centerLeft,
-                                child: Text('DB Tables',
+                                child: Text('Admin Actions',
                                     style: TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
                                         color: colorScheme.onSurface)),
                               ),
-                              Column(
-                                children: [
-                                  for (var tableInfo
-                                      in settingsState.tableInfos)
-                                    TableInfoSlice(tableInfo: tableInfo),
-                                ],
+                              _AdminActionRow(
+                                label: 'Delete all tasks/todos/habits',
+                                buttonLabel: 'Delete',
+                                onTap: () => QvConfirmationModal.showModal(
+                                  context,
+                                  title: 'Delete all todos?',
+                                  description:
+                                      'Deletes every task and habit, along '
+                                      'with their reminders and tag '
+                                      'assignments. Your tags themselves are '
+                                      'kept. This can\'t be undone.',
+                                  confirmLabel: 'Delete Todos',
+                                  onConfirm: () => context
+                                      .read<SettingsCubit>()
+                                      .deleteAllTodos(),
+                                ),
+                              ),
+                              _AdminActionRow(
+                                label: 'Delete all tags',
+                                buttonLabel: 'Delete',
+                                onTap: () => QvConfirmationModal.showModal(
+                                  context,
+                                  title: 'Delete all tags?',
+                                  description:
+                                      'Removes every tag you\'ve created and '
+                                      'untags all todos. This can\'t be undone.',
+                                  confirmLabel: 'Delete Tags',
+                                  onConfirm: () => context
+                                      .read<SettingsCubit>()
+                                      .deleteAllTags(),
+                                ),
+                              ),
+                              _AdminActionRow(
+                                label: 'Delete/cleanup all equipment',
+                                buttonLabel: 'Delete',
+                                onTap: () => QvConfirmationModal.showModal(
+                                  context,
+                                  title: 'Delete all equipment?',
+                                  description:
+                                      'Unequips and deletes every piece of '
+                                      'gear you own, worn or not. This '
+                                      'can\'t be undone.',
+                                  confirmLabel: 'Delete Equipment',
+                                  onConfirm: () => context
+                                      .read<SettingsCubit>()
+                                      .deleteAllEquipment(),
+                                ),
+                              ),
+                              _AdminActionRow(
+                                label: 'Cancel/delete quest',
+                                buttonLabel: 'Cancel',
+                                onTap: () => QvConfirmationModal.showModal(
+                                  context,
+                                  title: 'Cancel the current quest?',
+                                  description:
+                                      'Ends your active quest and deletes any '
+                                      'progress in it. This can\'t be undone.',
+                                  confirmLabel: 'Cancel Quest',
+                                  onConfirm: () => context
+                                      .read<SettingsCubit>()
+                                      .cancelQuest(),
+                                ),
+                              ),
+                              _AdminActionRow(
+                                label: 'Reset character to initial config',
+                                buttonLabel: 'Reset',
+                                onTap: () => QvConfirmationModal.showModal(
+                                  context,
+                                  title: 'Reset character?',
+                                  description:
+                                      'Resets level progress, gold, exp, AP, '
+                                      'equipment, and skills back to a fresh '
+                                      'start. Your todos and name are kept. '
+                                      'This can\'t be undone.',
+                                  confirmLabel: 'Reset Character',
+                                  onConfirm: () => context
+                                      .read<SettingsCubit>()
+                                      .resetCharacter(),
+                                ),
                               ),
                             ],
                           ),
@@ -145,99 +206,35 @@ class SettingsPage extends StatelessWidget {
   }
 }
 
-class TableInfoSlice extends StatelessWidget {
-  final TableInfo tableInfo;
-  const TableInfoSlice({super.key, required this.tableInfo});
+class _AdminActionRow extends StatelessWidget {
+  final String label;
+  final String buttonLabel;
+  final VoidCallback onTap;
 
-  @override
-  Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-    return SizedBox(
-      height: 50,
-      child: Row(
-        spacing: 10,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-              child: Text(tableInfo.tableType.name,
-                  style:
-                      TextStyle(fontSize: 16, color: colorScheme.onSurface))),
-          SizedBox(
-              width: 40,
-              child: Text(tableInfo.numRows.toString(),
-                  style:
-                      TextStyle(fontSize: 20, color: colorScheme.onSurface))),
-          QvButton(
-            height: 40,
-            width: tableInfo.isDeletable ? 60 : 130,
-            buttonColor: ButtonColor.silver,
-            onTap: () {
-              context
-                  .read<SettingsCubit>()
-                  .logTableContents(tableInfo.tableType);
-            },
-            child: Center(
-              child: Text('Log',
-                  style: TextStyle(color: colorScheme.onPrimary, fontSize: 18)),
-            ),
-          ),
-          tableInfo.isDeletable
-              ? QvButton(
-                  height: 40,
-                  width: 80,
-                  buttonColor: ButtonColor.silver,
-                  onTap: () {
-                    context
-                        .read<SettingsCubit>()
-                        .deleteTableContents(tableInfo);
-                  },
-                  child: Center(
-                    child: Text('Delete',
-                        style: TextStyle(
-                            color: colorScheme.onPrimary, fontSize: 18)),
-                  ),
-                )
-              : SizedBox.shrink(),
-        ],
-      ),
-    );
-  }
-}
-
-class InfoSlice extends StatelessWidget {
-  final String title;
-  final int count;
-  final Function() onTap;
-  const InfoSlice(
-      {super.key,
-      required this.title,
-      required this.count,
-      required this.onTap});
+  const _AdminActionRow({
+    required this.label,
+    required this.buttonLabel,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        SizedBox(
-            width: 120,
-            child: Text(title,
-                style: TextStyle(fontSize: 20, color: colorScheme.onSurface))),
-        SizedBox(
-            width: 80,
-            child: Text(count.toString(),
-                style: TextStyle(fontSize: 20, color: colorScheme.onSurface))),
         Expanded(
-          child: QvButton(
-            buttonColor: ButtonColor.silver,
-            onTap: onTap,
-            height: 50,
-            width: double.infinity,
-            child: Center(
-              child: Text(count > 0 ? 'Delete all $title' : 'None to delete',
-                  style: TextStyle(color: colorScheme.onPrimary, fontSize: 20)),
-            ),
+            child: Text(label,
+                style:
+                    TextStyle(fontSize: 20, color: colorScheme.onSurface))),
+        QvButton(
+          width: 180,
+          height: 50,
+          buttonColor: ButtonColor.silver,
+          onTap: onTap,
+          child: Center(
+            child: Text(buttonLabel,
+                style:
+                    TextStyle(fontSize: 20, color: colorScheme.onPrimary)),
           ),
         ),
       ],
