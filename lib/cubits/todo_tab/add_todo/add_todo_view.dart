@@ -3,18 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:questvale/cubits/todo_tab/add_todo/add_todo_cubit.dart';
 import 'package:questvale/cubits/todo_tab/add_todo/add_todo_state.dart';
-import 'package:questvale/cubits/todo_tab/character_tag/create_character_tag_page.dart';
-import 'package:questvale/cubits/todo_tab/due_date/due_date_page.dart';
-import 'package:questvale/data/models/character_tag.dart';
-import 'package:questvale/data/models/todo.dart';
-import 'package:questvale/helpers/constants.dart';
-import 'package:questvale/helpers/data_formatters.dart';
-import 'package:questvale/widgets/qv_popup_menu.dart';
-import 'package:questvale/widgets/qv_popup_menu_item.dart';
-import 'package:questvale/widgets/qv_textfield.dart';
+import 'package:questvale/cubits/todo_tab/todo_form/todo_form_body.dart';
+import 'package:questvale/cubits/todo_tab/todo_form/todo_form_sheet.dart';
 
 class AddTodoView extends StatelessWidget {
-  final void Function() onTodoAdded;
+  final VoidCallback onTodoAdded;
 
   const AddTodoView({
     super.key,
@@ -23,464 +16,67 @@ class AddTodoView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
+    return BlocBuilder<AddTodoCubit, AddTodoState>(
+      builder: (context, state) {
+        final cubit = context.read<AddTodoCubit>();
+        final canSubmit = state.name.isNotEmpty;
 
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: Container(
-        color: colorScheme.surfaceContainer,
-        child: BlocBuilder<AddTodoCubit, AddTodoState>(
-          builder: (context, state) {
-            return Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  NameField(onTodoAdded: onTodoAdded, id: state.id),
-                  DescriptionField(onTodoAdded: onTodoAdded, id: state.id),
-                  TagsField(state: state),
-                  EtcFields(onTodoAdded: onTodoAdded, state: state),
-                ],
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-
-class NameField extends StatelessWidget {
-  final Function() onTodoAdded;
-  final String id;
-
-  const NameField({super.key, required this.onTodoAdded, required this.id});
-
-  @override
-  Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-
-    return SizedBox(
-      height: 36,
-      child: QvTextField(
-        inputKey: Key('addTodoView_name_${id}_textField'),
-        hint: 'Todo Name',
-        textSize: 16,
-        onChanged: (value) => context.read<AddTodoCubit>().nameChanged(value),
-        onSubmitted: (value) async {
-          if (value.isNotEmpty) {
-            await context.read<AddTodoCubit>().submit();
-            onTodoAdded();
-          }
-        },
-        textInputAction: TextInputAction.done,
-      ),
-    );
-  }
-}
-
-class DescriptionField extends StatelessWidget {
-  final void Function() onTodoAdded;
-  final String id;
-
-  const DescriptionField({
-    super.key,
-    required this.onTodoAdded,
-    required this.id,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-    return ConstrainedBox(
-      constraints: BoxConstraints(
-        minHeight: 45.0,
-        maxHeight: 150.0,
-      ),
-      child: QvTextField(
-        inputKey: Key('addTodoView_description_${id}_textField'),
-        hint: 'Description',
-        textSize: 14,
-        onChanged: (value) =>
-            context.read<AddTodoCubit>().descriptionChanged(value),
-        onSubmitted: (value) async {
-          if (value.isNotEmpty) {
-            await context.read<AddTodoCubit>().submit();
-            onTodoAdded();
-          }
-        },
-        textInputAction: TextInputAction.newline,
-        keyboardType: TextInputType.multiline,
-        maxLines: null,
-        minLines: 2,
-      ),
-    );
-  }
-}
-
-class TagsField extends StatelessWidget {
-  final AddTodoState state;
-
-  const TagsField({super.key, required this.state});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 30,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: state.availableTags.length + 1,
-        itemBuilder: (context, index) {
-          if (index == state.availableTags.length) {
-            return TagChip(
-              icon: Icons.add,
-              name: 'Tag',
-              color: Colors.transparent,
-              onPressed: () => CreateCharacterTagPage.showModal(
-                context,
-                state.characterId,
-                () {
-                  context.read<AddTodoCubit>().loadAvailableTags();
-                },
-              ),
-              margin: const EdgeInsets.only(left: 2, right: 50),
-            );
-          }
-          return TagChip(
-            icon: CharacterTag
-                .availableIcons[state.availableTags[index].iconIndex],
-            name: state.availableTags[index].name,
-            color: CharacterTag
-                .availableColors[state.availableTags[index].colorIndex],
-            isSelected: state.selectedTags.contains(state.availableTags[index]),
-            onPressed: () {
-              context
-                  .read<AddTodoCubit>()
-                  .toggleTag(state.availableTags[index]);
-            },
-          );
-        },
-      ),
-    );
-  }
-}
-
-class TagChip extends StatelessWidget {
-  final IconData icon;
-  final String name;
-  final Color color;
-  final bool isSelected;
-  final void Function() onPressed;
-  final EdgeInsets margin;
-
-  const TagChip({
-    super.key,
-    required this.icon,
-    required this.name,
-    required this.color,
-    required this.onPressed,
-    this.isSelected = false,
-    this.margin = const EdgeInsets.symmetric(horizontal: 2),
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-
-    return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        margin: margin,
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-        decoration: BoxDecoration(
-          color: isSelected ? color : colorScheme.surface,
-          borderRadius: BorderRadius.circular(100),
-          border: isSelected
-              ? Border.all(
-                  color: Colors.transparent,
-                  width: 1.5,
-                )
-              : Border.all(
-                  color: colorScheme.onSurface.withValues(alpha: 0.5),
-                  width: 1.5,
-                ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          spacing: 2,
-          children: [
-            Icon(
-              icon,
-              color: isSelected
-                  ? colorScheme.onPrimary
-                  : colorScheme.onSurface.withValues(alpha: 0.5),
-              size: 16,
-            ),
-            Text(
-              name,
-              style: TextStyle(
-                color: isSelected
-                    ? colorScheme.onPrimary
-                    : colorScheme.onSurface.withValues(alpha: 0.5),
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class EtcFields extends StatelessWidget {
-  final Function() onTodoAdded;
-  final AddTodoState state;
-  const EtcFields({super.key, required this.onTodoAdded, required this.state});
-
-  @override
-  Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-    return Row(
-      children: [
-        GestureDetector(
-          onTap: () async {
-            await DueDatePage.showModal(
-              context,
-              initialDate: state.dueDate,
-              initialHasTime: state.hasTime,
-              initialReminders: state.reminders,
-              onDateSelected: (DateTime? date, bool hasTime,
-                      List<ReminderType> reminders) =>
-                  context
-                      .read<AddTodoCubit>()
-                      .dueDateChanged(date, hasTime, reminders),
-            );
-          },
-          child: Row(
-            children: [
-              Icon(
-                Symbols.calendar_clock,
-                color: state.dueDate != null
-                    ? colorScheme.primary
-                    : colorScheme.onSurface.withValues(alpha: 0.5),
-                weight: 600,
-              ),
-              const SizedBox(width: 4),
-              if (state.dueDate != null)
-                Text(
-                  DataFormatters.formatDateTime(state.dueDate!, state.hasTime),
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: colorScheme.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-            ],
+        return TodoFormSheet(
+          header: TodoFormHeader(
+            onCancel: () => Navigator.of(context).pop(),
+            confirmIcon: Symbols.add,
+            onConfirm: !canSubmit
+                ? null
+                : () async {
+                    await cubit.submit();
+                    onTodoAdded();
+                    if (context.mounted) Navigator.of(context).pop();
+                  },
           ),
-        ),
-        const SizedBox(width: 12),
-        HabitMenu(state: state),
-        if (state.isHabit) ...[
-          const SizedBox(width: 12),
-          MultipleCompletionsToggle(
-            value: state.allowsMultipleCompletions,
-            onTap: () => context
-                .read<AddTodoCubit>()
-                .multipleCompletionsToggled(!state.allowsMultipleCompletions),
-          ),
-        ],
-        const SizedBox(width: 12),
-        PriorityMenu(priority: state.priority),
-        const SizedBox(width: 12),
-        DifficultyMenu(difficulty: state.difficulty),
-        const SizedBox(width: 12),
-        Icon(
-          Symbols.more_horiz,
-          color: colorScheme.onSurface.withValues(alpha: 0.5),
-          weight: 600,
-        ),
-        Expanded(
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: GestureDetector(
-              onTap: () async {
-                await context.read<AddTodoCubit>().submit();
-                onTodoAdded();
-              },
-              child: Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: colorScheme.primary,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.arrow_upward,
-                  color: colorScheme.onPrimary,
-                  size: 20,
-                ),
-              ),
+          body: TodoFormBody(
+            characterId: state.characterId,
+            showCompletionToggle: false,
+            autofocusName: true,
+            fields: TodoFormFields(
+              name: state.name,
+              description: state.description,
+              dueDate: state.dueDate,
+              hasTime: state.hasTime,
+              reminders: state.reminders,
+              difficulty: state.difficulty,
+              priority: state.priority,
+              isHabit: state.isHabit,
+              timeframe: state.timeframe,
+              allowsMultipleCompletions: state.allowsMultipleCompletions,
+              repeatInterval: state.repeatInterval,
+              repeatWeekdays: state.repeatWeekdays,
+              monthlyRepeatMode: state.monthlyRepeatMode,
+              availableTags: state.availableTags,
+              selectedTags: state.selectedTags,
+            ),
+            callbacks: TodoFormCallbacks(
+              onNameChanged: cubit.nameChanged,
+              onDescriptionChanged: cubit.descriptionChanged,
+              onTagToggled: cubit.toggleTag,
+              onTagCreated: cubit.createTag,
+              onDueDateDaySelected: cubit.dueDateDaySelected,
+              onDueDateTimeSelected: cubit.dueDateTimeSelected,
+              onDueDateTimeCleared: cubit.dueDateTimeCleared,
+              onReminderToggled: cubit.toggleReminder,
+              onRemindersCleared: cubit.remindersCleared,
+              onDueDateCleared: cubit.dueDateCleared,
+              onDifficultyChanged: cubit.difficultyChanged,
+              onPriorityChanged: cubit.priorityChanged,
+              onHabitToggled: cubit.habitToggled,
+              onTimeframeChanged: cubit.timeframeChanged,
+              onMultipleCompletionsToggled: cubit.multipleCompletionsToggled,
+              onRepeatIntervalChanged: cubit.repeatIntervalChanged,
+              onRepeatWeekdayToggled: cubit.repeatWeekdayToggled,
+              onMonthlyRepeatModeChanged: cubit.monthlyRepeatModeChanged,
             ),
           ),
-        ),
-      ],
-    );
-  }
-}
-
-class HabitMenu extends StatelessWidget {
-  final AddTodoState state;
-
-  final MenuController menuController = MenuController();
-
-  HabitMenu({super.key, required this.state});
-
-  @override
-  Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-    return QVPopupMenu(
-      menuController: menuController,
-      offset: const Offset(0, -260),
-      button: Icon(
-        Symbols.event_repeat,
-        color: state.isHabit
-            ? colorScheme.primary
-            : colorScheme.onSurface.withValues(alpha: 0.5),
-        weight: 600,
-      ),
-      menuContents: [
-        QvPopupMenuItem(
-          text: 'One-time Task',
-          icon: Symbols.check_circle,
-          iconColor: !state.isHabit ? colorScheme.primary : null,
-          textColor: !state.isHabit ? colorScheme.primary : null,
-          onPressed: () {
-            menuController.close();
-            context.read<AddTodoCubit>().habitToggled(false);
-          },
-        ),
-        for (final tf in HabitTimeframe.values)
-          QvPopupMenuItem(
-            text: tf.name,
-            icon: Symbols.event_repeat,
-            iconColor: state.isHabit && state.timeframe == tf
-                ? colorScheme.primary
-                : null,
-            textColor: state.isHabit && state.timeframe == tf
-                ? colorScheme.primary
-                : null,
-            onPressed: () {
-              menuController.close();
-              context.read<AddTodoCubit>().timeframeChanged(tf);
-            },
-          ),
-      ],
-    );
-  }
-}
-
-class MultipleCompletionsToggle extends StatelessWidget {
-  final bool value;
-  final VoidCallback onTap;
-
-  const MultipleCompletionsToggle({
-    super.key,
-    required this.value,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-    return GestureDetector(
-      onTap: onTap,
-      child: Icon(
-        Symbols.plus_one,
-        color: value
-            ? colorScheme.primary
-            : colorScheme.onSurface.withValues(alpha: 0.5),
-        weight: 600,
-      ),
-    );
-  }
-}
-
-class PriorityMenu extends StatelessWidget {
-  final PriorityLevel priority;
-
-  final MenuController menuController = MenuController();
-
-  PriorityMenu({super.key, required this.priority});
-
-  @override
-  Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-    return QVPopupMenu(
-      menuController: menuController,
-      offset: const Offset(0, -205),
-      button: Icon(
-        PRIORITY_ICON,
-        color: priority != PriorityLevel.noPriority
-            ? priority.color
-            : colorScheme.onSurface.withValues(alpha: 0.5),
-        weight: 600,
-      ),
-      menuContents: [
-        for (int i = PriorityLevel.values.length - 1; i >= 0; i--)
-          QvPopupMenuItem(
-            text: PriorityLevel.values[i].name,
-            icon: PRIORITY_ICON,
-            iconColor: PriorityLevel.values[i].color,
-            onPressed: () {
-              menuController.close();
-              context
-                  .read<AddTodoCubit>()
-                  .priorityChanged(PriorityLevel.values[i]);
-            },
-          ),
-      ],
-    );
-  }
-}
-
-class DifficultyMenu extends StatelessWidget {
-  final DifficultyLevel difficulty;
-
-  final MenuController menuController = MenuController();
-
-  DifficultyMenu({super.key, required this.difficulty});
-
-  @override
-  Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-    return QVPopupMenu(
-      menuController: menuController,
-      offset: const Offset(0, -205),
-      button: Icon(
-        DIFFICULTY_ICON,
-        color: difficulty != DifficultyLevel.trivial
-            ? difficulty.color
-            : colorScheme.onSurface.withValues(alpha: 0.5),
-        weight: 600,
-      ),
-      menuContents: [
-        for (int i = DifficultyLevel.values.length - 1; i >= 0; i--)
-          QvPopupMenuItem(
-            text: DifficultyLevel.values[i].name,
-            icon: DIFFICULTY_ICON,
-            iconColor: DifficultyLevel.values[i].color,
-            onPressed: () {
-              menuController.close();
-              context
-                  .read<AddTodoCubit>()
-                  .difficultyChanged(DifficultyLevel.values[i]);
-            },
-          ),
-      ],
+        );
+      },
     );
   }
 }

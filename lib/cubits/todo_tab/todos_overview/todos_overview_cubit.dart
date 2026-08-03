@@ -52,8 +52,6 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
               .map((tag) => Tag(
                     characterTagId: tag.id,
                     name: tag.name,
-                    colorIndex: tag.colorIndex,
-                    iconIndex: tag.iconIndex,
                   ))
               .toList(),
         ),

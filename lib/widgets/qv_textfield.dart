@@ -11,6 +11,7 @@ class QvTextField extends StatelessWidget {
   final int? minLines;
   final double? textSize;
   final TextInputType? keyboardType;
+  final bool autofocus;
 
   const QvTextField({
     super.key,
@@ -24,6 +25,7 @@ class QvTextField extends StatelessWidget {
     this.minLines,
     this.textSize,
     this.keyboardType,
+    this.autofocus = false,
   });
 
   @override
@@ -52,6 +54,7 @@ class QvTextField extends StatelessWidget {
       maxLines: maxLines,
       minLines: minLines,
       keyboardType: keyboardType,
+      autofocus: autofocus,
     );
   }
 }

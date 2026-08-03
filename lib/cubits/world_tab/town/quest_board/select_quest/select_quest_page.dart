@@ -13,6 +13,7 @@ import 'package:questvale/data/providers/game_data_models/quest_zone.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/widgets/qv_app_bar.dart';
 import 'package:questvale/widgets/qv_enemy_info_modal.dart';
+import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:questvale/widgets/qv_gray_filter.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
 
@@ -48,28 +49,30 @@ class SelectQuestPage extends StatelessWidget {
                 create: (context) => SelectQuestCubit(questZones: questZones),
                 child: BlocBuilder<SelectQuestCubit, SelectQuestState>(
                     builder: (context, selectQuestState) {
-                  return ListView.builder(
-                    padding: const EdgeInsets.only(
-                      left: 20,
-                      right: 20,
-                      top: 10,
-                      bottom: 10,
+                  return QvFadingScrollable(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.only(
+                        left: 20,
+                        right: 20,
+                        top: 10,
+                        bottom: 10,
+                      ),
+                      itemCount: questZones.length,
+                      itemBuilder: (context, index) {
+                        final isOpen =
+                            selectQuestState.selectedQuestZoneIndex == index;
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: SelectQuestZoneCard(
+                            questZone: questZones[index],
+                            isOpen: isOpen,
+                            onTap: () => context
+                                .read<SelectQuestCubit>()
+                                .toggleQuestZone(index),
+                          ),
+                        );
+                      },
                     ),
-                    itemCount: questZones.length,
-                    itemBuilder: (context, index) {
-                      final isOpen =
-                          selectQuestState.selectedQuestZoneIndex == index;
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 8.0),
-                        child: SelectQuestZoneCard(
-                          questZone: questZones[index],
-                          isOpen: isOpen,
-                          onTap: () => context
-                              .read<SelectQuestCubit>()
-                              .toggleQuestZone(index),
-                        ),
-                      );
-                    },
                   );
                 }),
               ),
@@ -197,14 +200,17 @@ class SelectQuestZoneCard extends StatelessWidget {
                                         )),
                                       ),
                                       Expanded(
-                                        child: ListView.builder(
-                                          scrollDirection: Axis.horizontal,
-                                          itemCount: questZone.enemies.length,
-                                          itemBuilder: (context, index) {
-                                            return ZoneEnemyCard(
-                                              enemy: questZone.enemies[index],
-                                            );
-                                          },
+                                        child: QvFadingScrollable(
+                                          direction: Axis.horizontal,
+                                          child: ListView.builder(
+                                            scrollDirection: Axis.horizontal,
+                                            itemCount: questZone.enemies.length,
+                                            itemBuilder: (context, index) {
+                                              return ZoneEnemyCard(
+                                                enemy: questZone.enemies[index],
+                                              );
+                                            },
+                                          ),
                                         ),
                                       ),
                                       SizedBox(

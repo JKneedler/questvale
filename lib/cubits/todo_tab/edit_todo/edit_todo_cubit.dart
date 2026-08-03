@@ -1,5 +1,8 @@
+import 'package:collection/collection.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/todo_tab/edit_todo/edit_todo_state.dart';
+import 'package:questvale/data/models/character_tag.dart';
 import 'package:questvale/data/models/tag.dart';
 import 'package:questvale/data/models/todo.dart';
 import 'package:questvale/data/models/todo_reminder.dart';
@@ -35,6 +38,9 @@ class EditTodoCubit extends Cubit<EditTodoState> {
             isHabit: todo.isHabit,
             timeframe: todo.timeframe,
             allowsMultipleCompletions: todo.allowsMultipleCompletions,
+            repeatInterval: todo.repeatInterval,
+            repeatWeekdays: todo.repeatWeekdays,
+            monthlyRepeatMode: todo.monthlyRepeatMode,
           ),
         ) {
     loadTags();
@@ -48,11 +54,19 @@ class EditTodoCubit extends Cubit<EditTodoState> {
         .map((ct) => Tag(
               characterTagId: ct.id,
               name: ct.name,
-              colorIndex: ct.colorIndex,
-              iconIndex: ct.iconIndex,
             ))
         .toList();
     emit(state.copyWith(availableTags: tags));
+  }
+
+  Future<void> createTag(String name) async {
+    if (name.trim().isEmpty) return;
+    await characterRepository.createCharacterTag(CharacterTag(
+      id: const Uuid().v4(),
+      characterId: state.todo.characterId,
+      name: name.trim(),
+    ));
+    await loadTags();
   }
 
   void toggleCompletion() {
@@ -67,34 +81,61 @@ class EditTodoCubit extends Cubit<EditTodoState> {
     emit(state.copyWith(description: description));
   }
 
-  void dueDateChanged(DateTime? dueDate) {
-    emit(state.copyWith(dueDate: dueDate));
+  // Mirrors DueDateCubit.updateSelectedDate: a bare calendar day (from a
+  // quick-select shortcut or the calendar grid) keeps the existing
+  // time-of-day if one is already set, rather than clobbering it back to
+  // midnight.
+  void dueDateDaySelected(DateTime date) {
+    final merged = state.hasTime && state.dueDate != null
+        ? state.dueDate!.copyWith(
+            year: date.year, month: date.month, day: date.day)
+        : date;
+    emit(state.copyWith(dueDate: merged));
   }
 
-  // Matches DueDatePage's onDateSelected callback contract so the edit view
-  // can reuse the same due-date/time/reminders sub-modal as the add form.
-  void dueDateAndRemindersChanged(
-      DateTime? date, bool hasTime, List<ReminderType> reminders) {
+  // Mirrors DueDateCubit.updateSelectedTime: resets reminders when time is
+  // being turned on for the first time, since the without-time and
+  // with-time ReminderType sets are disjoint.
+  void dueDateTimeSelected(TimeOfDay time) {
+    final date = state.dueDate ?? DateTime.now();
+    emit(state.copyWith(
+      dueDate: date.copyWith(hour: time.hour, minute: time.minute),
+      hasTime: true,
+      reminders: state.hasTime ? state.reminders : [],
+    ));
+  }
+
+  void dueDateTimeCleared() {
+    emit(state.copyWith(hasTime: false, reminders: const []));
+  }
+
+  void remindersCleared() {
+    emit(state.copyWith(reminders: const []));
+  }
+
+  // state.copyWith can't null out dueDate (its `?? this.dueDate` fallback
+  // treats an explicit null as "unchanged"), so this constructs the state
+  // directly instead — same workaround habitToggled uses for timeframe.
+  void dueDateCleared() {
     emit(EditTodoState(
       todo: state.todo,
       isCompleted: state.isCompleted,
       name: state.name,
       description: state.description,
-      dueDate: date,
-      hasTime: hasTime,
+      dueDate: null,
+      hasTime: false,
       difficulty: state.difficulty,
       priority: state.priority,
       availableTags: state.availableTags,
       selectedTags: state.selectedTags,
-      reminders: reminders,
+      reminders: const [],
       isHabit: state.isHabit,
       timeframe: state.timeframe,
       allowsMultipleCompletions: state.allowsMultipleCompletions,
+      repeatInterval: state.repeatInterval,
+      repeatWeekdays: state.repeatWeekdays,
+      monthlyRepeatMode: state.monthlyRepeatMode,
     ));
-  }
-
-  void hasTimeChanged(bool hasTime) {
-    emit(state.copyWith(hasTime: hasTime));
   }
 
   void habitToggled(bool value) {
@@ -114,15 +155,52 @@ class EditTodoCubit extends Cubit<EditTodoState> {
       timeframe: value ? (state.timeframe ?? HabitTimeframe.daily) : null,
       allowsMultipleCompletions:
           value ? state.allowsMultipleCompletions : false,
+      repeatInterval: value ? state.repeatInterval : 1,
+      repeatWeekdays: value ? state.repeatWeekdays : const {},
+      monthlyRepeatMode:
+          value ? state.monthlyRepeatMode : MonthlyRepeatMode.dayOfMonth,
     ));
   }
 
+  // See AddTodoCubit.timeframeChanged for why repeatInterval always resets
+  // and repeatWeekdays is seeded/cleared on entering/leaving Weekly.
   void timeframeChanged(HabitTimeframe value) {
-    emit(state.copyWith(isHabit: true, timeframe: value));
+    Set<int> weekdays = state.repeatWeekdays;
+    if (value == HabitTimeframe.weekly) {
+      if (weekdays.isEmpty) {
+        weekdays = {(state.dueDate ?? DateTime.now()).weekday};
+      }
+    } else {
+      weekdays = const {};
+    }
+    emit(state.copyWith(
+      isHabit: true,
+      timeframe: value,
+      repeatInterval: 1,
+      repeatWeekdays: weekdays,
+    ));
   }
 
   void multipleCompletionsToggled(bool value) {
     emit(state.copyWith(allowsMultipleCompletions: value));
+  }
+
+  void repeatIntervalChanged(int value) {
+    emit(state.copyWith(repeatInterval: value));
+  }
+
+  void repeatWeekdayToggled(int weekday) {
+    final updated = Set<int>.from(state.repeatWeekdays);
+    if (updated.contains(weekday)) {
+      updated.remove(weekday);
+    } else {
+      updated.add(weekday);
+    }
+    emit(state.copyWith(repeatWeekdays: updated));
+  }
+
+  void monthlyRepeatModeChanged(MonthlyRepeatMode value) {
+    emit(state.copyWith(monthlyRepeatMode: value));
   }
 
   void difficultyChanged(DifficultyLevel difficulty) {
@@ -162,23 +240,54 @@ class EditTodoCubit extends Cubit<EditTodoState> {
     final todoReminders = _createRemindersForTodo(state.todo.id);
 
     // Habit fields (streak/completion count) reset if a Task just became a
-    // Habit, carry over untouched if it was already a Habit, and clear if a
-    // Habit just became a one-time Task again.
+    // Habit, carry over untouched if it was already a Habit and its
+    // repeat config didn't change, and clear if a Habit just became a
+    // one-time Task again. A repeat-config-only change (interval,
+    // weekdays, or monthly mode, on an already-existing habit) also needs
+    // to re-anchor currentPeriodStart — otherwise day-gating or the
+    // monthly "day of week" derivation could reflect the OLD config for
+    // up to one full period after the edit.
     final wasHabit = state.todo.isHabit;
     final isNowHabit = state.isHabit;
-    final currentPeriodStart = isNowHabit
-        ? (wasHabit
-            ? state.todo.currentPeriodStart
-            : HabitService.startOfPeriodContaining(DateTime.now()))
-        : null;
-    final completionsInCurrentPeriod =
-        isNowHabit && wasHabit ? state.todo.completionsInCurrentPeriod : 0;
-    final currentStreak = isNowHabit && wasHabit ? state.todo.currentStreak : 0;
-    // Preserve whether this item already earned its AP + stats credit (so
-    // editing-and-saving can't reset the lock and let it re-earn either) —
-    // unless the Task/Habit type just changed, which starts a fresh cycle.
-    final completionAwarded =
-        isNowHabit == wasHabit ? state.todo.completionAwarded : false;
+    final repeatConfigChanged = state.timeframe != state.todo.timeframe ||
+        state.repeatInterval != state.todo.repeatInterval ||
+        !const SetEquality<int>()
+            .equals(state.repeatWeekdays, state.todo.repeatWeekdays) ||
+        state.monthlyRepeatMode != state.todo.monthlyRepeatMode;
+
+    DateTime? currentPeriodStart;
+    int completionsInCurrentPeriod;
+    int currentStreak;
+    bool completionAwarded;
+
+    if (!isNowHabit) {
+      currentPeriodStart = null;
+      completionsInCurrentPeriod = 0;
+      currentStreak = 0;
+      completionAwarded = false;
+    } else if (!wasHabit || repeatConfigChanged) {
+      final anchorReference = (state.timeframe == HabitTimeframe.monthly &&
+              state.monthlyRepeatMode == MonthlyRepeatMode.dayOfWeek &&
+              state.dueDate != null)
+          ? state.dueDate!
+          : DateTime.now();
+      currentPeriodStart = HabitService.anchorPeriodStart(
+        timeframe: state.timeframe!,
+        repeatWeekdays: state.repeatWeekdays,
+        referenceDate: anchorReference,
+      );
+      completionsInCurrentPeriod = 0;
+      // Preserved across a repeat-config tweak (only zeroed on a genuine
+      // Task->Habit transition) — editing repeat settings shouldn't wipe
+      // an earned streak.
+      currentStreak = wasHabit ? state.todo.currentStreak : 0;
+      completionAwarded = false;
+    } else {
+      currentPeriodStart = state.todo.currentPeriodStart;
+      completionsInCurrentPeriod = state.todo.completionsInCurrentPeriod;
+      currentStreak = state.todo.currentStreak;
+      completionAwarded = state.todo.completionAwarded;
+    }
 
     final updatedTodo = Todo(
       id: state.todo.id,
@@ -199,6 +308,9 @@ class EditTodoCubit extends Cubit<EditTodoState> {
       completionsInCurrentPeriod: completionsInCurrentPeriod,
       currentStreak: currentStreak,
       completionAwarded: completionAwarded,
+      repeatInterval: state.repeatInterval,
+      repeatWeekdays: state.repeatWeekdays,
+      monthlyRepeatMode: state.monthlyRepeatMode,
     );
 
     await todoRepository.updateTodo(updatedTodo);
@@ -212,6 +324,13 @@ class EditTodoCubit extends Cubit<EditTodoState> {
     for (final reminder in todoReminders) {
       await NotificationService()
           .scheduleReminder(reminder, title: updatedTodo.name);
+    }
+  }
+
+  Future<void> deleteTodo() async {
+    await todoRepository.deleteTodo(state.todo);
+    for (final reminder in state.todo.reminders) {
+      await NotificationService().cancelReminder(reminder.id);
     }
   }
 

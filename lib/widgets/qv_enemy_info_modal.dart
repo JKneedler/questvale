@@ -8,6 +8,7 @@ import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_gray_filter.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
+import 'package:questvale/widgets/qv_fading_scrollable.dart';
 
 class QvEnemyInfoModal extends StatelessWidget {
   final EnemyData enemyData;
@@ -191,164 +192,168 @@ class QvEnemyInfoModal extends StatelessWidget {
                         padding: const EdgeInsets.only(left: 12, right: 12),
                         height: 325,
                         width: 320,
-                        child: SingleChildScrollView(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              SizedBox(
-                                width: 320,
-                                height: 26 + // Title height
-                                    10 + // Container padding
-                                    _calculateMaxElementsHeight(),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  spacing: 8,
-                                  children: [
-                                    ElementsView(
-                                      title: 'Immunities',
-                                      elements: enemyData.immunities,
-                                      height:
-                                          10 + _calculateMaxElementsHeight(),
-                                    ),
-                                    Container(
-                                      width: 1.5,
-                                      height: 26 +
-                                          10 +
-                                          _calculateMaxElementsHeight() * .75,
-                                      color: colorScheme.secondary,
-                                    ),
-                                    ElementsView(
-                                      title: 'Resistances',
-                                      elements: enemyData.resistances,
-                                      height:
-                                          10 + _calculateMaxElementsHeight(),
-                                    ),
-                                    Container(
-                                      width: 1.5,
-                                      height: 26 +
-                                          10 +
-                                          _calculateMaxElementsHeight() * .75,
-                                      color: colorScheme.secondary,
-                                    ),
-                                    ElementsView(
-                                      title: 'Weaknesses',
-                                      elements: enemyData.weaknesses,
-                                      height:
-                                          10 + _calculateMaxElementsHeight(),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                padding:
-                                    const EdgeInsets.only(left: 12, right: 12),
-                                height: 30,
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        'Attacks',
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          color: colorScheme.onSecondary,
-                                        ),
-                                        textAlign: TextAlign.start,
+                        child: QvFadingScrollable(
+                          child: SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                SizedBox(
+                                  width: 320,
+                                  height: 26 + // Title height
+                                      10 + // Container padding
+                                      _calculateMaxElementsHeight(),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    spacing: 8,
+                                    children: [
+                                      ElementsView(
+                                        title: 'Immunities',
+                                        elements: enemyData.immunities,
+                                        height:
+                                            10 + _calculateMaxElementsHeight(),
                                       ),
-                                    ),
-                                    SizedBox(
-                                        width: 50,
-                                        child: Text(
-                                          'DMG',
-                                          style: TextStyle(
-                                              fontSize: 14,
-                                              color: colorScheme.onSecondary),
-                                          textAlign: TextAlign.center,
-                                        )),
-                                    SizedBox(
-                                        width: 50,
-                                        child: Text(
-                                          'SPD',
-                                          style: TextStyle(
-                                              fontSize: 14,
-                                              color: colorScheme.onSecondary),
-                                          textAlign: TextAlign.center,
-                                        )),
-                                    SizedBox(
-                                        width: 50,
-                                        child: Text(
-                                          'TYPE',
-                                          style: TextStyle(
-                                              fontSize: 14,
-                                              color: colorScheme.onSecondary),
-                                          textAlign: TextAlign.center,
-                                        )),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                height: enemyData.attacks.length * 53,
-                                decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                    image: AssetImage(
-                                      'images/ui/backgrounds/$themeId/background-secondary.png',
-                                    ),
-                                    centerSlice: STANDARD_BORDER_SLICE,
-                                    fit: BoxFit.fill,
+                                      Container(
+                                        width: 1.5,
+                                        height: 26 +
+                                            10 +
+                                            _calculateMaxElementsHeight() * .75,
+                                        color: colorScheme.secondary,
+                                      ),
+                                      ElementsView(
+                                        title: 'Resistances',
+                                        elements: enemyData.resistances,
+                                        height:
+                                            10 + _calculateMaxElementsHeight(),
+                                      ),
+                                      Container(
+                                        width: 1.5,
+                                        height: 26 +
+                                            10 +
+                                            _calculateMaxElementsHeight() * .75,
+                                        color: colorScheme.secondary,
+                                      ),
+                                      ElementsView(
+                                        title: 'Weaknesses',
+                                        elements: enemyData.weaknesses,
+                                        height:
+                                            10 + _calculateMaxElementsHeight(),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                child: ListView.builder(
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemCount: enemyData.attacks.length,
-                                  itemBuilder: (context, index) {
-                                    return EnemyAttackView(
-                                      attack: enemyData.attacks[index],
-                                      includeSeparator:
-                                          index != enemyData.attacks.length - 1,
-                                    );
-                                  },
-                                ),
-                              ),
-                              Container(
-                                padding:
-                                    const EdgeInsets.only(left: 12, right: 12),
-                                height: 30,
-                                child: Row(
-                                  children: [
-                                    Expanded(
+                                Container(
+                                  padding: const EdgeInsets.only(
+                                      left: 12, right: 12),
+                                  height: 30,
+                                  child: Row(
+                                    children: [
+                                      Expanded(
                                         child: Text(
-                                      'Drops',
-                                      style: TextStyle(
-                                          fontSize: 20,
-                                          color: colorScheme.onSecondary),
-                                      textAlign: TextAlign.start,
-                                    )),
-                                    SizedBox(
-                                        width: 80,
-                                        child: Text(
-                                          'USES',
+                                          'Attacks',
                                           style: TextStyle(
-                                              fontSize: 14,
-                                              color: colorScheme.onSecondary),
-                                          textAlign: TextAlign.center,
-                                        )),
-                                  ],
+                                            fontSize: 20,
+                                            color: colorScheme.onSecondary,
+                                          ),
+                                          textAlign: TextAlign.start,
+                                        ),
+                                      ),
+                                      SizedBox(
+                                          width: 50,
+                                          child: Text(
+                                            'DMG',
+                                            style: TextStyle(
+                                                fontSize: 14,
+                                                color: colorScheme.onSecondary),
+                                            textAlign: TextAlign.center,
+                                          )),
+                                      SizedBox(
+                                          width: 50,
+                                          child: Text(
+                                            'SPD',
+                                            style: TextStyle(
+                                                fontSize: 14,
+                                                color: colorScheme.onSecondary),
+                                            textAlign: TextAlign.center,
+                                          )),
+                                      SizedBox(
+                                          width: 50,
+                                          child: Text(
+                                            'TYPE',
+                                            style: TextStyle(
+                                                fontSize: 14,
+                                                color: colorScheme.onSecondary),
+                                            textAlign: TextAlign.center,
+                                          )),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              SizedBox(
-                                width: 320,
-                                height: 82.0 * enemyData.drops.length,
-                                child: ListView.builder(
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemCount: enemyData.drops.length,
-                                  itemBuilder: (context, index) {
-                                    return EnemyDropView(
-                                        enemyName: enemyData.name,
-                                        drop: enemyData.drops[index]);
-                                  },
+                                Container(
+                                  height: enemyData.attacks.length * 53,
+                                  decoration: BoxDecoration(
+                                    image: DecorationImage(
+                                      image: AssetImage(
+                                        'images/ui/backgrounds/$themeId/background-secondary.png',
+                                      ),
+                                      centerSlice: STANDARD_BORDER_SLICE,
+                                      fit: BoxFit.fill,
+                                    ),
+                                  ),
+                                  child: ListView.builder(
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    itemCount: enemyData.attacks.length,
+                                    itemBuilder: (context, index) {
+                                      return EnemyAttackView(
+                                        attack: enemyData.attacks[index],
+                                        includeSeparator: index !=
+                                            enemyData.attacks.length - 1,
+                                      );
+                                    },
+                                  ),
                                 ),
-                              ),
-                            ],
+                                Container(
+                                  padding: const EdgeInsets.only(
+                                      left: 12, right: 12),
+                                  height: 30,
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                          child: Text(
+                                        'Drops',
+                                        style: TextStyle(
+                                            fontSize: 20,
+                                            color: colorScheme.onSecondary),
+                                        textAlign: TextAlign.start,
+                                      )),
+                                      SizedBox(
+                                          width: 80,
+                                          child: Text(
+                                            'USES',
+                                            style: TextStyle(
+                                                fontSize: 14,
+                                                color: colorScheme.onSecondary),
+                                            textAlign: TextAlign.center,
+                                          )),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 320,
+                                  height: 82.0 * enemyData.drops.length,
+                                  child: ListView.builder(
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    itemCount: enemyData.drops.length,
+                                    itemBuilder: (context, index) {
+                                      return EnemyDropView(
+                                          enemyName: enemyData.name,
+                                          drop: enemyData.drops[index]);
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),

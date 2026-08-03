@@ -8,6 +8,7 @@ import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
 import 'package:questvale/widgets/qv_equipment_item.dart';
+import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:sqflite/sqflite.dart';
 
 class EquipmentGearUpPage extends StatelessWidget {
@@ -319,25 +320,27 @@ class EquipmentSelectionView extends StatelessWidget {
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 10),
                   color: colorScheme.secondary,
-                  child: ListView.builder(
-                    padding: EdgeInsets.only(top: 10, bottom: 10),
-                    itemCount: equipmentGearUpState.inventoryEquipment.length,
-                    itemBuilder: (context, index) {
-                      final equipment =
-                          equipmentGearUpState.inventoryEquipment[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 2),
-                        child: QvEquipmentItem(
-                          equipment: equipment,
-                          isEquipped: false,
-                          showName: true,
-                          onTap: () {
-                            cubit.equipEquipment(equipment);
-                            context.read<PlayerCubit>().loadCharacter();
-                          },
-                        ),
-                      );
-                    },
+                  child: QvFadingScrollable(
+                    child: ListView.builder(
+                      padding: EdgeInsets.only(top: 10, bottom: 10),
+                      itemCount: equipmentGearUpState.inventoryEquipment.length,
+                      itemBuilder: (context, index) {
+                        final equipment =
+                            equipmentGearUpState.inventoryEquipment[index];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          child: QvEquipmentItem(
+                            equipment: equipment,
+                            isEquipped: false,
+                            showName: true,
+                            onTap: () {
+                              cubit.equipEquipment(equipment);
+                              context.read<PlayerCubit>().loadCharacter();
+                            },
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),

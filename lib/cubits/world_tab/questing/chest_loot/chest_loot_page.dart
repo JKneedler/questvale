@@ -8,6 +8,7 @@ import 'package:questvale/cubits/world_tab/questing/loot_summary_slice.dart';
 import 'package:questvale/cubits/theme/theme_cubit.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/widgets/qv_button.dart';
+import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:questvale/widgets/qv_primary_border.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -102,16 +103,18 @@ class ChestLootView extends StatelessWidget {
                       ),
                       child: Align(
                         alignment: Alignment.topCenter,
-                        child: ListView.builder(
-                          padding: const EdgeInsets.all(0),
-                          itemCount: chestLootState
-                              .chestReward!.equipmentRewards.length,
-                          itemBuilder: (context, index) {
-                            return SimpleEquipmentSlice(
-                              equipment: chestLootState
-                                  .chestReward!.equipmentRewards[index],
-                            );
-                          },
+                        child: QvFadingScrollable(
+                          child: ListView.builder(
+                            padding: const EdgeInsets.all(0),
+                            itemCount: chestLootState
+                                .chestReward!.equipmentRewards.length,
+                            itemBuilder: (context, index) {
+                              return SimpleEquipmentSlice(
+                                equipment: chestLootState
+                                    .chestReward!.equipmentRewards[index],
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ),

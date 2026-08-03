@@ -10,7 +10,11 @@ class TimePickerCubit extends Cubit<TimePickerState> {
     required this.initialTime,
     required this.onTimeSelected,
   }) : super(TimePickerState(
-          selectedHour: initialTime?.hourOfPeriod ?? 1,
+          // TimeOfDay.hourOfPeriod is 0-11 (0 covers both 12AM and 12PM),
+          // but this wheel shows a 1-12 clock face, so 0 needs mapping to 12.
+          selectedHour: initialTime == null
+              ? 1
+              : (initialTime.hourOfPeriod == 0 ? 12 : initialTime.hourOfPeriod),
           selectedMinute: initialTime?.minute ?? 0,
           isAM: initialTime?.period == DayPeriod.am,
         )) {

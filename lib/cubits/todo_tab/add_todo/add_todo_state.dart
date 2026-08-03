@@ -23,6 +23,9 @@ class AddTodoState extends Equatable {
   final bool isHabit;
   final HabitTimeframe? timeframe;
   final bool allowsMultipleCompletions;
+  final int repeatInterval;
+  final Set<int> repeatWeekdays;
+  final MonthlyRepeatMode monthlyRepeatMode;
 
   const AddTodoState({
     this.status = AddTodoStatus.initial,
@@ -40,6 +43,9 @@ class AddTodoState extends Equatable {
     this.isHabit = false,
     this.timeframe,
     this.allowsMultipleCompletions = false,
+    this.repeatInterval = 1,
+    this.repeatWeekdays = const {},
+    this.monthlyRepeatMode = MonthlyRepeatMode.dayOfMonth,
   });
 
   AddTodoState copyWith({
@@ -58,6 +64,9 @@ class AddTodoState extends Equatable {
     bool? isHabit,
     HabitTimeframe? timeframe,
     bool? allowsMultipleCompletions,
+    int? repeatInterval,
+    Set<int>? repeatWeekdays,
+    MonthlyRepeatMode? monthlyRepeatMode,
   }) {
     return AddTodoState(
       status: status ?? this.status,
@@ -76,6 +85,9 @@ class AddTodoState extends Equatable {
       timeframe: timeframe ?? this.timeframe,
       allowsMultipleCompletions:
           allowsMultipleCompletions ?? this.allowsMultipleCompletions,
+      repeatInterval: repeatInterval ?? this.repeatInterval,
+      repeatWeekdays: repeatWeekdays ?? this.repeatWeekdays,
+      monthlyRepeatMode: monthlyRepeatMode ?? this.monthlyRepeatMode,
     );
   }
 
@@ -96,5 +108,8 @@ class AddTodoState extends Equatable {
         isHabit,
         timeframe,
         allowsMultipleCompletions,
+        repeatInterval,
+        repeatWeekdays,
+        monthlyRepeatMode,
       ];
 }

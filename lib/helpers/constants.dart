@@ -15,6 +15,11 @@ const GRAY_FILTER_MATRIX = <double>[
 
 const ENCOUNTER_FIRST_PLAY_DELAY = 1000; // 1 second
 
+// Distance (in logical pixels) that QvFadingScrollable's edge fade spans —
+// shared so every scrollable in the app fades at the same rate regardless
+// of its own size.
+const SCROLL_FADE_DISTANCE = 12.0;
+
 const HEALTH_COLOR = Color(0xffFF4646);
 const MANA_COLOR = Color(0xff4679FF);
 const RAGE_COLOR = Color(0xffFF6231);
@@ -24,6 +29,18 @@ const EXP_COLOR = Color(0xffFFD966);
 const GOLD_COLOR = Color(0xffFFD966);
 const ACTION_POINTS_COLOR = Colors.white;
 const SKILL_POINTS_COLOR = Color(0xffFFD966);
+
+// Todo difficulty/priority tier colors (see DifficultyLevel.color and
+// PriorityLevel.color in lib/data/models/todo.dart).
+const DIFFICULTY_TRIVIAL_COLOR = Colors.grey;
+const DIFFICULTY_EASY_COLOR = Color(0xFFCD7F32); // Bronze
+const DIFFICULTY_MEDIUM_COLOR = Color(0xFFC0C0C0); // Silver
+const DIFFICULTY_HARD_COLOR = Color(0xFFFFD700); // Gold
+
+const PRIORITY_NONE_COLOR = Colors.grey;
+const PRIORITY_LOW_COLOR = Color(0xFF00BFFF); // Light Blue
+const PRIORITY_MEDIUM_COLOR = Color(0xFFFFA500); // Orange
+const PRIORITY_HIGH_COLOR = Color(0xFFDC143C); // Red
 
 // A theme's full color set — Main, Light Accent, and Dark Accent for each
 // of the 4 core roles (Primary/Secondary/Surface/Surface Container). These

@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/todo_tab/add_todo/add_todo_state.dart';
+import 'package:questvale/data/models/character_tag.dart';
 import 'package:questvale/data/models/tag.dart';
 import 'package:questvale/data/models/todo.dart';
 import 'package:questvale/data/models/todo_reminder.dart';
@@ -14,10 +16,15 @@ class AddTodoCubit extends Cubit<AddTodoState> {
   final CharacterRepository characterRepository;
   final String characterId;
 
-  AddTodoCubit(this.todoRepository, this.characterRepository, this.characterId)
-      : super(AddTodoState(
+  AddTodoCubit(
+    this.todoRepository,
+    this.characterRepository,
+    this.characterId, {
+    DateTime? initialDueDate,
+  }) : super(AddTodoState(
           id: const Uuid().v4(),
           characterId: characterId,
+          dueDate: initialDueDate,
         )) {
     loadAvailableTags();
   }
@@ -31,12 +38,20 @@ class AddTodoCubit extends Cubit<AddTodoState> {
             .map((tag) => Tag(
                   characterTagId: tag.id,
                   name: tag.name,
-                  colorIndex: tag.colorIndex,
-                  iconIndex: tag.iconIndex,
                 ))
             .toList(),
       ),
     );
+  }
+
+  Future<void> createTag(String name) async {
+    if (name.trim().isEmpty) return;
+    await characterRepository.createCharacterTag(CharacterTag(
+      id: const Uuid().v4(),
+      characterId: characterId,
+      name: name.trim(),
+    ));
+    await loadAvailableTags();
   }
 
   void nameChanged(String value) {
@@ -47,21 +62,69 @@ class AddTodoCubit extends Cubit<AddTodoState> {
     emit(state.copyWith(description: value));
   }
 
-  void dueDateChanged(
-      DateTime? date, bool hasTime, List<ReminderType> reminders) {
+  // Mirrors DueDateCubit.updateSelectedDate: a bare calendar day (from a
+  // quick-select shortcut or the calendar grid) keeps the existing
+  // time-of-day if one is already set, rather than clobbering it back to
+  // midnight.
+  void dueDateDaySelected(DateTime date) {
+    final merged = state.hasTime && state.dueDate != null
+        ? state.dueDate!.copyWith(
+            year: date.year, month: date.month, day: date.day)
+        : date;
+    emit(state.copyWith(dueDate: merged));
+  }
+
+  // Mirrors DueDateCubit.updateSelectedTime: resets reminders when time is
+  // being turned on for the first time, since the without-time and
+  // with-time ReminderType sets are disjoint.
+  void dueDateTimeSelected(TimeOfDay time) {
+    final date = state.dueDate ?? DateTime.now();
+    emit(state.copyWith(
+      dueDate: date.copyWith(hour: time.hour, minute: time.minute),
+      hasTime: true,
+      reminders: state.hasTime ? state.reminders : [],
+    ));
+  }
+
+  void dueDateTimeCleared() {
+    emit(state.copyWith(hasTime: false, reminders: const []));
+  }
+
+  void toggleReminder(ReminderType reminder) {
+    emit(state.copyWith(
+      reminders: state.reminders.contains(reminder)
+          ? state.reminders.where((e) => e != reminder).toList()
+          : [...state.reminders, reminder],
+    ));
+  }
+
+  void remindersCleared() {
+    emit(state.copyWith(reminders: const []));
+  }
+
+  // state.copyWith can't null out dueDate (its `?? this.dueDate` fallback
+  // treats an explicit null as "unchanged"), so this constructs the state
+  // directly instead — same workaround habitToggled uses for timeframe.
+  void dueDateCleared() {
     emit(AddTodoState(
-      id: state.id,
+      status: state.status,
       characterId: state.characterId,
+      id: state.id,
       name: state.name,
       description: state.description,
-      dueDate: date,
-      hasTime: hasTime,
+      dueDate: null,
+      hasTime: false,
       difficulty: state.difficulty,
       priority: state.priority,
       availableTags: state.availableTags,
       selectedTags: state.selectedTags,
-      status: AddTodoStatus.initial,
-      reminders: reminders,
+      reminders: const [],
+      isHabit: state.isHabit,
+      timeframe: state.timeframe,
+      allowsMultipleCompletions: state.allowsMultipleCompletions,
+      repeatInterval: state.repeatInterval,
+      repeatWeekdays: state.repeatWeekdays,
+      monthlyRepeatMode: state.monthlyRepeatMode,
     ));
   }
 
@@ -91,30 +154,95 @@ class AddTodoCubit extends Cubit<AddTodoState> {
       timeframe: value ? (state.timeframe ?? HabitTimeframe.daily) : null,
       allowsMultipleCompletions:
           value ? state.allowsMultipleCompletions : false,
+      repeatInterval: value ? state.repeatInterval : 1,
+      repeatWeekdays: value ? state.repeatWeekdays : const {},
+      monthlyRepeatMode:
+          value ? state.monthlyRepeatMode : MonthlyRepeatMode.dayOfMonth,
     ));
   }
 
+  // Resets repeatInterval to 1 on every timeframe switch — a stale value
+  // could otherwise sit out of range for the new unit's wheel (e.g. a
+  // weekly "every 45" carried into Daily, where the max is 30). Seeds
+  // repeatWeekdays with the due date's (or today's) weekday when
+  // switching INTO Weekly with nothing chosen yet, so the user never
+  // lands on an invalid "Weekly with zero days" state; clears it when
+  // switching away from Weekly, since it's meaningless elsewhere.
   void timeframeChanged(HabitTimeframe value) {
-    emit(state.copyWith(isHabit: true, timeframe: value));
+    Set<int> weekdays = state.repeatWeekdays;
+    if (value == HabitTimeframe.weekly) {
+      if (weekdays.isEmpty) {
+        weekdays = {(state.dueDate ?? DateTime.now()).weekday};
+      }
+    } else {
+      weekdays = const {};
+    }
+    emit(state.copyWith(
+      isHabit: true,
+      timeframe: value,
+      repeatInterval: 1,
+      repeatWeekdays: weekdays,
+    ));
   }
 
   void multipleCompletionsToggled(bool value) {
     emit(state.copyWith(allowsMultipleCompletions: value));
   }
 
+  void repeatIntervalChanged(int value) {
+    emit(state.copyWith(repeatInterval: value));
+  }
+
+  void repeatWeekdayToggled(int weekday) {
+    final updated = Set<int>.from(state.repeatWeekdays);
+    if (updated.contains(weekday)) {
+      updated.remove(weekday);
+    } else {
+      updated.add(weekday);
+    }
+    emit(state.copyWith(repeatWeekdays: updated));
+  }
+
+  void monthlyRepeatModeChanged(MonthlyRepeatMode value) {
+    emit(state.copyWith(monthlyRepeatMode: value));
+  }
+
+  // Compares by characterTagId rather than Tag equality (Tag has no ==
+  // override, so it'd fall back to reference identity) — availableTags is
+  // rebuilt with brand-new Tag instances on every reload (e.g. creating a
+  // tag via the inline "+ Tag" button), which would otherwise orphan an
+  // already-selected tag's old instance and make it un-toggleable.
   void toggleTag(Tag tag) {
-    if (state.selectedTags.contains(tag)) {
+    if (state.selectedTags.any((t) => t.characterTagId == tag.characterTagId)) {
       emit(state.copyWith(
-          selectedTags: state.selectedTags.where((t) => t != tag).toList()));
+          selectedTags: state.selectedTags
+              .where((t) => t.characterTagId != tag.characterTagId)
+              .toList()));
     } else {
       emit(state.copyWith(selectedTags: [...state.selectedTags, tag]));
     }
   }
 
   Future<void> submit() async {
+    if (state.name.isEmpty) {
+      return; // Don't submit if name is empty
+    }
     emit(state.copyWith(status: AddTodoStatus.loading));
 
     try {
+      // Monthly "Day of Week" mode derives its weekday+ordinal pattern
+      // from currentPeriodStart itself (see HabitService), so a brand-new
+      // habit in that mode must anchor to the selected due date for the
+      // derivation to be correct. Every other configuration anchors to
+      // "now" exactly as before — a due-dated daily habit is still
+      // available immediately, not deferred to its due date.
+      final anchorReference = (state.isHabit &&
+              state.timeframe == HabitTimeframe.monthly &&
+              state.monthlyRepeatMode == MonthlyRepeatMode.dayOfWeek &&
+              state.dueDate != null)
+          ? state.dueDate!
+          : DateTime.now();
+
       final todo = Todo(
         id: state.id,
         characterId: characterId,
@@ -131,8 +259,15 @@ class AddTodoCubit extends Cubit<AddTodoState> {
         timeframe: state.timeframe,
         allowsMultipleCompletions: state.allowsMultipleCompletions,
         currentPeriodStart: state.isHabit
-            ? HabitService.startOfPeriodContaining(DateTime.now())
+            ? HabitService.anchorPeriodStart(
+                timeframe: state.timeframe!,
+                repeatWeekdays: state.repeatWeekdays,
+                referenceDate: anchorReference,
+              )
             : null,
+        repeatInterval: state.repeatInterval,
+        repeatWeekdays: state.repeatWeekdays,
+        monthlyRepeatMode: state.monthlyRepeatMode,
       );
 
       await todoRepository.createTodo(todo);
@@ -155,6 +290,9 @@ class AddTodoCubit extends Cubit<AddTodoState> {
         isHabit: false,
         timeframe: null,
         allowsMultipleCompletions: false,
+        repeatInterval: 1,
+        repeatWeekdays: const {},
+        monthlyRepeatMode: MonthlyRepeatMode.dayOfMonth,
       ));
     } catch (e) {
       // Handle error

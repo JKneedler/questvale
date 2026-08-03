@@ -78,6 +78,17 @@ class QuestvaleDB {
 
       await db.execute(Enemy.createTableSQL);
     }, onUpgrade: (db, oldVersion, newVersion) async {
+      // TodoTag/CharacterTag were never added to a version-gated migration
+      // block when the tags feature shipped, so any install that upgraded
+      // through that point instead of a fresh install never got these
+      // tables — every tag-related insert then silently failed. Run
+      // unconditionally (IF NOT EXISTS) on every upgrade rather than
+      // guessing which version boundary they should have belonged to.
+      await db.execute(
+          TodoTag.createTableSQL.replaceFirst('CREATE TABLE', 'CREATE TABLE IF NOT EXISTS'));
+      await db.execute(
+          CharacterTag.createTableSQL.replaceFirst('CREATE TABLE', 'CREATE TABLE IF NOT EXISTS'));
+
       if (oldVersion < 2) {
         await db.execute(
             'ALTER TABLE ${Todo.todoTableName} ADD COLUMN ${Todo.isHabitColumnName} BOOLEAN DEFAULT 0');
@@ -146,6 +157,28 @@ class QuestvaleDB {
         await db.execute(
             'ALTER TABLE ${Character.characterTableName} ADD COLUMN ${Character.themeIdColumnName} TEXT NOT NULL DEFAULT \'$DEFAULT_THEME_ID\'');
       }
-    }, version: 8);
+      if (oldVersion < 9) {
+        await db.execute(
+            'ALTER TABLE ${Todo.todoTableName} ADD COLUMN ${Todo.repeatIntervalColumnName} INTEGER DEFAULT 1');
+        await db.execute(
+            'ALTER TABLE ${Todo.todoTableName} ADD COLUMN ${Todo.repeatWeekdaysColumnName} INTEGER DEFAULT 0');
+        await db.execute(
+            'ALTER TABLE ${Todo.todoTableName} ADD COLUMN ${Todo.monthlyRepeatModeColumnName} INTEGER DEFAULT 0');
+      }
+      if (oldVersion < 10) {
+        // Tags were simplified to name-only; colorIndex/iconIndex only
+        // exist on installs that had the table pre-simplification (a
+        // fresh IF NOT EXISTS create above already omits them).
+        final columns = await db.rawQuery(
+            'PRAGMA table_info(${CharacterTag.characterTagTableName})');
+        final hasColorIndex = columns.any((c) => c['name'] == 'colorIndex');
+        if (hasColorIndex) {
+          await db.execute(
+              'ALTER TABLE ${CharacterTag.characterTagTableName} DROP COLUMN colorIndex');
+          await db.execute(
+              'ALTER TABLE ${CharacterTag.characterTagTableName} DROP COLUMN iconIndex');
+        }
+      }
+    }, version: 10);
   }
 }

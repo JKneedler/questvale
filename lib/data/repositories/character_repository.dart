@@ -72,8 +72,6 @@ class CharacterRepository {
           id: tagMap[CharacterTag.idColumnName] as String,
           characterId: tagMap[CharacterTag.characterIdColumnName] as String,
           name: tagMap[CharacterTag.nameColumnName] as String,
-          colorIndex: tagMap[CharacterTag.colorIndexColumnName] as int,
-          iconIndex: tagMap[CharacterTag.iconIndexColumnName] as int,
         ),
     ];
   }
