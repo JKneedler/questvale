@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:questvale/cubits/todo_tab/character_tag/create_character_tag_page.dart';
 import 'package:questvale/cubits/todo_tab/time_picker/time_picker_cubit.dart';
 import 'package:questvale/cubits/todo_tab/time_picker/time_picker_view.dart';
 import 'package:questvale/data/models/tag.dart';
@@ -70,7 +69,7 @@ class TodoFormCallbacks {
     required this.onNameChanged,
     required this.onDescriptionChanged,
     required this.onTagToggled,
-    required this.onTagsReloaded,
+    required this.onTagCreated,
     required this.onDueDateDaySelected,
     required this.onDueDateTimeSelected,
     required this.onDueDateTimeCleared,
@@ -90,7 +89,7 @@ class TodoFormCallbacks {
   final ValueChanged<String> onNameChanged;
   final ValueChanged<String> onDescriptionChanged;
   final ValueChanged<Tag> onTagToggled;
-  final VoidCallback onTagsReloaded;
+  final Future<void> Function(String name) onTagCreated;
   final ValueChanged<DateTime> onDueDateDaySelected;
   final ValueChanged<TimeOfDay> onDueDateTimeSelected;
   final VoidCallback onDueDateTimeCleared;
@@ -146,6 +145,7 @@ class TodoFormBody extends StatefulWidget {
 class _TodoFormBodyState extends State<TodoFormBody> {
   late final TextEditingController _nameController;
   late final TextEditingController _descriptionController;
+  late final TextEditingController _newTagController;
 
   // Local UI-only state for the Due Date / Time / Reminders rows'
   // expand-in-place pickers — never persisted, so a fresh TodoFormBody (new
@@ -170,6 +170,10 @@ class _TodoFormBodyState extends State<TodoFormBody> {
   // None can reveal everything that unlocks below it, not just the row that
   // was tapped.
   final GlobalKey _repeatsSectionKey = GlobalKey();
+
+  // Covers the whole Tags section, so creating a new tag (which grows the
+  // list by one row) can scroll down to reveal the new bottom.
+  final GlobalKey _tagsSectionKey = GlobalKey();
 
   // Scrolling has to wait until the frame after the state change that grows
   // a section — only then does its RenderBox reflect the new, taller size.
@@ -209,6 +213,7 @@ class _TodoFormBodyState extends State<TodoFormBody> {
     _nameController = TextEditingController(text: widget.fields.name);
     _descriptionController =
         TextEditingController(text: widget.fields.description);
+    _newTagController = TextEditingController();
     final base = widget.fields.dueDate ?? DateTime.now();
     _displayedMonth = DateTime(base.year, base.month);
   }
@@ -245,6 +250,7 @@ class _TodoFormBodyState extends State<TodoFormBody> {
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
+    _newTagController.dispose();
     super.dispose();
   }
 
@@ -314,10 +320,7 @@ class _TodoFormBodyState extends State<TodoFormBody> {
           ),
         ),
 
-        // Tags section
         const SizedBox(height: 16),
-        _buildTagsSection(context, fields, callbacks),
-        const SizedBox(height: 24),
 
         // Details section
         _buildDueDateRow(context, fields, callbacks),
@@ -331,6 +334,9 @@ class _TodoFormBodyState extends State<TodoFormBody> {
         ),
         _buildDifficultyRow(context, fields, callbacks),
         _buildPriorityRow(context, fields, callbacks),
+
+        // Tags section
+        _buildTagsSection(context, fields, callbacks),
       ],
     );
   }
@@ -853,10 +859,13 @@ class _TodoFormBodyState extends State<TodoFormBody> {
 
   Widget _buildTagsSection(BuildContext context, TodoFormFields fields,
       TodoFormCallbacks callbacks) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+
     return _buildSelectableSection(
       context,
       label: 'Tags',
       child: QvInsetBackground(
+        key: _tagsSectionKey,
         type: QvInsetBackgroundType.secondary,
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -864,6 +873,12 @@ class _TodoFormBodyState extends State<TodoFormBody> {
           children: [
             for (final tag in fields.availableTags)
               _buildTagOptionRow(context, tag, fields, callbacks),
+            if (fields.availableTags.isNotEmpty)
+              Container(
+                height: 1,
+                margin: const EdgeInsets.symmetric(vertical: 4),
+                color: colorScheme.onSurface.withValues(alpha: 0.15),
+              ),
             _buildAddTagRow(context, callbacks),
           ],
         ),
@@ -880,9 +895,10 @@ class _TodoFormBodyState extends State<TodoFormBody> {
     return GestureDetector(
       onTap: () => callbacks.onTagToggled(tag),
       behavior: HitTestBehavior.translucent,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 36),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Expanded(
               child: Text(
@@ -906,33 +922,59 @@ class _TodoFormBodyState extends State<TodoFormBody> {
 
   Widget _buildAddTagRow(BuildContext context, TodoFormCallbacks callbacks) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final hasText = _newTagController.text.trim().isNotEmpty;
 
-    return GestureDetector(
-      onTap: () => CreateCharacterTagPage.showModal(
-        context,
-        widget.characterId,
-        callbacks.onTagsReloaded,
-      ),
-      behavior: HitTestBehavior.translucent,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            Icon(Symbols.add,
-                color: colorScheme.onSurface.withValues(alpha: 0.5), size: 16),
-            const SizedBox(width: 6),
-            Text(
-              'New Tag',
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 36),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _newTagController,
+              onChanged: (_) => setState(() {}),
+              onSubmitted: (_) => _submitNewTag(callbacks),
+              textInputAction: TextInputAction.done,
+              decoration: InputDecoration(
+                hintText: 'New Tag',
+                hintStyle: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: colorScheme.onSurface.withValues(alpha: 0.5),
+                ),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+              ),
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
-                color: colorScheme.onSurface.withValues(alpha: 0.5),
+                color: colorScheme.onSurface,
               ),
             ),
+          ),
+          if (hasText) ...[
+            const SizedBox(width: 8),
+            QvButton(
+              width: 46,
+              height: 36,
+              buttonColor: ButtonColor.primary,
+              onTap: () => _submitNewTag(callbacks),
+              child: Icon(Symbols.add, color: colorScheme.onPrimary, size: 20),
+            ),
           ],
-        ),
+        ],
       ),
     );
+  }
+
+  Future<void> _submitNewTag(TodoFormCallbacks callbacks) async {
+    final name = _newTagController.text.trim();
+    if (name.isEmpty) return;
+    _newTagController.clear();
+    setState(() {});
+    await callbacks.onTagCreated(name);
+    _scrollExpandedSectionIntoView(_tagsSectionKey);
   }
 
   String _getDifficultyText(DifficultyLevel difficulty) {

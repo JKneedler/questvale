@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/todo_tab/edit_todo/edit_todo_state.dart';
+import 'package:questvale/data/models/character_tag.dart';
 import 'package:questvale/data/models/tag.dart';
 import 'package:questvale/data/models/todo.dart';
 import 'package:questvale/data/models/todo_reminder.dart';
@@ -56,6 +57,16 @@ class EditTodoCubit extends Cubit<EditTodoState> {
             ))
         .toList();
     emit(state.copyWith(availableTags: tags));
+  }
+
+  Future<void> createTag(String name) async {
+    if (name.trim().isEmpty) return;
+    await characterRepository.createCharacterTag(CharacterTag(
+      id: const Uuid().v4(),
+      characterId: state.todo.characterId,
+      name: name.trim(),
+    ));
+    await loadTags();
   }
 
   void toggleCompletion() {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/todo_tab/add_todo/add_todo_state.dart';
+import 'package:questvale/data/models/character_tag.dart';
 import 'package:questvale/data/models/tag.dart';
 import 'package:questvale/data/models/todo.dart';
 import 'package:questvale/data/models/todo_reminder.dart';
@@ -41,6 +42,16 @@ class AddTodoCubit extends Cubit<AddTodoState> {
             .toList(),
       ),
     );
+  }
+
+  Future<void> createTag(String name) async {
+    if (name.trim().isEmpty) return;
+    await characterRepository.createCharacterTag(CharacterTag(
+      id: const Uuid().v4(),
+      characterId: characterId,
+      name: name.trim(),
+    ));
+    await loadAvailableTags();
   }
 
   void nameChanged(String value) {

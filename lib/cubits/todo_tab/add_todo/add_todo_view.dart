@@ -58,7 +58,7 @@ class AddTodoView extends StatelessWidget {
               onNameChanged: cubit.nameChanged,
               onDescriptionChanged: cubit.descriptionChanged,
               onTagToggled: cubit.toggleTag,
-              onTagsReloaded: cubit.loadAvailableTags,
+              onTagCreated: cubit.createTag,
               onDueDateDaySelected: cubit.dueDateDaySelected,
               onDueDateTimeSelected: cubit.dueDateTimeSelected,
               onDueDateTimeCleared: cubit.dueDateTimeCleared,
