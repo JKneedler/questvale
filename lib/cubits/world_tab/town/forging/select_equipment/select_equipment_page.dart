@@ -11,6 +11,7 @@ import 'package:questvale/widgets/qv_animated_transition.dart';
 import 'package:questvale/widgets/qv_app_bar.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_equipment_item.dart';
+import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -144,23 +145,25 @@ class EquipmentSelectView extends StatelessWidget {
             child: QvInsetBackground(
               padding: EdgeInsets.symmetric(vertical: 4),
               type: QvInsetBackgroundType.secondary,
-              child: ListView.builder(
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                itemCount: equipmentList.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 10.0),
-                    child: QvEquipmentItem(
-                      equipment: equipmentList[index],
-                      onTap: () => context
-                          .read<ForgeCubit>()
-                          .onEquipmentSelected(equipmentList[index]),
-                      isEquipped:
-                          equipmentList[index].id == equippedEquipment?.id,
-                      showEquippedTag: true,
-                    ),
-                  );
-                },
+              child: QvFadingScrollable(
+                child: ListView.builder(
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                  itemCount: equipmentList.length,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 10.0),
+                      child: QvEquipmentItem(
+                        equipment: equipmentList[index],
+                        onTap: () => context
+                            .read<ForgeCubit>()
+                            .onEquipmentSelected(equipmentList[index]),
+                        isEquipped:
+                            equipmentList[index].id == equippedEquipment?.id,
+                        showEquippedTag: true,
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ),

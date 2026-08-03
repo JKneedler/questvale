@@ -15,6 +15,7 @@ import 'package:questvale/widgets/qv_animated_transition.dart';
 import 'package:questvale/widgets/qv_blinking.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
+import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:questvale/widgets/qv_metal_corner_border.dart';
 import 'package:questvale/widgets/qv_skill_button.dart';
 import 'package:sqflite/sqflite.dart';
@@ -671,29 +672,31 @@ class EnemyInfoBox extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    EnemyNextAttackSlice(),
-                    EnemyStatusEffectsSlice(),
-                    Text(enemyData.rarity.name.toUpperCase()),
-                    Text(enemyData.enemyType.name.toUpperCase()),
-                    Text(enemyData.immunities
-                        .map((immunity) => immunity.name.toUpperCase())
-                        .join(', ')),
-                    Text(enemyData.resistances
-                        .map((resistance) => resistance.name.toUpperCase())
-                        .join(', ')),
-                    Text(enemyData.weaknesses
-                        .map((weakness) => weakness.name.toUpperCase())
-                        .join(', ')),
-                    Text(enemyData.attacks
-                        .map((attack) => attack.name.toUpperCase())
-                        .join(', ')),
-                    Text(enemyData.drops
-                        .map((drop) => drop.itemName.toUpperCase())
-                        .join(', ')),
-                  ],
+              child: QvFadingScrollable(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      EnemyNextAttackSlice(),
+                      EnemyStatusEffectsSlice(),
+                      Text(enemyData.rarity.name.toUpperCase()),
+                      Text(enemyData.enemyType.name.toUpperCase()),
+                      Text(enemyData.immunities
+                          .map((immunity) => immunity.name.toUpperCase())
+                          .join(', ')),
+                      Text(enemyData.resistances
+                          .map((resistance) => resistance.name.toUpperCase())
+                          .join(', ')),
+                      Text(enemyData.weaknesses
+                          .map((weakness) => weakness.name.toUpperCase())
+                          .join(', ')),
+                      Text(enemyData.attacks
+                          .map((attack) => attack.name.toUpperCase())
+                          .join(', ')),
+                      Text(enemyData.drops
+                          .map((drop) => drop.itemName.toUpperCase())
+                          .join(', ')),
+                    ],
+                  ),
                 ),
               ),
             ),

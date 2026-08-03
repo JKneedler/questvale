@@ -8,6 +8,7 @@ import 'package:questvale/cubits/world_tab/questing/simple_equipment_slice.dart'
 import 'package:questvale/cubits/theme/theme_cubit.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/widgets/qv_button.dart';
+import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:questvale/widgets/qv_primary_border.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -124,16 +125,18 @@ class CombatLootView extends StatelessWidget {
                       ),
                       child: Align(
                         alignment: Alignment.topCenter,
-                        child: ListView.builder(
-                          padding: const EdgeInsets.all(0),
-                          itemCount: combatLootState
-                              .encounterReward!.equipmentRewards.length,
-                          itemBuilder: (context, index) {
-                            return SimpleEquipmentSlice(
-                              equipment: combatLootState
-                                  .encounterReward!.equipmentRewards[index],
-                            );
-                          },
+                        child: QvFadingScrollable(
+                          child: ListView.builder(
+                            padding: const EdgeInsets.all(0),
+                            itemCount: combatLootState
+                                .encounterReward!.equipmentRewards.length,
+                            itemBuilder: (context, index) {
+                              return SimpleEquipmentSlice(
+                                equipment: combatLootState
+                                    .encounterReward!.equipmentRewards[index],
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ),

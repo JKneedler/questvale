@@ -5,6 +5,7 @@ import 'package:questvale/cubits/todo_tab/todos_calendar/todos_calendar_state.da
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_cubit.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_item.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_state.dart';
+import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:questvale/widgets/qv_month_calendar.dart';
 
 // Rendered inline in TodosOverviewView when viewMode is calendar — no
@@ -59,13 +60,15 @@ class TodosCalendarBody extends StatelessWidget {
                             ),
                           ),
                         )
-                      : ListView.builder(
-                          padding: const EdgeInsets.only(
-                              left: 6, right: 6, top: 10, bottom: 10),
-                          itemCount: selectedDayTodos.length,
-                          itemBuilder: (context, index) => TodosOverviewItem(
-                              key: ValueKey(selectedDayTodos[index].id),
-                              todo: selectedDayTodos[index]),
+                      : QvFadingScrollable(
+                          child: ListView.builder(
+                            padding: const EdgeInsets.only(
+                                left: 6, right: 6, top: 10, bottom: 10),
+                            itemCount: selectedDayTodos.length,
+                            itemBuilder: (context, index) => TodosOverviewItem(
+                                key: ValueKey(selectedDayTodos[index].id),
+                                todo: selectedDayTodos[index]),
+                          ),
                         ),
                 ),
               ],

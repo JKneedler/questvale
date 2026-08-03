@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:questvale/widgets/qv_background.dart';
 import 'package:questvale/widgets/qv_button.dart';
+import 'package:questvale/widgets/qv_fading_scrollable.dart';
 
 /// Shared modal-sheet chrome for the add-todo and edit-todo screens: a
 /// DraggableScrollableSheet (so dragging down from the top of the content
@@ -39,19 +40,21 @@ class TodoFormSheet extends StatelessWidget {
           padding: EdgeInsets.all(16),
           child: SafeArea(
             top: false,
-            child: SingleChildScrollView(
-              controller: scrollController,
-              physics: const CalmSnapScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  header,
-                  body,
-                  if (footer != null) ...[
-                    const SizedBox(height: 8),
-                    footer!,
+            child: QvFadingScrollable(
+              child: SingleChildScrollView(
+                controller: scrollController,
+                physics: const CalmSnapScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    header,
+                    body,
+                    if (footer != null) ...[
+                      const SizedBox(height: 8),
+                      footer!,
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ),

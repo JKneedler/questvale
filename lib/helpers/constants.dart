@@ -15,6 +15,11 @@ const GRAY_FILTER_MATRIX = <double>[
 
 const ENCOUNTER_FIRST_PLAY_DELAY = 1000; // 1 second
 
+// Distance (in logical pixels) that QvFadingScrollable's edge fade spans —
+// shared so every scrollable in the app fades at the same rate regardless
+// of its own size.
+const SCROLL_FADE_DISTANCE = 12.0;
+
 const HEALTH_COLOR = Color(0xffFF4646);
 const MANA_COLOR = Color(0xff4679FF);
 const RAGE_COLOR = Color(0xffFF6231);

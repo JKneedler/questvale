@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/todo_tab/character_tag/create_character_tag_cubit.dart';
 import 'package:questvale/cubits/todo_tab/character_tag/create_character_tag_state.dart';
 import 'package:questvale/data/models/character_tag.dart';
+import 'package:questvale/widgets/qv_fading_scrollable.dart';
 
 class CreateCharacterTagView extends StatelessWidget {
   final void Function() onTagCreated;
@@ -125,73 +126,79 @@ class CreateCharacterTagView extends StatelessWidget {
               const SizedBox(height: 16),
               SizedBox(
                 height: 50,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: CharacterTag.availableColors.length,
-                  itemBuilder: (context, index) {
-                    final color = CharacterTag.availableColors[index];
-                    final isSelected = index == state.colorIndex;
-                    return GestureDetector(
-                      onTap: () => context
-                          .read<CreateCharacterTagCubit>()
-                          .colorIndexChanged(index),
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        margin: const EdgeInsets.only(right: 8),
-                        decoration: BoxDecoration(
-                          color: color,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: isSelected
-                                ? colorScheme.onPrimary
-                                : colorScheme.surfaceContainerLow,
-                            width: 3,
+                child: QvFadingScrollable(
+                  direction: Axis.horizontal,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: CharacterTag.availableColors.length,
+                    itemBuilder: (context, index) {
+                      final color = CharacterTag.availableColors[index];
+                      final isSelected = index == state.colorIndex;
+                      return GestureDetector(
+                        onTap: () => context
+                            .read<CreateCharacterTagCubit>()
+                            .colorIndexChanged(index),
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          margin: const EdgeInsets.only(right: 8),
+                          decoration: BoxDecoration(
+                            color: color,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isSelected
+                                  ? colorScheme.onPrimary
+                                  : colorScheme.surfaceContainerLow,
+                              width: 3,
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
               SizedBox(
                 height: 50,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: CharacterTag.availableIcons.length,
-                  itemBuilder: (context, index) {
-                    final icon = CharacterTag.availableIcons[index];
-                    final isSelected = index == state.iconIndex;
-                    return GestureDetector(
-                      onTap: () => context
-                          .read<CreateCharacterTagCubit>()
-                          .iconIndexChanged(index),
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        margin: const EdgeInsets.only(right: 8),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? colorScheme.primary
-                              : colorScheme.surfaceContainerLow,
-                          shape: BoxShape.circle,
-                          border: Border.all(
+                child: QvFadingScrollable(
+                  direction: Axis.horizontal,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: CharacterTag.availableIcons.length,
+                    itemBuilder: (context, index) {
+                      final icon = CharacterTag.availableIcons[index];
+                      final isSelected = index == state.iconIndex;
+                      return GestureDetector(
+                        onTap: () => context
+                            .read<CreateCharacterTagCubit>()
+                            .iconIndexChanged(index),
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          margin: const EdgeInsets.only(right: 8),
+                          decoration: BoxDecoration(
                             color: isSelected
-                                ? Colors.transparent
+                                ? colorScheme.primary
+                                : colorScheme.surfaceContainerLow,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isSelected
+                                  ? Colors.transparent
+                                  : colorScheme.onPrimaryFixedVariant,
+                              width: 1,
+                            ),
+                          ),
+                          child: Icon(
+                            icon,
+                            color: isSelected
+                                ? colorScheme.onPrimary
                                 : colorScheme.onPrimaryFixedVariant,
-                            width: 1,
                           ),
                         ),
-                        child: Icon(
-                          icon,
-                          color: isSelected
-                              ? colorScheme.onPrimary
-                              : colorScheme.onPrimaryFixedVariant,
-                        ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
               ),
             ],
