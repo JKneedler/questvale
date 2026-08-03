@@ -63,7 +63,7 @@ class TodosOverviewView extends StatelessWidget {
               ),
             ),
             trailingButton: QvAppBarButton(
-              button: '⋮',
+              button: '⋯',
               onTap: () => showModalBottomSheet(
                 context: context,
                 backgroundColor: Colors.transparent,
