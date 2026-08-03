@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:questvale/cubits/todo_tab/character_tag/create_character_tag_page.dart';
-import 'package:questvale/cubits/todo_tab/due_date/due_date_editor.dart';
+import 'package:questvale/cubits/todo_tab/time_picker/time_picker_cubit.dart';
+import 'package:questvale/cubits/todo_tab/time_picker/time_picker_view.dart';
 import 'package:questvale/data/models/character_tag.dart';
 import 'package:questvale/data/models/tag.dart';
 import 'package:questvale/data/models/todo.dart';
 import 'package:questvale/data/models/todo_reminder.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/data_formatters.dart';
+import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_check_box.dart';
+import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
+import 'package:questvale/widgets/qv_month_calendar.dart';
 import 'package:questvale/widgets/qv_segmented_control.dart';
 import 'package:questvale/widgets/qv_tag_chip.dart';
 import 'package:questvale/widgets/qv_textfield.dart';
@@ -130,12 +135,35 @@ class _TodoFormBodyState extends State<TodoFormBody> {
   late final TextEditingController _nameController;
   late final TextEditingController _descriptionController;
 
+  // Local UI-only state for the Due Date / Time / Reminders rows'
+  // expand-in-place pickers — never persisted, so a fresh TodoFormBody (new
+  // todo, or a different todo loaded into edit) always starts collapsed.
+  bool _dateExpanded = false;
+  bool _timeExpanded = false;
+  bool _remindersExpanded = false;
+  late DateTime _displayedMonth;
+
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.fields.name);
     _descriptionController =
         TextEditingController(text: widget.fields.description);
+    final base = widget.fields.dueDate ?? DateTime.now();
+    _displayedMonth = DateTime(base.year, base.month);
+  }
+
+  @override
+  void didUpdateWidget(covariant TodoFormBody oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Follow the due date to whatever month it lands in when it's changed
+    // from outside the calendar grid (e.g. cleared then re-set elsewhere).
+    final date = widget.fields.dueDate;
+    if (date != null &&
+        (date.year != oldWidget.fields.dueDate?.year ||
+            date.month != oldWidget.fields.dueDate?.month)) {
+      _displayedMonth = DateTime(date.year, date.month);
+    }
   }
 
   @override
@@ -143,6 +171,13 @@ class _TodoFormBodyState extends State<TodoFormBody> {
     _nameController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  void _changeMonth(int delta) {
+    setState(() {
+      _displayedMonth =
+          DateTime(_displayedMonth.year, _displayedMonth.month + delta);
+    });
   }
 
   @override
@@ -210,39 +245,46 @@ class _TodoFormBodyState extends State<TodoFormBody> {
         const SizedBox(height: 8),
         SizedBox(
           height: 30,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: fields.availableTags.length + 1,
-            itemBuilder: (context, index) {
-              if (index == fields.availableTags.length) {
+          child: QvFadingScrollable(
+            direction: Axis.horizontal,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: fields.availableTags.length + 1,
+              itemBuilder: (context, index) {
+                if (index == fields.availableTags.length) {
+                  return TagChip(
+                    icon: Icons.add,
+                    name: 'Tag',
+                    color: Colors.transparent,
+                    onPressed: () => CreateCharacterTagPage.showModal(
+                      context,
+                      widget.characterId,
+                      callbacks.onTagsReloaded,
+                    ),
+                    margin: const EdgeInsets.only(left: 2, right: 50),
+                  );
+                }
+                final tag = fields.availableTags[index];
                 return TagChip(
-                  icon: Icons.add,
-                  name: 'Tag',
-                  color: Colors.transparent,
-                  onPressed: () => CreateCharacterTagPage.showModal(
-                    context,
-                    widget.characterId,
-                    callbacks.onTagsReloaded,
-                  ),
-                  margin: const EdgeInsets.only(left: 2, right: 50),
+                  icon: CharacterTag.availableIcons[tag.iconIndex],
+                  name: tag.name,
+                  color: CharacterTag.availableColors[tag.colorIndex],
+                  isSelected: fields.selectedTags
+                      .any((t) => t.characterTagId == tag.characterTagId),
+                  onPressed: () => callbacks.onTagToggled(tag),
                 );
-              }
-              final tag = fields.availableTags[index];
-              return TagChip(
-                icon: CharacterTag.availableIcons[tag.iconIndex],
-                name: tag.name,
-                color: CharacterTag.availableColors[tag.colorIndex],
-                isSelected: fields.selectedTags.any(
-                    (t) => t.characterTagId == tag.characterTagId),
-                onPressed: () => callbacks.onTagToggled(tag),
-              );
-            },
+              },
+            ),
           ),
         ),
         const SizedBox(height: 24),
 
         // Details section
         _buildDueDateRow(context, fields, callbacks),
+        if (fields.dueDate != null) ...[
+          _buildTimeRow(context, fields, callbacks),
+          _buildReminderRow(context, fields, callbacks),
+        ],
         _buildDifficultyRow(context, fields, callbacks),
         _buildPriorityRow(context, fields, callbacks),
         _buildHabitRow(context, fields, callbacks),
@@ -254,49 +296,221 @@ class _TodoFormBodyState extends State<TodoFormBody> {
 
   Widget _buildDueDateRow(BuildContext context, TodoFormFields fields,
       TodoFormCallbacks callbacks) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final hasDueDate = fields.dueDate != null;
 
     return _buildSelectableSection(
       context,
       label: 'Due Date',
-      trailing: fields.dueDate != null
-          ? GestureDetector(
-              onTap: callbacks.onDueDateCleared,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    DataFormatters.formatDateTime(
-                        fields.dueDate!, fields.hasTime),
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: fields.dueDate!.isBefore(DateTime.now()) &&
-                              !fields.isCompleted
-                          ? colorScheme.error
-                          : colorScheme.primary,
-                    ),
-                  ),
-                  const SizedBox(width: 3),
-                  Icon(Symbols.close,
-                      color: colorScheme.error, size: 16, weight: 900),
-                ],
-              ),
-            )
-          : null,
       child: QvInsetBackground(
         type: QvInsetBackgroundType.secondary,
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: DueDateEditor(
-          selectedDate: fields.dueDate,
-          hasTime: fields.hasTime,
-          reminders: fields.reminders,
-          onDateSelected: callbacks.onDueDateDaySelected,
-          onTimeSelected: callbacks.onDueDateTimeSelected,
-          onTimeCleared: callbacks.onDueDateTimeCleared,
-          onReminderToggled: callbacks.onReminderToggled,
-          onRemindersCleared: callbacks.onRemindersCleared,
+        padding: EdgeInsets.zero,
+        child: Column(
+          children: [
+            _buildExpandableValueRow(
+              context,
+              value: hasDueDate
+                  ? DataFormatters.formatDateTime(fields.dueDate!, false)
+                  : 'None',
+              isSet: hasDueDate,
+              expanded: _dateExpanded,
+              onTap: () => setState(() => _dateExpanded = !_dateExpanded),
+              onClear: hasDueDate ? callbacks.onDueDateCleared : null,
+            ),
+            if (_dateExpanded)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: QvMonthCalendar(
+                  displayedMonth: _displayedMonth,
+                  selectedDate: fields.dueDate,
+                  onMonthChanged: _changeMonth,
+                  onDateSelected: (date) {
+                    callbacks.onDueDateDaySelected(date);
+                    setState(() => _dateExpanded = false);
+                  },
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTimeRow(BuildContext context, TodoFormFields fields,
+      TodoFormCallbacks callbacks) {
+    return _buildSelectableSection(
+      context,
+      label: 'Time',
+      child: QvInsetBackground(
+        type: QvInsetBackgroundType.secondary,
+        width: double.infinity,
+        padding: EdgeInsets.zero,
+        child: Column(
+          children: [
+            _buildExpandableValueRow(
+              context,
+              value: fields.hasTime
+                  ? DataFormatters.formatTime(fields.dueDate!)
+                  : 'None',
+              isSet: fields.hasTime,
+              expanded: _timeExpanded,
+              onTap: () => setState(() => _timeExpanded = !_timeExpanded),
+              onClear: fields.hasTime ? callbacks.onDueDateTimeCleared : null,
+            ),
+            if (_timeExpanded)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: BlocProvider(
+                  create: (context) => TimePickerCubit(
+                    initialTime: fields.hasTime
+                        ? TimeOfDay(
+                            hour: fields.dueDate!.hour,
+                            minute: fields.dueDate!.minute)
+                        : TimeOfDay.now(),
+                    onTimeSelected: callbacks.onDueDateTimeSelected,
+                  ),
+                  child: const TimePickerView(),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReminderRow(BuildContext context, TodoFormFields fields,
+      TodoFormCallbacks callbacks) {
+    final hasReminders = fields.reminders.isNotEmpty;
+    final options = fields.hasTime
+        ? ReminderType.values.sublist(5, 10)
+        : ReminderType.values.sublist(0, 5);
+
+    return _buildSelectableSection(
+      context,
+      label: 'Reminders',
+      child: QvInsetBackground(
+        type: QvInsetBackgroundType.secondary,
+        width: double.infinity,
+        padding: EdgeInsets.zero,
+        child: Column(
+          children: [
+            _buildExpandableValueRow(
+              context,
+              value: hasReminders
+                  ? fields.reminders.map((e) => e.name).join(', ')
+                  : 'None',
+              isSet: hasReminders,
+              expanded: _remindersExpanded,
+              onTap: () =>
+                  setState(() => _remindersExpanded = !_remindersExpanded),
+              onClear: hasReminders ? callbacks.onRemindersCleared : null,
+            ),
+            if (_remindersExpanded)
+              Padding(
+                padding: const EdgeInsets.only(left: 12, right: 12, bottom: 8),
+                child: Column(
+                  children: [
+                    for (final reminderType in options)
+                      _buildReminderOptionRow(
+                          context, reminderType, fields, callbacks),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReminderOptionRow(BuildContext context,
+      ReminderType reminderType, TodoFormFields fields,
+      TodoFormCallbacks callbacks) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final isChecked = fields.reminders.contains(reminderType);
+
+    return GestureDetector(
+      onTap: () => callbacks.onReminderToggled(reminderType),
+      behavior: HitTestBehavior.translucent,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                reminderType.name,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: isChecked ? FontWeight.bold : FontWeight.w500,
+                  color: isChecked
+                      ? colorScheme.primary
+                      : colorScheme.onSurface.withValues(alpha: 0.5),
+                ),
+              ),
+            ),
+            if (isChecked)
+              Icon(Symbols.check, color: colorScheme.primary, size: 18),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExpandableValueRow(
+    BuildContext context, {
+    required String value,
+    required bool isSet,
+    required bool expanded,
+    required VoidCallback onTap,
+    VoidCallback? onClear,
+  }) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+
+    return InkWell(
+      onTap: onTap,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 54),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  value,
+                  style: TextStyle(
+                    color: isSet
+                        ? colorScheme.primary
+                        : colorScheme.onSurface.withValues(alpha: 0.5),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              if (onClear != null) ...[
+                QvButton(
+                  width: 64,
+                  height: 36,
+                  buttonColor: ButtonColor.surfaceContainer,
+                  onTap: onClear,
+                  child: Center(
+                    child: Text(
+                      'Clear',
+                      style: TextStyle(
+                        color: colorScheme.error,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+              ],
+              Icon(
+                expanded ? Symbols.expand_less : Symbols.expand_more,
+                color: colorScheme.onSurface,
+                size: 20,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -373,17 +587,17 @@ class _TodoFormBodyState extends State<TodoFormBody> {
             )
           : null,
       child: QvSegmentedControl<HabitTimeframe?>(
+        itemSize: 40,
+        highlightWidthFraction: 0.9,
         items: [
           const QvSegmentedControlItem(
             value: null,
-            label: 'One-time',
-            icon: Symbols.check_circle,
+            label: 'None',
           ),
           for (final tf in HabitTimeframe.values)
             QvSegmentedControlItem(
               value: tf,
               label: tf.name,
-              icon: Symbols.event_repeat,
             ),
         ],
         selectedValue:

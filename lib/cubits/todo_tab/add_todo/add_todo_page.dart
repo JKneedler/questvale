@@ -10,8 +10,9 @@ class AddTodoPage {
   static Future<void> showModal(
     BuildContext context,
     VoidCallback onTodoAdded,
-    String characterId,
-  ) {
+    String characterId, {
+    DateTime? initialDueDate,
+  }) {
     return showModalBottomSheet<dynamic>(
       context: context,
       builder: (context) => BlocProvider(
@@ -19,6 +20,7 @@ class AddTodoPage {
           TodoRepository(db: context.read<Database>()),
           CharacterRepository(db: context.read<Database>()),
           characterId,
+          initialDueDate: initialDueDate,
         ),
         child: AddTodoView(
           onTodoAdded: onTodoAdded,

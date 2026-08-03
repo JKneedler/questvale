@@ -25,14 +25,24 @@ class QvSegmentedControl<T> extends StatelessWidget {
     required this.items,
     required this.selectedValue,
     required this.onChanged,
+    this.itemSize = 76,
+    this.highlightWidthFraction,
   });
 
   final List<QvSegmentedControlItem<T>> items;
   final T selectedValue;
   final ValueChanged<T> onChanged;
 
-  static const double _bandHeight = 76;
-  static const double _boxSize = 76;
+  /// Width/height of each square selection box, and the row's overall
+  /// height — shrink this for text-only item lists (no [QvSegmentedControlItem.icon])
+  /// so the row doesn't carry empty space sized for an icon it no longer shows.
+  final double itemSize;
+
+  /// Widens the sliding highlight box to this fraction of each item's
+  /// column width (0-1) instead of the default square sized to [itemSize].
+  /// Leave null for the square highlight used elsewhere (Difficulty,
+  /// Priority).
+  final double? highlightWidthFraction;
 
   @override
   Widget build(BuildContext context) {
@@ -44,11 +54,14 @@ class QvSegmentedControl<T> extends StatelessWidget {
       type: QvInsetBackgroundType.secondary,
       width: double.infinity,
       child: SizedBox(
-        height: _bandHeight,
+        height: itemSize,
         child: LayoutBuilder(
           builder: (context, constraints) {
             final itemWidth = constraints.maxWidth / items.length;
-            final boxOffset = (itemWidth - _boxSize) / 2;
+            final boxWidth = highlightWidthFraction != null
+                ? itemWidth * highlightWidthFraction!
+                : itemSize;
+            final boxOffset = (itemWidth - boxWidth) / 2;
             return Stack(
               children: [
                 if (selectedIndex >= 0)
@@ -57,12 +70,12 @@ class QvSegmentedControl<T> extends StatelessWidget {
                     curve: Curves.easeInOut,
                     left: itemWidth * selectedIndex + boxOffset,
                     top: 0,
-                    width: _boxSize,
-                    height: _boxSize,
+                    width: boxWidth,
+                    height: itemSize,
                     child: QvButton(
                       buttonColor: ButtonColor.primary,
-                      width: _boxSize,
-                      height: _boxSize,
+                      width: boxWidth,
+                      height: itemSize,
                       padding: EdgeInsets.zero,
                       child: const SizedBox.shrink(),
                     ),
@@ -80,8 +93,8 @@ class QvSegmentedControl<T> extends StatelessWidget {
                         behavior: HitTestBehavior.translucent,
                         child: Center(
                           child: SizedBox(
-                            width: _boxSize,
-                            height: _boxSize,
+                            width: itemSize,
+                            height: itemSize,
                             child: Center(
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,

@@ -15,10 +15,15 @@ class AddTodoCubit extends Cubit<AddTodoState> {
   final CharacterRepository characterRepository;
   final String characterId;
 
-  AddTodoCubit(this.todoRepository, this.characterRepository, this.characterId)
-      : super(AddTodoState(
+  AddTodoCubit(
+    this.todoRepository,
+    this.characterRepository,
+    this.characterId, {
+    DateTime? initialDueDate,
+  }) : super(AddTodoState(
           id: const Uuid().v4(),
           characterId: characterId,
+          dueDate: initialDueDate,
         )) {
     loadAvailableTags();
   }
