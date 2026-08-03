@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:questvale/helpers/data_formatters.dart';
+import 'package:questvale/widgets/qv_button.dart';
+import 'package:questvale/widgets/qv_inset_background.dart';
 
 /// Month calendar grid shared between the todos calendar tab and the
 /// due-date editor. Fully controlled — no internal state — so each caller
@@ -27,9 +29,20 @@ class QvMonthCalendar extends StatelessWidget {
 
   static const _weekdayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
+  // firstDate/lastDate often arrive as DateTime.now() — carrying today's
+  // time-of-day rather than midnight — while each day cell below is built
+  // at exactly midnight. Comparing those directly would mark today itself
+  // as before firstDate (and thus disabled) for the rest of the day, so
+  // both bounds are truncated to day-precision before comparing.
   bool _isOutOfRange(DateTime date) {
-    if (firstDate != null && date.isBefore(firstDate!)) return true;
-    if (lastDate != null && date.isAfter(lastDate!)) return true;
+    if (firstDate != null) {
+      final first = DateTime(firstDate!.year, firstDate!.month, firstDate!.day);
+      if (date.isBefore(first)) return true;
+    }
+    if (lastDate != null) {
+      final last = DateTime(lastDate!.year, lastDate!.month, lastDate!.day);
+      if (date.isAfter(last)) return true;
+    }
     return false;
   }
 
@@ -52,23 +65,34 @@ class QvMonthCalendar extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              GestureDetector(
+              QvButton(
+                width: 36,
+                height: 36,
+                buttonColor: ButtonColor.surfaceContainer,
                 onTap: () => onMonthChanged(-1),
                 child: Icon(Symbols.chevron_left,
-                    color: colorScheme.onSurface, size: 28),
+                    color: colorScheme.onSurface, size: 20),
               ),
-              Text(
-                DataFormatters.formatMonthYear(displayedMonth),
-                style: TextStyle(
-                  color: colorScheme.onSurface,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+              QvInsetBackground(
+                type: QvInsetBackgroundType.secondary,
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 4),
+                child: Text(
+                  DataFormatters.formatMonthYear(displayedMonth),
+                  style: TextStyle(
+                    color: colorScheme.onSurface,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-              GestureDetector(
+              QvButton(
+                width: 36,
+                height: 36,
+                buttonColor: ButtonColor.surfaceContainer,
                 onTap: () => onMonthChanged(1),
                 child: Icon(Symbols.chevron_right,
-                    color: colorScheme.onSurface, size: 28),
+                    color: colorScheme.onSurface, size: 20),
               ),
             ],
           ),
@@ -114,50 +138,55 @@ class QvMonthCalendar extends StatelessWidget {
             final hasMark = markedDates.contains(date);
             final isDisabled = _isOutOfRange(date);
 
+            final dayContent = Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '$dayNum',
+                  style: TextStyle(
+                    color: isDisabled
+                        ? colorScheme.onSurface.withValues(alpha: 0.25)
+                        : isSelected
+                            ? colorScheme.onPrimary
+                            : colorScheme.onSurface,
+                    fontSize: 14,
+                    fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
+                SizedBox(
+                  height: 5,
+                  child: hasMark
+                      ? Icon(
+                          Symbols.circle,
+                          size: 5,
+                          fill: 1,
+                          color: isSelected
+                              ? colorScheme.onPrimary
+                              : colorScheme.primary,
+                        )
+                      : null,
+                ),
+              ],
+            );
+
             return GestureDetector(
+              behavior: HitTestBehavior.opaque,
               onTap: isDisabled ? null : () => onDateSelected(date),
               child: Padding(
                 padding: const EdgeInsets.all(2),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: isSelected ? colorScheme.primary : null,
-                    shape: BoxShape.circle,
-                    border: isToday && !isSelected
-                        ? Border.all(color: colorScheme.primary, width: 1.5)
-                        : null,
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        '$dayNum',
-                        style: TextStyle(
-                          color: isDisabled
-                              ? colorScheme.onSurface.withValues(alpha: 0.25)
-                              : isSelected
-                                  ? colorScheme.onPrimary
-                                  : colorScheme.onSurface,
-                          fontSize: 14,
-                          fontWeight:
-                              isToday ? FontWeight.bold : FontWeight.normal,
-                        ),
-                      ),
-                      SizedBox(
-                        height: 5,
-                        child: hasMark
-                            ? Icon(
-                                Symbols.circle,
-                                size: 5,
-                                fill: 1,
-                                color: isSelected
-                                    ? colorScheme.onPrimary
-                                    : colorScheme.primary,
-                              )
-                            : null,
-                      ),
-                    ],
-                  ),
-                ),
+                child: isSelected
+                    ? QvButton(
+                        padding: EdgeInsets.zero,
+                        child: Center(child: dayContent),
+                      )
+                    : isToday
+                        ? QvInsetBackground(
+                            type: QvInsetBackgroundType.secondary,
+                            padding: EdgeInsets.zero,
+                            child: Center(child: dayContent),
+                          )
+                        : Center(child: dayContent),
               ),
             );
           },
