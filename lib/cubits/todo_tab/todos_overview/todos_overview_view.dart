@@ -5,12 +5,15 @@ import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_cubit.da
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_item.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_state.dart';
 import 'package:questvale/cubits/todo_tab/add_todo/add_todo_page.dart';
+import 'package:questvale/cubits/todo_tab/todos_calendar/todos_calendar_cubit.dart';
 import 'package:questvale/cubits/todo_tab/todos_calendar/todos_calendar_view.dart';
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/tag.dart';
 import 'package:questvale/data/models/todo.dart';
 import 'package:questvale/widgets/qv_app_bar.dart';
+import 'package:questvale/widgets/qv_background.dart';
 import 'package:questvale/widgets/qv_button.dart';
+import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
 
 class TodosOverviewView extends StatelessWidget {
@@ -28,10 +31,15 @@ class TodosOverviewView extends StatelessWidget {
         onTap: () async {
           Character? character = todoCubit.state.character;
           if (character != null) {
+            final isCalendarView =
+                todoCubit.state.viewMode == TodosViewMode.calendar;
             await AddTodoPage.showModal(
               context,
               () => todoCubit.loadCharacter(),
               character.id,
+              initialDueDate: isCalendarView
+                  ? context.read<TodosCalendarCubit>().state.selectedDate
+                  : null,
             );
           }
         },
@@ -58,7 +66,7 @@ class TodosOverviewView extends StatelessWidget {
               button: '⋮',
               onTap: () => showModalBottomSheet(
                 context: context,
-                backgroundColor: colorScheme.surfaceContainer,
+                backgroundColor: Colors.transparent,
                 builder: (context) => BlocProvider.value(
                   value: todoCubit,
                   child: const TodosOverviewMenuSheet(),
@@ -77,16 +85,18 @@ class TodosOverviewView extends StatelessWidget {
                   return const TodosCalendarBody();
                 }
                 final visibleTodos = todosOverviewState.visibleTodos;
-                return ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: visibleTodos.length,
-                    padding: const EdgeInsets.only(
-                        left: 6, right: 6, top: 10, bottom: 10),
-                    itemBuilder: (context, index) {
-                      final todo = visibleTodos[index];
-                      return TodosOverviewItem(
-                          key: ValueKey(todo.id), todo: todo);
-                    });
+                return QvFadingScrollable(
+                  child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: visibleTodos.length,
+                      padding: const EdgeInsets.only(
+                          left: 6, right: 6, top: 10, bottom: 10),
+                      itemBuilder: (context, index) {
+                        final todo = visibleTodos[index];
+                        return TodosOverviewItem(
+                            key: ValueKey(todo.id), todo: todo);
+                      }),
+                );
               }),
             ),
           ),
@@ -127,50 +137,60 @@ class TodosOverviewMenuSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
     final cubit = context.read<TodosOverviewCubit>();
-    return SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _MenuRow(
-              icon: Symbols.filter_alt,
-              label: 'Filter',
-              onTap: () => showModalBottomSheet(
-                    context: context,
-                    backgroundColor: colorScheme.surfaceContainer,
-                    builder: (context) => BlocProvider.value(
-                      value: cubit,
-                      child: const TodosFilterSheet(),
-                    ),
-                  )),
-          _MenuRow(
-              icon: Symbols.sort,
-              label: 'Sort',
-              onTap: () => showModalBottomSheet(
-                    context: context,
-                    backgroundColor: colorScheme.surfaceContainer,
-                    builder: (context) => BlocProvider.value(
-                      value: cubit,
-                      child: const TodosSortSheet(),
-                    ),
-                  )),
-          _MenuRow(
-              icon: cubit.state.viewMode == TodosViewMode.calendar
-                  ? Symbols.list
-                  : Symbols.calendar_month,
-              label: cubit.state.viewMode == TodosViewMode.calendar
-                  ? 'Swap to List View'
-                  : 'Swap to Calendar View',
-              onTap: () {
-                cubit.setViewMode(
-                  cubit.state.viewMode == TodosViewMode.calendar
-                      ? TodosViewMode.list
-                      : TodosViewMode.calendar,
-                );
-                Navigator.pop(context);
-              }),
-        ],
+    return QvBackground(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _MenuRow(
+                icon: Symbols.filter_alt,
+                label: 'Filter',
+                hint: cubit.state.filter == TodoFilter.none
+                    ? null
+                    : cubit.state.filter.name,
+                onTap: () => showModalBottomSheet(
+                      context: context,
+                      backgroundColor: Colors.transparent,
+                      builder: (context) => BlocProvider.value(
+                        value: cubit,
+                        child: const TodosFilterSheet(),
+                      ),
+                    )),
+            _MenuRow(
+                icon: Symbols.sort,
+                label: 'Sort',
+                hint: cubit.state.sort == TodoSort.dueDate
+                    ? null
+                    : cubit.state.sort.name,
+                onTap: () => showModalBottomSheet(
+                      context: context,
+                      backgroundColor: Colors.transparent,
+                      builder: (context) => BlocProvider.value(
+                        value: cubit,
+                        child: const TodosSortSheet(),
+                      ),
+                    )),
+            _MenuRow(
+                icon: cubit.state.viewMode == TodosViewMode.calendar
+                    ? Symbols.list
+                    : Symbols.calendar_month,
+                label: cubit.state.viewMode == TodosViewMode.calendar
+                    ? 'Swap to List View'
+                    : 'Swap to Calendar View',
+                onTap: () {
+                  cubit.setViewMode(
+                    cubit.state.viewMode == TodosViewMode.calendar
+                        ? TodosViewMode.list
+                        : TodosViewMode.calendar,
+                  );
+                  Navigator.pop(context);
+                }),
+          ],
+        ),
       ),
     );
   }
@@ -196,69 +216,76 @@ class _TodosFilterSheetState extends State<TodosFilterSheet> {
       Navigator.of(context).popUntil((route) => route.isFirst);
     }
 
-    return SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final f in [
-            TodoFilter.none,
-            TodoFilter.today,
-            TodoFilter.thisWeek,
-            TodoFilter.all,
-            TodoFilter.completed,
-          ])
+    return QvBackground(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final f in [
+              TodoFilter.none,
+              TodoFilter.today,
+              TodoFilter.thisWeek,
+              TodoFilter.all,
+              TodoFilter.completed,
+            ])
+              _FilterOptionRow(
+                label: f.name,
+                isSelected: state.filter == f,
+                onTap: () => apply(f),
+              ),
             _FilterOptionRow(
-              label: f.name,
-              isSelected: state.filter == f,
-              onTap: () => apply(f),
+              label: TodoFilter.byTag.name,
+              isSelected: state.filter == TodoFilter.byTag,
+              onTap: () => setState(() => expanded =
+                  expanded == TodoFilter.byTag ? null : TodoFilter.byTag),
             ),
-          _FilterOptionRow(
-            label: TodoFilter.byTag.name,
-            isSelected: state.filter == TodoFilter.byTag,
-            onTap: () => setState(() => expanded =
-                expanded == TodoFilter.byTag ? null : TodoFilter.byTag),
-          ),
-          if (expanded == TodoFilter.byTag)
-            Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20, bottom: 12),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: state.availableTags
-                    .map((tag) => _ChoiceChip(
-                          label: tag.name,
-                          isSelected: state.filterTag?.characterTagId ==
-                              tag.characterTagId,
-                          onTap: () => apply(TodoFilter.byTag, tag: tag),
-                        ))
-                    .toList(),
+            if (expanded == TodoFilter.byTag)
+              Padding(
+                padding:
+                    const EdgeInsets.only(left: 20, right: 20, bottom: 12),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: state.availableTags
+                      .map((tag) => _ChoiceChip(
+                            label: tag.name,
+                            isSelected: state.filterTag?.characterTagId ==
+                                tag.characterTagId,
+                            onTap: () => apply(TodoFilter.byTag, tag: tag),
+                          ))
+                      .toList(),
+                ),
               ),
+            _FilterOptionRow(
+              label: TodoFilter.byPriority.name,
+              isSelected: state.filter == TodoFilter.byPriority,
+              onTap: () => setState(() => expanded =
+                  expanded == TodoFilter.byPriority
+                      ? null
+                      : TodoFilter.byPriority),
             ),
-          _FilterOptionRow(
-            label: TodoFilter.byPriority.name,
-            isSelected: state.filter == TodoFilter.byPriority,
-            onTap: () => setState(() => expanded =
-                expanded == TodoFilter.byPriority
-                    ? null
-                    : TodoFilter.byPriority),
-          ),
-          if (expanded == TodoFilter.byPriority)
-            Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20, bottom: 12),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: PriorityLevel.values
-                    .map((p) => _ChoiceChip(
-                          label: p.name,
-                          isSelected: state.filterPriority == p,
-                          onTap: () =>
-                              apply(TodoFilter.byPriority, priority: p),
-                        ))
-                    .toList(),
+            if (expanded == TodoFilter.byPriority)
+              Padding(
+                padding:
+                    const EdgeInsets.only(left: 20, right: 20, bottom: 12),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: PriorityLevel.values
+                      .map((p) => _ChoiceChip(
+                            label: p.name,
+                            isSelected: state.filterPriority == p,
+                            onTap: () =>
+                                apply(TodoFilter.byPriority, priority: p),
+                          ))
+                      .toList(),
+                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -271,20 +298,25 @@ class TodosSortSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final cubit = context.read<TodosOverviewCubit>();
     final state = cubit.state;
-    return SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final s in TodoSort.values)
-            _FilterOptionRow(
-              label: s.name,
-              isSelected: state.sort == s,
-              onTap: () {
-                cubit.setSort(s);
-                Navigator.of(context).popUntil((route) => route.isFirst);
-              },
-            ),
-        ],
+    return QvBackground(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final s in TodoSort.values)
+              _FilterOptionRow(
+                label: s.name,
+                isSelected: state.sort == s,
+                onTap: () {
+                  cubit.setSort(s);
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                },
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -370,8 +402,15 @@ class _MenuRow extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
+  /// Current non-default value shown at the row's trailing edge (e.g. the
+  /// active filter/sort) — null hides it, leaving just the plain label.
+  final String? hint;
+
   const _MenuRow(
-      {required this.icon, required this.label, required this.onTap});
+      {required this.icon,
+      required this.label,
+      required this.onTap,
+      this.hint});
 
   @override
   Widget build(BuildContext context) {
@@ -384,10 +423,20 @@ class _MenuRow extends StatelessWidget {
           children: [
             Icon(icon, color: colorScheme.onSurface, size: 20),
             const SizedBox(width: 14),
-            Text(
-              label,
-              style: TextStyle(color: colorScheme.onSurface, fontSize: 16),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(color: colorScheme.onSurface, fontSize: 16),
+              ),
             ),
+            if (hint != null)
+              Text(
+                hint!,
+                style: TextStyle(
+                  color: colorScheme.onSurface.withValues(alpha: 0.5),
+                  fontSize: 13,
+                ),
+              ),
           ],
         ),
       ),
