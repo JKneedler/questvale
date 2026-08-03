@@ -37,8 +37,6 @@ class AddTodoCubit extends Cubit<AddTodoState> {
             .map((tag) => Tag(
                   characterTagId: tag.id,
                   name: tag.name,
-                  colorIndex: tag.colorIndex,
-                  iconIndex: tag.iconIndex,
                 ))
             .toList(),
       ),

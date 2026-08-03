@@ -15,14 +15,6 @@ class CreateCharacterTagCubit extends Cubit<CreateCharacterTagState> {
     emit(state.copyWith(name: value));
   }
 
-  void colorIndexChanged(int value) {
-    emit(state.copyWith(colorIndex: value));
-  }
-
-  void iconIndexChanged(int value) {
-    emit(state.copyWith(iconIndex: value));
-  }
-
   Future<void> submit() async {
     if (state.name.isEmpty) {
       emit(state.copyWith(
@@ -39,8 +31,6 @@ class CreateCharacterTagCubit extends Cubit<CreateCharacterTagState> {
         id: const Uuid().v4(),
         characterId: characterId,
         name: state.name,
-        colorIndex: state.colorIndex,
-        iconIndex: state.iconIndex,
       );
 
       await characterRepository.createCharacterTag(tag);

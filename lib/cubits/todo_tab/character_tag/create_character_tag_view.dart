@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/todo_tab/character_tag/create_character_tag_cubit.dart';
 import 'package:questvale/cubits/todo_tab/character_tag/create_character_tag_state.dart';
-import 'package:questvale/data/models/character_tag.dart';
-import 'package:questvale/widgets/qv_fading_scrollable.dart';
 
 class CreateCharacterTagView extends StatelessWidget {
   final void Function() onTagCreated;
@@ -69,136 +67,24 @@ class CreateCharacterTagView extends StatelessWidget {
               const SizedBox(height: 16),
               SizedBox(
                 height: 36,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        key: Key('createCharacterTagView_name_textField'),
-                        decoration: InputDecoration(
-                          hintText: 'Tag Name',
-                          hintStyle: TextStyle(
-                              color: colorScheme.onPrimaryFixedVariant),
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.zero,
-                          isDense: true,
-                        ),
-                        maxLines: 1,
-                        style: TextStyle(
-                          fontSize: 20,
-                          color: colorScheme.onPrimaryContainer,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        onChanged: (value) => context
-                            .read<CreateCharacterTagCubit>()
-                            .nameChanged(value),
-                      ),
-                    ),
-                    Container(
-                      height: 40,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      decoration: BoxDecoration(
-                        color: CharacterTag.availableColors[state.colorIndex],
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        spacing: 2,
-                        children: [
-                          Icon(
-                            CharacterTag.availableIcons[state.iconIndex],
-                            color: colorScheme.onPrimary,
-                            size: 18,
-                          ),
-                          Text(
-                            state.name,
-                            style: TextStyle(
-                              color: colorScheme.onPrimary,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                height: 50,
-                child: QvFadingScrollable(
-                  direction: Axis.horizontal,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: CharacterTag.availableColors.length,
-                    itemBuilder: (context, index) {
-                      final color = CharacterTag.availableColors[index];
-                      final isSelected = index == state.colorIndex;
-                      return GestureDetector(
-                        onTap: () => context
-                            .read<CreateCharacterTagCubit>()
-                            .colorIndexChanged(index),
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          margin: const EdgeInsets.only(right: 8),
-                          decoration: BoxDecoration(
-                            color: color,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: isSelected
-                                  ? colorScheme.onPrimary
-                                  : colorScheme.surfaceContainerLow,
-                              width: 3,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
+                child: TextField(
+                  key: Key('createCharacterTagView_name_textField'),
+                  decoration: InputDecoration(
+                    hintText: 'Tag Name',
+                    hintStyle:
+                        TextStyle(color: colorScheme.onPrimaryFixedVariant),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
+                    isDense: true,
                   ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                height: 50,
-                child: QvFadingScrollable(
-                  direction: Axis.horizontal,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: CharacterTag.availableIcons.length,
-                    itemBuilder: (context, index) {
-                      final icon = CharacterTag.availableIcons[index];
-                      final isSelected = index == state.iconIndex;
-                      return GestureDetector(
-                        onTap: () => context
-                            .read<CreateCharacterTagCubit>()
-                            .iconIndexChanged(index),
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          margin: const EdgeInsets.only(right: 8),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? colorScheme.primary
-                                : colorScheme.surfaceContainerLow,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: isSelected
-                                  ? Colors.transparent
-                                  : colorScheme.onPrimaryFixedVariant,
-                              width: 1,
-                            ),
-                          ),
-                          child: Icon(
-                            icon,
-                            color: isSelected
-                                ? colorScheme.onPrimary
-                                : colorScheme.onPrimaryFixedVariant,
-                          ),
-                        ),
-                      );
-                    },
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: colorScheme.onPrimaryContainer,
+                    fontWeight: FontWeight.w500,
                   ),
+                  onChanged: (value) =>
+                      context.read<CreateCharacterTagCubit>().nameChanged(value),
                 ),
               ),
             ],

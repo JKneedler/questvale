@@ -165,6 +165,20 @@ class QuestvaleDB {
         await db.execute(
             'ALTER TABLE ${Todo.todoTableName} ADD COLUMN ${Todo.monthlyRepeatModeColumnName} INTEGER DEFAULT 0');
       }
-    }, version: 9);
+      if (oldVersion < 10) {
+        // Tags were simplified to name-only; colorIndex/iconIndex only
+        // exist on installs that had the table pre-simplification (a
+        // fresh IF NOT EXISTS create above already omits them).
+        final columns = await db.rawQuery(
+            'PRAGMA table_info(${CharacterTag.characterTagTableName})');
+        final hasColorIndex = columns.any((c) => c['name'] == 'colorIndex');
+        if (hasColorIndex) {
+          await db.execute(
+              'ALTER TABLE ${CharacterTag.characterTagTableName} DROP COLUMN colorIndex');
+          await db.execute(
+              'ALTER TABLE ${CharacterTag.characterTagTableName} DROP COLUMN iconIndex');
+        }
+      }
+    }, version: 10);
   }
 }

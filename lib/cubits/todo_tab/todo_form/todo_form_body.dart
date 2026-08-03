@@ -5,7 +5,6 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:questvale/cubits/todo_tab/character_tag/create_character_tag_page.dart';
 import 'package:questvale/cubits/todo_tab/time_picker/time_picker_cubit.dart';
 import 'package:questvale/cubits/todo_tab/time_picker/time_picker_view.dart';
-import 'package:questvale/data/models/character_tag.dart';
 import 'package:questvale/data/models/tag.dart';
 import 'package:questvale/data/models/todo.dart';
 import 'package:questvale/data/models/todo_reminder.dart';
@@ -13,12 +12,10 @@ import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/data_formatters.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_check_box.dart';
-import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
 import 'package:questvale/widgets/qv_month_calendar.dart';
 import 'package:questvale/widgets/qv_number_wheel_picker.dart';
 import 'package:questvale/widgets/qv_segmented_control.dart';
-import 'package:questvale/widgets/qv_tag_chip.dart';
 import 'package:questvale/widgets/qv_textfield.dart';
 import 'package:questvale/widgets/qv_weekday_selector.dart';
 
@@ -319,42 +316,7 @@ class _TodoFormBodyState extends State<TodoFormBody> {
 
         // Tags section
         const SizedBox(height: 16),
-        _buildSectionTitle(context, 'Tags'),
-        const SizedBox(height: 8),
-        SizedBox(
-          height: 30,
-          child: QvFadingScrollable(
-            direction: Axis.horizontal,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: fields.availableTags.length + 1,
-              itemBuilder: (context, index) {
-                if (index == fields.availableTags.length) {
-                  return TagChip(
-                    icon: Icons.add,
-                    name: 'Tag',
-                    color: Colors.transparent,
-                    onPressed: () => CreateCharacterTagPage.showModal(
-                      context,
-                      widget.characterId,
-                      callbacks.onTagsReloaded,
-                    ),
-                    margin: const EdgeInsets.only(left: 2, right: 50),
-                  );
-                }
-                final tag = fields.availableTags[index];
-                return TagChip(
-                  icon: CharacterTag.availableIcons[tag.iconIndex],
-                  name: tag.name,
-                  color: CharacterTag.availableColors[tag.colorIndex],
-                  isSelected: fields.selectedTags
-                      .any((t) => t.characterTagId == tag.characterTagId),
-                  onPressed: () => callbacks.onTagToggled(tag),
-                );
-              },
-            ),
-          ),
-        ),
+        _buildTagsSection(context, fields, callbacks),
         const SizedBox(height: 24),
 
         // Details section
@@ -889,15 +851,86 @@ class _TodoFormBodyState extends State<TodoFormBody> {
     );
   }
 
-  Widget _buildSectionTitle(BuildContext context, String title) {
+  Widget _buildTagsSection(BuildContext context, TodoFormFields fields,
+      TodoFormCallbacks callbacks) {
+    return _buildSelectableSection(
+      context,
+      label: 'Tags',
+      child: QvInsetBackground(
+        type: QvInsetBackgroundType.secondary,
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        child: Column(
+          children: [
+            for (final tag in fields.availableTags)
+              _buildTagOptionRow(context, tag, fields, callbacks),
+            _buildAddTagRow(context, callbacks),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTagOptionRow(BuildContext context, Tag tag,
+      TodoFormFields fields, TodoFormCallbacks callbacks) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final isChecked =
+        fields.selectedTags.any((t) => t.characterTagId == tag.characterTagId);
+
+    return GestureDetector(
+      onTap: () => callbacks.onTagToggled(tag),
+      behavior: HitTestBehavior.translucent,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                tag.name,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: isChecked ? FontWeight.bold : FontWeight.w500,
+                  color: isChecked
+                      ? colorScheme.primary
+                      : colorScheme.onSurface.withValues(alpha: 0.5),
+                ),
+              ),
+            ),
+            if (isChecked)
+              Icon(Symbols.check, color: colorScheme.primary, size: 18),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAddTagRow(BuildContext context, TodoFormCallbacks callbacks) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
 
-    return Text(
-      title,
-      style: TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.bold,
-        color: colorScheme.onSurface,
+    return GestureDetector(
+      onTap: () => CreateCharacterTagPage.showModal(
+        context,
+        widget.characterId,
+        callbacks.onTagsReloaded,
+      ),
+      behavior: HitTestBehavior.translucent,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Icon(Symbols.add,
+                color: colorScheme.onSurface.withValues(alpha: 0.5), size: 16),
+            const SizedBox(width: 6),
+            Text(
+              'New Tag',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: colorScheme.onSurface.withValues(alpha: 0.5),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

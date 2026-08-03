@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_cubit.dart';
-import 'package:questvale/data/models/character_tag.dart';
-import 'package:questvale/data/models/tag.dart';
 import 'package:questvale/helpers/data_formatters.dart';
 import 'package:questvale/cubits/todo_tab/edit_todo/edit_todo_page.dart';
 import 'package:questvale/widgets/qv_ap_toast.dart';
@@ -123,13 +121,6 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
                                   colorScheme.onSurface.withValues(alpha: 0.5),
                             ),
                           ),
-                        if (widget.todo.tags.isNotEmpty)
-                          Wrap(
-                            spacing: 6,
-                            children: widget.todo.tags
-                                .map((tag) => TodoItemTagChip(tag: tag))
-                                .toList(),
-                          ),
                         Row(
                           children: [
                             if (widget.todo.isHabit)
@@ -216,33 +207,6 @@ class MultiCheckIndicator extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class TodoItemTagChip extends StatelessWidget {
-  final Tag tag;
-  const TodoItemTagChip({super.key, required this.tag});
-
-  @override
-  Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      width: 46,
-      height: 24,
-      decoration: BoxDecoration(
-        color: Color.lerp(colorScheme.surfaceContainer,
-            CharacterTag.availableColors[tag.colorIndex], 0.6),
-        borderRadius: BorderRadius.circular(100),
-      ),
-      child: Center(
-        child: Icon(
-          CharacterTag.availableIcons[tag.iconIndex],
-          color: Color.lerp(
-              colorScheme.onPrimary, colorScheme.onPrimaryFixedVariant, 0.3),
-          size: 17,
-        ),
       ),
     );
   }

@@ -53,8 +53,6 @@ class EditTodoCubit extends Cubit<EditTodoState> {
         .map((ct) => Tag(
               characterTagId: ct.id,
               name: ct.name,
-              colorIndex: ct.colorIndex,
-              iconIndex: ct.iconIndex,
             ))
         .toList();
     emit(state.copyWith(availableTags: tags));

@@ -161,8 +161,6 @@ class TodoRepository {
       (map) => Tag(
         characterTagId: map[CharacterTag.idColumnName] as String,
         name: map[CharacterTag.nameColumnName] as String,
-        colorIndex: map[CharacterTag.colorIndexColumnName] as int,
-        iconIndex: map[CharacterTag.iconIndexColumnName] as int,
       ),
     );
     return tags.toList();
