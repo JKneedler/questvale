@@ -69,10 +69,6 @@ class EditTodoCubit extends Cubit<EditTodoState> {
     await loadTags();
   }
 
-  void toggleCompletion() {
-    emit(state.copyWith(isCompleted: !state.isCompleted));
-  }
-
   void nameChanged(String name) {
     emit(state.copyWith(name: name));
   }
@@ -87,8 +83,8 @@ class EditTodoCubit extends Cubit<EditTodoState> {
   // midnight.
   void dueDateDaySelected(DateTime date) {
     final merged = state.hasTime && state.dueDate != null
-        ? state.dueDate!.copyWith(
-            year: date.year, month: date.month, day: date.day)
+        ? state.dueDate!
+            .copyWith(year: date.year, month: date.month, day: date.day)
         : date;
     emit(state.copyWith(dueDate: merged));
   }

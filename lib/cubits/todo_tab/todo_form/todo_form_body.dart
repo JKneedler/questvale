@@ -38,7 +38,6 @@ class TodoFormFields {
     this.monthlyRepeatMode = MonthlyRepeatMode.dayOfMonth,
     required this.availableTags,
     required this.selectedTags,
-    this.isCompleted = false,
     this.currentStreak = 0,
   });
 
@@ -57,7 +56,6 @@ class TodoFormFields {
   final MonthlyRepeatMode monthlyRepeatMode;
   final List<Tag> availableTags;
   final List<Tag> selectedTags;
-  final bool isCompleted;
   final int currentStreak;
 }
 
@@ -117,21 +115,12 @@ class TodoFormBody extends StatefulWidget {
     required this.characterId,
     required this.fields,
     required this.callbacks,
-    this.showCompletionToggle = true,
-    this.onCompletionToggled,
     this.autofocusName = false,
   });
 
   final String characterId;
   final TodoFormFields fields;
   final TodoFormCallbacks callbacks;
-
-  /// The edit-todo form shows a completion checkbox next to the title;
-  /// creating a brand-new todo has nothing to mark complete yet, so the
-  /// add-todo form hides it instead of restructuring the row around an
-  /// always-unchecked, meaningless toggle.
-  final bool showCompletionToggle;
-  final VoidCallback? onCompletionToggled;
 
   /// Opens the keyboard on the title field as soon as the sheet appears —
   /// only wanted when creating a new todo, since editing an existing one
@@ -142,10 +131,12 @@ class TodoFormBody extends StatefulWidget {
   State<TodoFormBody> createState() => _TodoFormBodyState();
 }
 
-class _TodoFormBodyState extends State<TodoFormBody> {
+class _TodoFormBodyState extends State<TodoFormBody>
+    with WidgetsBindingObserver {
   late final TextEditingController _nameController;
   late final TextEditingController _descriptionController;
   late final TextEditingController _newTagController;
+  late final FocusNode _newTagFocusNode;
 
   // Local UI-only state for the Due Date / Time / Reminders rows'
   // expand-in-place pickers — never persisted, so a fresh TodoFormBody (new
@@ -183,7 +174,14 @@ class _TodoFormBodyState extends State<TodoFormBody> {
   // current scroll position — so a section that's already fully visible
   // (e.g. collapsing a row further down freed up space above it) never gets
   // yanked upward to satisfy the alignment.
-  void _scrollExpandedSectionIntoView(GlobalKey key) {
+  //
+  // extraOffset scrolls further still than that plain bottom-alignment —
+  // needed when the keyboard is open, since the Scrollable's own viewport
+  // extent doesn't shrink for it (TodoFormSheet just pads the *content* so
+  // there's room to scroll into, per the SizedBox there); without this, the
+  // "bottom edge" target computed against the full, keyboard-unaware
+  // viewport still lands underneath the keyboard.
+  void _scrollExpandedSectionIntoView(GlobalKey key, {double extraOffset = 0}) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final sectionContext = key.currentContext;
       if (sectionContext == null) return;
@@ -193,10 +191,9 @@ class _TodoFormBodyState extends State<TodoFormBody> {
       if (scrollable == null) return;
       final position = scrollable.position;
       final viewport = RenderAbstractViewport.of(renderObject);
-      final targetOffset = viewport
-          .getOffsetToReveal(renderObject, 1.0)
-          .offset
-          .clamp(position.minScrollExtent, position.maxScrollExtent);
+      final targetOffset =
+          (viewport.getOffsetToReveal(renderObject, 1.0).offset + extraOffset)
+              .clamp(position.minScrollExtent, position.maxScrollExtent);
       if (targetOffset > position.pixels) {
         position.animateTo(
           targetOffset,
@@ -214,8 +211,35 @@ class _TodoFormBodyState extends State<TodoFormBody> {
     _descriptionController =
         TextEditingController(text: widget.fields.description);
     _newTagController = TextEditingController();
+    _newTagFocusNode = FocusNode();
+    // The New Tag field sits at the very bottom of the Tags section (the
+    // last section in the form), so the keyboard covers it unless the sheet
+    // scrolls to compensate. Focus alone isn't enough to know how far to
+    // scroll — the soft keyboard's show animation shrinks the scrollable's
+    // viewport over the following frames, so didChangeMetrics (below)
+    // re-checks once that resize has actually landed.
+    _newTagFocusNode.addListener(() {
+      if (_newTagFocusNode.hasFocus) {
+        _scrollExpandedSectionIntoView(_tagsSectionKey,
+            extraOffset: MediaQuery.of(context).viewInsets.bottom);
+      }
+    });
+    WidgetsBinding.instance.addObserver(this);
     final base = widget.fields.dueDate ?? DateTime.now();
     _displayedMonth = DateTime(base.year, base.month);
+  }
+
+  @override
+  void didChangeMetrics() {
+    // Fires as the keyboard's show/hide animation actually changes the
+    // available viewport height — re-run the scroll-into-view then, not
+    // just at the moment focus is gained, so the New Tag field ends up
+    // above the keyboard once it's done animating in rather than wherever
+    // it happened to land at the pre-keyboard scroll position.
+    if (_newTagFocusNode.hasFocus) {
+      _scrollExpandedSectionIntoView(_tagsSectionKey,
+          extraOffset: MediaQuery.of(context).viewInsets.bottom);
+    }
   }
 
   @override
@@ -248,9 +272,11 @@ class _TodoFormBodyState extends State<TodoFormBody> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _nameController.dispose();
     _descriptionController.dispose();
     _newTagController.dispose();
+    _newTagFocusNode.dispose();
     super.dispose();
   }
 
@@ -272,17 +298,6 @@ class _TodoFormBodyState extends State<TodoFormBody> {
         // Title
         Row(
           children: [
-            if (widget.showCompletionToggle) ...[
-              GestureDetector(
-                onTap: widget.onCompletionToggled,
-                child: QvCheckBox(
-                  width: 32,
-                  height: 32,
-                  isChecked: fields.isCompleted,
-                ),
-              ),
-              const SizedBox(width: 12),
-            ],
             Expanded(
               child: QvInsetBackground(
                 type: QvInsetBackgroundType.secondary,
@@ -932,6 +947,7 @@ class _TodoFormBodyState extends State<TodoFormBody> {
           Expanded(
             child: TextField(
               controller: _newTagController,
+              focusNode: _newTagFocusNode,
               onChanged: (_) => setState(() {}),
               onSubmitted: (_) => _submitNewTag(callbacks),
               textInputAction: TextInputAction.done,
@@ -971,10 +987,12 @@ class _TodoFormBodyState extends State<TodoFormBody> {
   Future<void> _submitNewTag(TodoFormCallbacks callbacks) async {
     final name = _newTagController.text.trim();
     if (name.isEmpty) return;
+    final keyboardInset = MediaQuery.of(context).viewInsets.bottom;
     _newTagController.clear();
     setState(() {});
     await callbacks.onTagCreated(name);
-    _scrollExpandedSectionIntoView(_tagsSectionKey);
+    if (!mounted) return;
+    _scrollExpandedSectionIntoView(_tagsSectionKey, extraOffset: keyboardInset);
   }
 
   String _getDifficultyText(DifficultyLevel difficulty) {

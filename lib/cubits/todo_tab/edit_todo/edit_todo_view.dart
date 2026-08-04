@@ -30,8 +30,6 @@ class EditTodoView extends StatelessWidget {
           ),
           body: TodoFormBody(
             characterId: state.todo.characterId,
-            showCompletionToggle: true,
-            onCompletionToggled: cubit.toggleCompletion,
             fields: TodoFormFields(
               name: state.name,
               description: state.description,
@@ -48,7 +46,6 @@ class EditTodoView extends StatelessWidget {
               monthlyRepeatMode: state.monthlyRepeatMode,
               availableTags: state.availableTags,
               selectedTags: state.selectedTags,
-              isCompleted: state.isCompleted,
               currentStreak: state.todo.currentStreak,
             ),
             callbacks: TodoFormCallbacks(
@@ -97,7 +94,8 @@ class EditTodoView extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text('Cancel', style: TextStyle(color: colorScheme.onSurface)),
+            child:
+                Text('Cancel', style: TextStyle(color: colorScheme.onSurface)),
           ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
