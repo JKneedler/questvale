@@ -75,9 +75,9 @@ class _CombatStatusCardState extends State<CombatStatusCard> {
                   colors: _placeholderSkillColors,
                   cooldowns: _placeholderSkillCooldowns,
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 6),
                 const _HorizontalDivider(),
-                const SizedBox(height: 14),
+                const SizedBox(height: 4),
                 _CombatEnemiesSection(state: state),
               ],
             ),
@@ -175,7 +175,7 @@ class _CharacterVitalsRow extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: QvInsetBackground(
-            type: QvInsetBackgroundType.secondary,
+            type: QvInsetBackgroundType.surface,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -320,7 +320,7 @@ class _CombatEnemiesSection extends StatelessWidget {
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
       child: state.isInActiveCombat
           ? IntrinsicHeight(
               child: Row(
@@ -379,7 +379,7 @@ class _RarityMiniBorder extends StatelessWidget {
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
             decoration: BoxDecoration(
               image: DecorationImage(
                 image: AssetImage(rarity.borderAssetPath),
