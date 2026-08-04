@@ -36,6 +36,16 @@ enum SkillButtonColor {
         SkillButtonColor.iceBlue: Color(0xFF0C2034),
         SkillButtonColor.arcanePurple: Color(0xFF200A2D),
       }[this]!;
+
+  // Dominant trim color sampled from each border PNG's most common opaque
+  // pixel (arcanePurple has no border art of its own yet, same as
+  // borderImagePath above, so it mirrors weaponType's).
+  Color get primaryColor => {
+        SkillButtonColor.weaponType: Color(0xFF6A2BAA),
+        SkillButtonColor.fireRed: Color(0xFFC22F27),
+        SkillButtonColor.iceBlue: Color(0xFF367AE0),
+        SkillButtonColor.arcanePurple: Color(0xFF6A2BAA),
+      }[this]!;
 }
 
 enum SkillDamageType {
