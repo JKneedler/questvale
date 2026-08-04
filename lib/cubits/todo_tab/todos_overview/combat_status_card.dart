@@ -2,15 +2,15 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:questvale/cubits/theme/theme_cubit.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_cubit.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_state.dart';
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
-import 'package:questvale/data/providers/game_data_models/skill_data.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/shared_enums.dart';
+import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
 import 'package:questvale/widgets/qv_resource_bar.dart';
 
@@ -30,8 +30,13 @@ class CombatStatusCard extends StatefulWidget {
 
 class _CombatStatusCardState extends State<CombatStatusCard> {
   static const _skillSlotCount = 5;
+  static const _placeholderColorChoices = [
+    ButtonColor.fireRed,
+    ButtonColor.iceBlue,
+    ButtonColor.arcanePurple,
+  ];
 
-  late final List<SkillButtonColor> _placeholderSkillColors;
+  late final List<ButtonColor> _placeholderSkillColors;
   late final List<Duration> _placeholderSkillCooldowns;
 
   @override
@@ -43,8 +48,8 @@ class _CombatStatusCardState extends State<CombatStatusCard> {
     final random = Random();
     _placeholderSkillColors = List.generate(
       _skillSlotCount,
-      (_) => SkillButtonColor
-          .values[random.nextInt(SkillButtonColor.values.length)],
+      (_) => _placeholderColorChoices[
+          random.nextInt(_placeholderColorChoices.length)],
     );
     // Cooldowns run on an hours-scale cadence, not seconds — matches the
     // real-world-task -> AP -> combat pacing of the game. Capped at 12h,
@@ -67,20 +72,24 @@ class _CombatStatusCardState extends State<CombatStatusCard> {
 
         return Container(
           margin: const EdgeInsets.only(bottom: 10),
-          child: _PrimaryBorderCard(
+          child: QvButton(
+            buttonColor: ButtonColor.surfaceContainer,
+            padding: const EdgeInsets.fromLTRB(18, 18, 18, 8),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 _ExperienceBar(character: character),
-                const SizedBox(height: 10),
+                const SizedBox(height: 6),
                 _CharacterVitalsRow(character: character),
-                const SizedBox(height: 10),
+                const SizedBox(height: 6),
+                const _SectionHeader(label: 'Skills'),
+                const SizedBox(height: 4),
                 _SkillCooldownRow(
                   colors: _placeholderSkillColors,
                   cooldowns: _placeholderSkillCooldowns,
                 ),
                 const SizedBox(height: 6),
-                const _HorizontalDivider(),
+                const _SectionHeader(label: 'Enemies'),
                 const SizedBox(height: 4),
                 _CombatEnemiesSection(state: state),
               ],
@@ -92,64 +101,32 @@ class _CombatStatusCardState extends State<CombatStatusCard> {
   }
 }
 
-// Separates the player's own stats/skills from the current-combat enemy
-// state below it.
-class _HorizontalDivider extends StatelessWidget {
-  const _HorizontalDivider();
+// Centered section label with divider lines extending to either side —
+// separates the XP/vitals block from Skills, and Skills from Enemies.
+class _SectionHeader extends StatelessWidget {
+  final String label;
+  const _SectionHeader({required this.label});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 1,
-      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.15),
-    );
-  }
-}
-
-// Mirrors QvPrimaryBorder's look (same border asset) but sizes itself off
-// its child's intrinsic content instead of a FractionallySizedBox, which
-// would throw when placed at the top of a ListView.builder item — list
-// items get unbounded height, and QvPrimaryBorder/QvCardBorder need a
-// bounded parent size to resolve their height factor.
-class _PrimaryBorderCard extends StatelessWidget {
-  final Widget child;
-  const _PrimaryBorderCard({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    final themeId = context.watch<ThemeCubit>().state.theme.id;
     final colorScheme = Theme.of(context).colorScheme;
-    return ConstrainedBox(
-      constraints: BoxConstraints(
-        minWidth: STANDARD_BORDER_MIN_SIZE.width,
-        minHeight: STANDARD_BORDER_MIN_SIZE.height,
-      ),
-      child: Stack(
-        children: [
-          // Inset from the border art's own bounds so the flat fill doesn't
-          // show through the border's rounded corners or get undercut by
-          // the drop-shadow baked into the bottom edge of the asset.
-          Positioned.fill(
-            child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: ColoredBox(color: colorScheme.surfaceContainer),
+    final dividerColor = colorScheme.onSurface.withValues(alpha: 0.15);
+    return Row(
+      children: [
+        Expanded(child: Container(height: 1, color: dividerColor)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: colorScheme.onSurface.withValues(alpha: 0.6),
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
             ),
           ),
-          Container(
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image:
-                    AssetImage('images/ui/borders/$themeId/border-primary.png'),
-                centerSlice: STANDARD_BORDER_SLICE,
-                fit: BoxFit.fill,
-                filterQuality: FilterQuality.none,
-              ),
-            ),
-            child: child,
-          ),
-        ],
-      ),
+        ),
+        Expanded(child: Container(height: 1, color: dividerColor)),
+      ],
     );
   }
 }
@@ -163,6 +140,7 @@ class _ExperienceBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final expForNextLevel = character.level * 100;
     final progress = expForNextLevel > 0
         ? (character.currentExp / expForNextLevel).clamp(0.0, 1.0)
@@ -171,12 +149,19 @@ class _ExperienceBar extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          'Level ${character.level} · ${character.currentExp} / $expForNextLevel',
-          style: const TextStyle(
-            color: EXP_COLOR,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+        Text.rich(
+          TextSpan(
+            style: const TextStyle(color: EXP_COLOR, fontSize: 18),
+            children: [
+              TextSpan(
+                text: 'Lvl ${character.level}',
+                style: const TextStyle(fontWeight: FontWeight.w900),
+              ),
+              TextSpan(
+                text: ' · ${character.currentExp} / $expForNextLevel',
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 2),
@@ -184,7 +169,7 @@ class _ExperienceBar extends StatelessWidget {
           height: 10,
           child: Stack(
             children: [
-              Container(color: Colors.white.withValues(alpha: 0.3)),
+              Container(color: colorScheme.surface),
               FractionallySizedBox(
                 alignment: Alignment.centerLeft,
                 widthFactor: progress,
@@ -220,6 +205,7 @@ class _CharacterVitalsRow extends StatelessWidget {
             fontSize: 18,
             labelAbove: true,
             labelAlign: TextAlign.right,
+            trackColor: colorScheme.surface,
           ),
         ),
         Padding(
@@ -261,6 +247,7 @@ class _CharacterVitalsRow extends StatelessWidget {
             fontSize: 18,
             labelAbove: true,
             labelAlign: TextAlign.left,
+            trackColor: colorScheme.surface,
           ),
         ),
       ],
@@ -285,10 +272,10 @@ String _formatCountdown(Duration remaining) {
   return '${pad(minutes)}:${pad(seconds)}';
 }
 
-// Row 2 — 5 skill-cooldown rectangles. Placeholder colors/cooldowns only;
-// no live skill-cooldown tracking exists yet (see class doc comment above).
+// Row 2 — 5 skill-cooldown buttons. Placeholder colors/cooldowns only; no
+// live skill-cooldown tracking exists yet (see class doc comment above).
 class _SkillCooldownRow extends StatelessWidget {
-  final List<SkillButtonColor> colors;
+  final List<ButtonColor> colors;
   final List<Duration> cooldowns;
   const _SkillCooldownRow({required this.colors, required this.cooldowns});
 
@@ -297,11 +284,6 @@ class _SkillCooldownRow extends StatelessWidget {
     return SizedBox(
       height: 40,
       child: Row(
-        // Row's default crossAxisAlignment (center) lets each slot's
-        // Container shrink-wrap to whatever it contains — an empty
-        // (ready) slot has no non-positioned child to size against and
-        // collapses toward zero height. Stretch forces every slot to
-        // fill the full 40px regardless of content.
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: List.generate(colors.length, (index) {
           return Expanded(
@@ -321,41 +303,27 @@ class _SkillCooldownRow extends StatelessWidget {
 }
 
 class _SkillCooldownSlot extends StatelessWidget {
-  final SkillButtonColor color;
+  final ButtonColor color;
   final Duration cooldown;
   const _SkillCooldownSlot({required this.color, required this.cooldown});
 
   @override
   Widget build(BuildContext context) {
     final onCooldown = cooldown > Duration.zero;
-    // Same Stack shape whether on cooldown or not (just an invisible overlay
-    // + no text when ready) so every slot resolves to an identical size.
-    return Container(
-      decoration: BoxDecoration(
-        color: color.backgroundColor,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: onCooldown ? 0.5 : 0),
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-          ),
-          if (onCooldown)
-            Text(
-              _formatCountdown(cooldown),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-        ],
+    return QvButton(
+      buttonColor: color,
+      darkened: onCooldown,
+      child: Center(
+        child: onCooldown
+            ? Text(
+                _formatCountdown(cooldown),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              )
+            : const Icon(Symbols.check, color: Colors.white, size: 20),
       ),
     );
   }

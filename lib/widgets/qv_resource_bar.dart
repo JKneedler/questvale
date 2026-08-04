@@ -11,6 +11,7 @@ class QvResourceBar extends StatelessWidget {
     this.fontSize = 22,
     this.labelAbove = false,
     this.labelAlign = TextAlign.center,
+    this.trackColor,
   });
   final Color color;
   final int maxValue;
@@ -28,6 +29,10 @@ class QvResourceBar extends StatelessWidget {
   // lean their labels toward the AP display between them instead of
   // centering over their own (differently-sized) bar.
   final TextAlign labelAlign;
+  // Color of the unfilled portion behind the bar. Defaults to the original
+  // translucent white (combat page); the status card overrides this to the
+  // theme's surface color.
+  final Color? trackColor;
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
@@ -52,7 +57,7 @@ class QvResourceBar extends StatelessWidget {
             children: [
               Container(
                   height: fillHeight,
-                  color: Colors.white.withValues(alpha: 0.3)),
+                  color: trackColor ?? Colors.white.withValues(alpha: 0.3)),
               FractionallySizedBox(
                 widthFactor: currentValue / maxValue,
                 child: Container(color: color, height: fillHeight),
