@@ -10,6 +10,7 @@ import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
 import 'package:questvale/data/providers/game_data_models/skill_data.dart';
 import 'package:questvale/helpers/constants.dart';
+import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
 import 'package:questvale/widgets/qv_resource_bar.dart';
 
@@ -308,9 +309,9 @@ class _SkillCooldownSlot extends StatelessWidget {
   }
 }
 
-// Row 3 — in-combat enemy state, in its own inset background. Real
-// in-combat detection + enemy health; placeholder attack timers only
-// (see class doc comment above).
+// Row 3 — in-combat enemy state. Real in-combat detection + enemy health;
+// placeholder attack timers only (see class doc comment above). Each enemy
+// gets its own inset background rather than the row sharing one big panel.
 class _CombatEnemiesSection extends StatelessWidget {
   final TodosOverviewState state;
   const _CombatEnemiesSection({required this.state});
@@ -318,8 +319,7 @@ class _CombatEnemiesSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
-    return QvInsetBackground(
-      type: QvInsetBackgroundType.surface,
+    return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
       child: state.isInActiveCombat
           ? IntrinsicHeight(
@@ -350,6 +350,52 @@ class _CombatEnemiesSection extends StatelessWidget {
   }
 }
 
+// Mirrors QvCardBorder's rarity-mini look (same border asset) but, like
+// _PrimaryBorderCard above, uses Container/DecorationImage instead of
+// QvCardBorder's Stack+FractionallySizedBox so it sizes safely off its
+// child's intrinsic content in this unbounded-height list context.
+class _RarityMiniBorder extends StatelessWidget {
+  final Rarity rarity;
+  final Widget child;
+  const _RarityMiniBorder({required this.rarity, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        minWidth: STANDARD_BORDER_MIN_SIZE.width,
+        minHeight: STANDARD_BORDER_MIN_SIZE.height,
+      ),
+      child: Stack(
+        children: [
+          // Inset from the border art's own bounds — same fix as
+          // _PrimaryBorderCard — so the flat fill doesn't show through the
+          // border's rounded corners.
+          Positioned.fill(
+            child: Padding(
+              padding: const EdgeInsets.all(4),
+              child: ColoredBox(color: colorScheme.surface),
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage(rarity.borderAssetPath),
+                centerSlice: STANDARD_BORDER_SLICE,
+                fit: BoxFit.fill,
+                filterQuality: FilterQuality.none,
+              ),
+            ),
+            child: child,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _EnemyCombatBlock extends StatelessWidget {
   final Enemy enemy;
   final EnemyData? enemyData;
@@ -369,9 +415,8 @@ class _EnemyCombatBlock extends StatelessWidget {
 
     return Opacity(
       opacity: isDead ? 0.4 : 1,
-      child: QvInsetBackground(
-        type: QvInsetBackgroundType.secondary,
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      child: _RarityMiniBorder(
+        rarity: enemyData?.rarity ?? Rarity.common,
         child: SizedBox(
           width: 90,
           child: Column(
