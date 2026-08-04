@@ -105,8 +105,7 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
     bool completionAwarded = todo.completionAwarded;
     int apEarned = 0;
     if (isCompleting && !todo.completionAwarded) {
-      apEarned =
-          await _grantCompletionRewards(todo.difficulty, isHabit: false);
+      apEarned = await _grantCompletionRewards(todo.difficulty, isHabit: false);
       if (apEarned > 0) completionAwarded = true;
     }
 
@@ -132,8 +131,7 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
     bool completionAwarded = result.updated.completionAwarded;
     int apEarned = 0;
     if (todo.allowsMultipleCompletions || !todo.completionAwarded) {
-      apEarned =
-          await _grantCompletionRewards(todo.difficulty, isHabit: true);
+      apEarned = await _grantCompletionRewards(todo.difficulty, isHabit: true);
       if (apEarned > 0 && !todo.allowsMultipleCompletions) {
         completionAwarded = true;
       }
@@ -149,13 +147,16 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
   // Grants AP (subject to the daily cap) and increments the totalCompleted
   // stat together, as one bundled reward — callers gate repeat calls behind
   // completionAwarded so re-toggling can't farm either one. Returns the AP
-  // amount actually granted (0 if blocked by the daily cap), so callers can
-  // decide whether to latch completionAwarded and whether to show feedback.
+  // amount actually granted (0 if blocked by the daily cap or the character
+  // isn't in combat — no AP outside combat, regardless of what the caller's
+  // own UI already confirmed with the player), so callers can decide
+  // whether to latch completionAwarded and whether to show feedback.
   Future<int> _grantCompletionRewards(DifficultyLevel difficulty,
       {required bool isHabit}) async {
     final character = state.character;
     final stats = state.characterStats;
     if (character == null || stats == null) return 0;
+    if (!state.isInActiveCombat) return 0;
 
     final dailyEarned = apRewardService.currentDailyEarned(character);
     final rawAmount = apRewardService.apForCompletion(difficulty, isHabit);
