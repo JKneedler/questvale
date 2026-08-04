@@ -15,10 +15,12 @@ import 'package:questvale/widgets/qv_inset_background.dart';
 import 'package:questvale/widgets/qv_resource_bar.dart';
 
 // Scaffold for the character/combat status block pinned above the todo
-// list. Health/AP/mana (row 1) and in-combat enemy state (row 3) read real
-// data from TodosOverviewCubit. Skill cooldowns (row 2) and enemy attack
-// timers (row 3) have no live tracking system yet, so those are placeholder
-// values laid out so the real systems can slot in later.
+// list. XP (level/currentExp), health/AP/mana, and in-combat enemy state
+// read real data from TodosOverviewCubit. Skill cooldowns, enemy attack
+// timers, and the XP bar's exp-to-next-level threshold have no real system
+// behind them yet (no leveling curve exists anywhere in the codebase), so
+// those are placeholder values laid out so the real systems can slot in
+// later.
 class CombatStatusCard extends StatefulWidget {
   const CombatStatusCard({super.key});
 
@@ -69,6 +71,8 @@ class _CombatStatusCardState extends State<CombatStatusCard> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                _ExperienceBar(character: character),
+                const SizedBox(height: 10),
                 _CharacterVitalsRow(character: character),
                 const SizedBox(height: 10),
                 _SkillCooldownRow(
@@ -150,6 +154,50 @@ class _PrimaryBorderCard extends StatelessWidget {
   }
 }
 
+// Row 0 — full-width XP bar. Level and currentExp are real; the
+// exp-needed-for-next-level denominator is a placeholder (level * 100)
+// since no leveling/exp-curve system exists anywhere in the codebase yet.
+class _ExperienceBar extends StatelessWidget {
+  final Character character;
+  const _ExperienceBar({required this.character});
+
+  @override
+  Widget build(BuildContext context) {
+    final expForNextLevel = character.level * 100;
+    final progress = expForNextLevel > 0
+        ? (character.currentExp / expForNextLevel).clamp(0.0, 1.0)
+        : 0.0;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          'Level ${character.level} · ${character.currentExp} / $expForNextLevel',
+          style: const TextStyle(
+            color: EXP_COLOR,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 2),
+        SizedBox(
+          height: 10,
+          child: Stack(
+            children: [
+              Container(color: Colors.white.withValues(alpha: 0.3)),
+              FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: progress,
+                child: Container(color: EXP_COLOR),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 // Row 1 — health bar / AP block / mana bar. Fully real: all three values
 // come straight off the loaded Character.
 class _CharacterVitalsRow extends StatelessWidget {
@@ -168,8 +216,10 @@ class _CharacterVitalsRow extends StatelessWidget {
             maxValue: character.maxHealth,
             currentValue: character.currentHealth,
             alignment: Alignment.centerLeft,
-            height: 22,
-            fontSize: 13,
+            height: 10,
+            fontSize: 18,
+            labelAbove: true,
+            labelAlign: TextAlign.right,
           ),
         ),
         Padding(
@@ -207,8 +257,10 @@ class _CharacterVitalsRow extends StatelessWidget {
             maxValue: character.maxMana,
             currentValue: character.currentMana,
             alignment: Alignment.centerRight,
-            height: 22,
-            fontSize: 13,
+            height: 10,
+            fontSize: 18,
+            labelAbove: true,
+            labelAlign: TextAlign.left,
           ),
         ),
       ],
