@@ -149,20 +149,26 @@ class _ExperienceBar extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text.rich(
-          TextSpan(
-            style: const TextStyle(color: EXP_COLOR, fontSize: 18),
-            children: [
-              TextSpan(
-                text: 'Lvl ${character.level}',
-                style: const TextStyle(fontWeight: FontWeight.w900),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Lvl ${character.level}',
+              style: const TextStyle(
+                color: EXP_COLOR,
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
               ),
-              TextSpan(
-                text: ' · ${character.currentExp} / $expForNextLevel',
-                style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+            Text(
+              '${character.currentExp} / $expForNextLevel',
+              style: const TextStyle(
+                color: EXP_COLOR,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
         const SizedBox(height: 2),
         SizedBox(
