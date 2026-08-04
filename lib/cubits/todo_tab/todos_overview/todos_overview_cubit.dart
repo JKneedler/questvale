@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_state.dart';
@@ -6,6 +7,8 @@ import 'package:questvale/data/models/tag.dart';
 import 'package:questvale/data/providers/game_data.dart';
 import 'package:questvale/data/repositories/todo_repository.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
+import 'package:questvale/data/repositories/encounter_repository.dart';
+import 'package:questvale/data/repositories/quest_repository.dart';
 import 'package:questvale/services/ap_reward_service.dart';
 import 'package:questvale/services/habit_service.dart';
 import 'package:questvale/services/notification_service.dart';
@@ -13,12 +16,20 @@ import 'package:questvale/services/notification_service.dart';
 class TodosOverviewCubit extends Cubit<TodosOverviewState> {
   final TodoRepository todoRepository;
   final CharacterRepository characterRepository;
+  final QuestRepository questRepository;
+  final EncounterRepository encounterRepository;
+  final GameData gameData;
   final PlayerCubit playerCubit;
   late final HabitService habitService;
   late final ApRewardService apRewardService;
 
-  TodosOverviewCubit(this.todoRepository, this.characterRepository,
-      GameData gameData, this.playerCubit)
+  TodosOverviewCubit(
+      this.todoRepository,
+      this.characterRepository,
+      this.questRepository,
+      this.encounterRepository,
+      this.gameData,
+      this.playerCubit)
       : super(const TodosOverviewState()) {
     habitService = HabitService();
     apRewardService = ApRewardService(gameData: gameData);
@@ -42,9 +53,18 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
 
     final availableTags =
         await characterRepository.getCharacterTags(character.id);
+
+    final quest = await questRepository.getQuest(character.id);
+    final encounter = quest != null && quest.completedAt == null
+        ? await encounterRepository.getEncounterByQuestId(quest.id)
+        : null;
+    final questZone = quest != null
+        ? gameData.questZones.firstWhereOrNull((z) => z.id == quest.zoneId)
+        : null;
+
     if (!isClosed) {
       emit(
-        state.copyWith(
+        TodosOverviewState(
           character: character,
           characterStats: stats,
           todos: todos,
@@ -54,6 +74,13 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
                     name: tag.name,
                   ))
               .toList(),
+          filter: state.filter,
+          filterTag: state.filterTag,
+          filterPriority: state.filterPriority,
+          sort: state.sort,
+          viewMode: state.viewMode,
+          activeEncounter: encounter,
+          activeQuestZone: questZone,
         ),
       );
     }
@@ -169,6 +196,8 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
       filterTag: filter == TodoFilter.byTag ? tag : null,
       filterPriority: filter == TodoFilter.byPriority ? priority : null,
       sort: state.sort,
+      activeEncounter: state.activeEncounter,
+      activeQuestZone: state.activeQuestZone,
     ));
   }
 

@@ -7,6 +7,8 @@ import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_view.dar
 import 'package:questvale/data/providers/game_data.dart';
 import 'package:questvale/data/repositories/todo_repository.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
+import 'package:questvale/data/repositories/encounter_repository.dart';
+import 'package:questvale/data/repositories/quest_repository.dart';
 import 'package:sqflite/sqflite.dart';
 
 class TodosOverviewPage extends StatelessWidget {
@@ -20,6 +22,8 @@ class TodosOverviewPage extends StatelessWidget {
           create: (context) => TodosOverviewCubit(
             TodoRepository(db: context.read<Database>()),
             CharacterRepository(db: context.read<Database>()),
+            QuestRepository(db: context.read<Database>()),
+            EncounterRepository(db: context.read<Database>()),
             context.read<GameData>(),
             context.read<PlayerCubit>(),
           ),

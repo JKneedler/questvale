@@ -17,6 +17,7 @@ import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
 import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:questvale/widgets/qv_metal_corner_border.dart';
+import 'package:questvale/widgets/qv_resource_bar.dart';
 import 'package:questvale/widgets/qv_skill_button.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -219,7 +220,7 @@ class CombatView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Expanded(
-                      child: ResourceBar(
+                      child: QvResourceBar(
                         color: HEALTH_COLOR,
                         maxValue: character.maxHealth,
                         currentValue: character.currentHealth,
@@ -287,7 +288,7 @@ class CombatView extends StatelessWidget {
                       ),
                     ),
                     Expanded(
-                      child: ResourceBar(
+                      child: QvResourceBar(
                         color: MANA_COLOR,
                         maxValue: character.maxMana,
                         currentValue: character.currentMana,
@@ -302,49 +303,6 @@ class CombatView extends StatelessWidget {
         }),
       );
     });
-  }
-}
-
-class ResourceBar extends StatelessWidget {
-  const ResourceBar({
-    super.key,
-    required this.color,
-    required this.maxValue,
-    required this.currentValue,
-    required this.alignment,
-  });
-  final Color color;
-  final int maxValue;
-  final int currentValue;
-  final Alignment alignment;
-  @override
-  Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-    return SizedBox(
-      height: 40,
-      child: Column(
-        children: [
-          Container(height: 2, color: colorScheme.secondary),
-          Stack(
-            alignment: alignment,
-            children: [
-              Container(height: 38, color: Colors.white.withValues(alpha: 0.3)),
-              FractionallySizedBox(
-                widthFactor: currentValue / maxValue,
-                child: Container(color: color, height: 38),
-              ),
-              Center(
-                child: Text(
-                  '$currentValue / $maxValue',
-                  style: TextStyle(
-                      fontSize: 22, color: Colors.grey[100], height: 1),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
   }
 }
 
