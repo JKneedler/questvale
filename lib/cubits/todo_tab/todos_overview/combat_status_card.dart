@@ -74,13 +74,29 @@ class _CombatStatusCardState extends State<CombatStatusCard> {
                   colors: _placeholderSkillColors,
                   cooldowns: _placeholderSkillCooldowns,
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 14),
+                const _HorizontalDivider(),
+                const SizedBox(height: 14),
                 _CombatEnemiesSection(state: state),
               ],
             ),
           ),
         );
       },
+    );
+  }
+}
+
+// Separates the player's own stats/skills from the current-combat enemy
+// state below it.
+class _HorizontalDivider extends StatelessWidget {
+  const _HorizontalDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 1,
+      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.15),
     );
   }
 }
@@ -310,7 +326,13 @@ class _CombatEnemiesSection extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: _enemyBlocksWithDividers(state, colorScheme),
+                children: (List<Enemy>.from(state.activeEncounter!.enemies)
+                      ..sort((a, b) => a.position.compareTo(b.position)))
+                    .map((enemy) => _EnemyCombatBlock(
+                          enemy: enemy,
+                          enemyData: state.enemyDataFor(enemy),
+                        ))
+                    .toList(),
               ),
             )
           : Padding(
@@ -326,27 +348,6 @@ class _CombatEnemiesSection extends StatelessWidget {
             ),
     );
   }
-}
-
-List<Widget> _enemyBlocksWithDividers(
-    TodosOverviewState state, ColorScheme colorScheme) {
-  final enemies = List<Enemy>.from(state.activeEncounter!.enemies)
-    ..sort((a, b) => a.position.compareTo(b.position));
-  final children = <Widget>[];
-  for (var i = 0; i < enemies.length; i++) {
-    if (i > 0) {
-      children.add(VerticalDivider(
-        width: 17,
-        thickness: 1,
-        color: colorScheme.onSurface.withValues(alpha: 0.2),
-      ));
-    }
-    children.add(_EnemyCombatBlock(
-      enemy: enemies[i],
-      enemyData: state.enemyDataFor(enemies[i]),
-    ));
-  }
-  return children;
 }
 
 class _EnemyCombatBlock extends StatelessWidget {
@@ -368,48 +369,52 @@ class _EnemyCombatBlock extends StatelessWidget {
 
     return Opacity(
       opacity: isDead ? 0.4 : 1,
-      child: SizedBox(
-        width: 90,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              height: 16,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: isDead
-                  ? const Text(
-                      'X X X',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    )
-                  : FractionallySizedBox(
-                      alignment: Alignment.centerLeft,
-                      widthFactor: healthFraction,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: HEALTH_COLOR,
-                          borderRadius: BorderRadius.circular(4),
+      child: QvInsetBackground(
+        type: QvInsetBackgroundType.secondary,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        child: SizedBox(
+          width: 90,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                height: 16,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: isDead
+                    ? const Text(
+                        'X X X',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      )
+                    : FractionallySizedBox(
+                        alignment: Alignment.centerLeft,
+                        widthFactor: healthFraction,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: HEALTH_COLOR,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
                         ),
                       ),
-                    ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              isDead ? 'Defeated' : _formatCountdown(placeholderAttackTime),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
               ),
-            ),
-          ],
+              const SizedBox(height: 6),
+              Text(
+                isDead ? 'Defeated' : _formatCountdown(placeholderAttackTime),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
