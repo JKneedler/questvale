@@ -11,7 +11,6 @@ import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_button.dart';
-import 'package:questvale/widgets/qv_inset_background.dart';
 import 'package:questvale/widgets/qv_resource_bar.dart';
 
 // Scaffold for the character/combat status block pinned above the todo
@@ -164,7 +163,7 @@ class _ExperienceBar extends StatelessWidget {
               '${character.currentExp} / $expForNextLevel',
               style: const TextStyle(
                 color: EXP_COLOR,
-                fontSize: 16,
+                fontSize: 18,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -207,7 +206,7 @@ class _CharacterVitalsRow extends StatelessWidget {
             maxValue: character.maxHealth,
             currentValue: character.currentHealth,
             alignment: Alignment.centerLeft,
-            height: 10,
+            height: 16,
             fontSize: 18,
             labelAbove: true,
             labelAlign: TextAlign.right,
@@ -216,27 +215,27 @@ class _CharacterVitalsRow extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: QvInsetBackground(
-            type: QvInsetBackgroundType.surface,
+          child: QvButton(
+            buttonColor: ButtonColor.primary,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'AP',
-                  style: TextStyle(
-                    color: colorScheme.onSurface,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
                   '${character.actionPoints}',
                   style: TextStyle(
-                    color: colorScheme.onSurface,
+                    color: colorScheme.onPrimary,
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     height: 1,
+                  ),
+                ),
+                Text(
+                  'AP',
+                  style: TextStyle(
+                    color: colorScheme.onPrimary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
