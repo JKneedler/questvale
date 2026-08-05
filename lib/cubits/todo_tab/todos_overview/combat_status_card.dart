@@ -11,7 +11,8 @@ import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_button.dart';
-import 'package:questvale/widgets/qv_resource_bar.dart';
+import 'package:questvale/widgets/qv_bar.dart';
+import 'package:questvale/widgets/qv_inset_background.dart';
 
 // Scaffold for the character/combat status block pinned above the todo
 // list. XP (level/currentExp), health/AP/mana, and in-combat enemy state
@@ -139,11 +140,7 @@ class _ExperienceBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final expForNextLevel = character.level * 100;
-    final progress = expForNextLevel > 0
-        ? (character.currentExp / expForNextLevel).clamp(0.0, 1.0)
-        : 0.0;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -170,18 +167,13 @@ class _ExperienceBar extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 2),
-        SizedBox(
-          height: 10,
-          child: Stack(
-            children: [
-              Container(color: colorScheme.surface),
-              FractionallySizedBox(
-                alignment: Alignment.centerLeft,
-                widthFactor: progress,
-                child: Container(color: EXP_COLOR),
-              ),
-            ],
-          ),
+        QvBar(
+          currentValue: character.currentExp,
+          maxValue: expForNextLevel,
+          resource: QvBarResource.exp,
+          size: QvBarSize.mini,
+          height: 20,
+          child: const SizedBox.shrink(),
         ),
       ],
     );
@@ -201,16 +193,28 @@ class _CharacterVitalsRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Expanded(
-          child: QvResourceBar(
-            color: HEALTH_COLOR,
-            maxValue: character.maxHealth,
-            currentValue: character.currentHealth,
-            alignment: Alignment.centerLeft,
-            height: 16,
-            fontSize: 18,
-            labelAbove: true,
-            labelAlign: TextAlign.right,
-            trackColor: colorScheme.surface,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                '${character.currentHealth} / ${character.maxHealth}',
+                textAlign: TextAlign.right,
+                style: const TextStyle(
+                  color: HEALTH_COLOR,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 2),
+              QvBar(
+                currentValue: character.currentHealth,
+                maxValue: character.maxHealth,
+                resource: QvBarResource.health,
+                size: QvBarSize.mini,
+                height: 20,
+                child: const SizedBox.shrink(),
+              ),
+            ],
           ),
         ),
         Padding(
@@ -243,16 +247,28 @@ class _CharacterVitalsRow extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: QvResourceBar(
-            color: MANA_COLOR,
-            maxValue: character.maxMana,
-            currentValue: character.currentMana,
-            alignment: Alignment.centerRight,
-            height: 10,
-            fontSize: 18,
-            labelAbove: true,
-            labelAlign: TextAlign.left,
-            trackColor: colorScheme.surface,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                '${character.currentMana} / ${character.maxMana}',
+                textAlign: TextAlign.left,
+                style: const TextStyle(
+                  color: MANA_COLOR,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 2),
+              QvBar(
+                currentValue: character.currentMana,
+                maxValue: character.maxMana,
+                resource: QvBarResource.mana,
+                size: QvBarSize.mini,
+                height: 20,
+                child: const SizedBox.shrink(),
+              ),
+            ],
           ),
         ),
       ],
@@ -429,9 +445,6 @@ class _EnemyCombatBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDead = enemy.currentHealth <= 0;
-    final healthFraction = (enemyData != null && enemyData!.health > 0)
-        ? (enemy.currentHealth / enemyData!.health).clamp(0.0, 1.0)
-        : 0.0;
     // Stable per-enemy placeholder (seeded off the enemy id) so it doesn't
     // jump around on every reload — no live attack-timer system exists yet.
     // Attacks land on an hours-scale cadence, not seconds.
@@ -447,32 +460,22 @@ class _EnemyCombatBlock extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                height: 16,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(4),
+              QvBar(
+                currentValue: enemy.currentHealth,
+                maxValue: enemyData?.health ?? 0,
+                size: QvBarSize.mini,
+                insetBackgroundType: QvInsetBackgroundType.secondary,
+                height: 26,
+                child: Text(
+                  isDead
+                      ? 'X X X'
+                      : '${enemy.currentHealth} / ${enemyData?.health ?? 0}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[100],
+                    height: 1,
+                  ),
                 ),
-                child: isDead
-                    ? const Text(
-                        'X X X',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      )
-                    : FractionallySizedBox(
-                        alignment: Alignment.centerLeft,
-                        widthFactor: healthFraction,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: HEALTH_COLOR,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                      ),
               ),
               const SizedBox(height: 6),
               Text(

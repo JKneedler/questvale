@@ -16,7 +16,9 @@ import 'package:questvale/widgets/qv_blinking.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
 import 'package:questvale/widgets/qv_fading_scrollable.dart';
+import 'package:questvale/widgets/qv_inset_background.dart';
 import 'package:questvale/widgets/qv_metal_corner_border.dart';
+import 'package:questvale/widgets/qv_bar.dart';
 import 'package:questvale/widgets/qv_resource_bar.dart';
 import 'package:questvale/widgets/qv_skill_button.dart';
 import 'package:sqflite/sqflite.dart';
@@ -587,40 +589,21 @@ class EnemyInfoBox extends StatelessWidget {
                             ),
                           )),
                         ),
-                        Container(
-                          height: 30,
-                          color: colorScheme.secondary,
-                          padding: EdgeInsets.all(2),
-                          margin: EdgeInsets.symmetric(horizontal: 10),
-                          child: Stack(
-                            children: [
-                              FractionallySizedBox(
-                                widthFactor:
-                                    enemy.currentHealth / enemyData.health,
-                                child: Container(
-                                  height: double.infinity,
-                                  width: double.infinity,
-                                  decoration: BoxDecoration(
-                                      image: DecorationImage(
-                                    image: AssetImage(
-                                        'images/ui/borders/border-health.png'),
-                                    centerSlice: HEALTH_BORDER_SLICE,
-                                    fit: BoxFit.fill,
-                                    filterQuality: FilterQuality.none,
-                                  )),
-                                ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          child: QvBar(
+                            currentValue: enemy.currentHealth,
+                            maxValue: enemyData.health,
+                            insetBackgroundType:
+                                QvInsetBackgroundType.secondary,
+                            child: Text(
+                              '${enemy.currentHealth} / ${enemyData.health}',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.grey[100],
+                                height: 1,
                               ),
-                              Center(
-                                child: Text(
-                                  '${enemy.currentHealth} / ${enemyData.health}',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    color: Colors.grey[100],
-                                    height: 1,
-                                  ),
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
                       ],

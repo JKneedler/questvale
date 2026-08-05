@@ -17,7 +17,6 @@ import 'package:questvale/widgets/qv_app_bar.dart';
 import 'package:questvale/widgets/qv_background.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_fading_scrollable.dart';
-import 'package:questvale/widgets/qv_inset_background.dart';
 
 class TodosOverviewView extends StatelessWidget {
   static const _todoTabIndex = 1;
@@ -69,11 +68,6 @@ class TodosOverviewView extends StatelessWidget {
         body: Column(
           children: [
             QvAppBar(
-              leading: BlocBuilder<TodosOverviewCubit, TodosOverviewState>(
-                builder: (context, state) => _ApDisplay(
-                  actionPoints: state.character?.actionPoints ?? 0,
-                ),
-              ),
               trailingButton: QvAppBarButton(
                 button: '⋯',
                 onTap: () => showModalBottomSheet(
@@ -118,31 +112,6 @@ class TodosOverviewView extends StatelessWidget {
           ],
         ),
         backgroundColor: colorScheme.surface,
-      ),
-    );
-  }
-}
-
-class _ApDisplay extends StatelessWidget {
-  final int actionPoints;
-
-  const _ApDisplay({required this.actionPoints});
-
-  @override
-  Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-    return QvInsetBackground(
-      type: QvInsetBackgroundType.secondary,
-      padding: const EdgeInsets.only(top: 2, bottom: 6, left: 20, right: 20),
-      child: Center(
-        child: Text(
-          '$actionPoints',
-          style: TextStyle(
-            color: colorScheme.onSurface,
-            fontSize: 26,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
       ),
     );
   }
