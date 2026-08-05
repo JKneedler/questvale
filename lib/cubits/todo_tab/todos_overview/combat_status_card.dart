@@ -532,16 +532,16 @@ class _EnemyCombatBlock extends StatelessWidget {
                 size: QvBarSize.mini,
                 insetBackgroundType: QvInsetBackgroundType.secondary,
                 height: 26,
-                child: Text(
-                  isDead
-                      ? 'X X X'
-                      : '${enemy.currentHealth} / ${enemyData?.health ?? 0}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[100],
-                    height: 1,
-                  ),
-                ),
+                child: isDead
+                    ? Text(
+                        'X X X',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[100],
+                          height: 1,
+                        ),
+                      )
+                    : const SizedBox.shrink(),
               ),
               // Expanded+Center rather than a fixed gap so the move
               // type/timer block sits centered in whatever space is left
