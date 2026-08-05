@@ -12,6 +12,7 @@ import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_bar.dart';
+import 'package:questvale/widgets/qv_card_border.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
 
 // Scaffold for the character/combat status block pinned above the todo
@@ -476,49 +477,23 @@ class _CombatEnemiesSection extends StatelessWidget {
   }
 }
 
-// Mirrors QvCardBorder's rarity-mini look (same border asset) but, like
-// _PrimaryBorderCard above, uses Container/DecorationImage instead of
-// QvCardBorder's Stack+FractionallySizedBox so it sizes safely off its
-// child's intrinsic content in this unbounded-height list context.
-class _RarityMiniBorder extends StatelessWidget {
-  final Rarity rarity;
-  final Widget child;
-  const _RarityMiniBorder({required this.rarity, required this.child});
+// Placeholder for the enemy's next-move type — no such system exists yet
+// (see class doc comment above); this stands in for whatever real enum
+// eventually classifies an enemy move as attack/buff/debuff/etc.
+enum _EnemyMoveType {
+  attack,
+  buff,
+  debuff;
 
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return ConstrainedBox(
-      constraints: BoxConstraints(
-        minWidth: STANDARD_BORDER_MIN_SIZE.width,
-        minHeight: STANDARD_BORDER_MIN_SIZE.height,
-      ),
-      child: Stack(
-        children: [
-          // Inset from the border art's own bounds — same fix as
-          // _PrimaryBorderCard — so the flat fill doesn't show through the
-          // border's rounded corners.
-          Positioned.fill(
-            child: Padding(
-              padding: const EdgeInsets.all(4),
-              child: ColoredBox(color: colorScheme.surface),
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage(rarity.borderAssetPath),
-                centerSlice: STANDARD_BORDER_SLICE,
-                fit: BoxFit.fill,
-                filterQuality: FilterQuality.none,
-              ),
-            ),
-            child: child,
-          ),
-        ],
-      ),
-    );
+  String get label {
+    switch (this) {
+      case _EnemyMoveType.attack:
+        return 'Attack';
+      case _EnemyMoveType.buff:
+        return 'Buff';
+      case _EnemyMoveType.debuff:
+        return 'Debuff';
+    }
   }
 }
 
@@ -530,20 +505,26 @@ class _EnemyCombatBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDead = enemy.currentHealth <= 0;
-    // Stable per-enemy placeholder (seeded off the enemy id) so it doesn't
-    // jump around on every reload — no live attack-timer system exists yet.
-    // Attacks land on an hours-scale cadence, not seconds.
+    // Stable per-enemy placeholders (seeded off the enemy id, salted
+    // differently per field so they don't move in lockstep) so neither
+    // jumps around on every reload — no live attack-timer or move-type
+    // system exists yet. Attacks land on an hours-scale cadence, not
+    // seconds.
     final placeholderAttackTime =
         Duration(seconds: Random(enemy.id.hashCode).nextInt(24 * 3600) + 1);
+    final placeholderMoveType = _EnemyMoveType.values[
+        Random(enemy.id.hashCode + 1).nextInt(_EnemyMoveType.values.length)];
 
+    final colorScheme = Theme.of(context).colorScheme;
     return Opacity(
       opacity: isDead ? 0.4 : 1,
-      child: _RarityMiniBorder(
+      child: QvCardBorder(
         rarity: enemyData?.rarity ?? Rarity.common,
+        bgColor: colorScheme.surface,
+        padding: const EdgeInsets.fromLTRB(8, 8, 8, 12),
         child: SizedBox(
           width: 90,
           child: Column(
-            mainAxisSize: MainAxisSize.min,
             children: [
               QvBar(
                 currentValue: enemy.currentHealth,
@@ -562,13 +543,43 @@ class _EnemyCombatBlock extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 6),
-              Text(
-                isDead ? 'Defeated' : _formatCountdown(placeholderAttackTime),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
+              // Expanded+Center rather than a fixed gap so the move
+              // type/timer block sits centered in whatever space is left
+              // below the bar once IntrinsicHeight/CrossAxisAlignment.
+              // stretch (in _CombatEnemiesSection) stretches this block to
+              // match its tallest sibling.
+              Expanded(
+                child: Center(
+                  child: isDead
+                      ? const Text(
+                          'Defeated',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        )
+                      : Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              placeholderMoveType.label,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.7),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              _formatCountdown(placeholderAttackTime),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
                 ),
               ),
             ],
