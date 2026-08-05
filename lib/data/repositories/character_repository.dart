@@ -209,6 +209,8 @@ class CharacterRepository {
               map[Character.dailyApEarnedDateColumnName] as int)
           : null,
       themeId: map[Character.themeIdColumnName] as String? ?? DEFAULT_THEME_ID,
+      combatStatusCardExpanded:
+          map[Character.combatStatusCardExpandedColumnName] != 0,
     );
     return character;
   }

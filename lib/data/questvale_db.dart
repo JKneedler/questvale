@@ -84,10 +84,10 @@ class QuestvaleDB {
       // tables — every tag-related insert then silently failed. Run
       // unconditionally (IF NOT EXISTS) on every upgrade rather than
       // guessing which version boundary they should have belonged to.
-      await db.execute(
-          TodoTag.createTableSQL.replaceFirst('CREATE TABLE', 'CREATE TABLE IF NOT EXISTS'));
-      await db.execute(
-          CharacterTag.createTableSQL.replaceFirst('CREATE TABLE', 'CREATE TABLE IF NOT EXISTS'));
+      await db.execute(TodoTag.createTableSQL
+          .replaceFirst('CREATE TABLE', 'CREATE TABLE IF NOT EXISTS'));
+      await db.execute(CharacterTag.createTableSQL
+          .replaceFirst('CREATE TABLE', 'CREATE TABLE IF NOT EXISTS'));
 
       if (oldVersion < 2) {
         await db.execute(
@@ -179,6 +179,10 @@ class QuestvaleDB {
               'ALTER TABLE ${CharacterTag.characterTagTableName} DROP COLUMN iconIndex');
         }
       }
-    }, version: 10);
+      if (oldVersion < 11) {
+        await db.execute(
+            'ALTER TABLE ${Character.characterTableName} ADD COLUMN ${Character.combatStatusCardExpandedColumnName} BOOLEAN NOT NULL DEFAULT 1');
+      }
+    }, version: 11);
   }
 }

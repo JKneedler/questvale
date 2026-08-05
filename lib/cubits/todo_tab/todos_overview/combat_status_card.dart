@@ -69,29 +69,58 @@ class _CombatStatusCardState extends State<CombatStatusCard> {
       builder: (context, state) {
         final character = state.character;
         if (character == null) return const SizedBox.shrink();
+        final isExpanded = character.combatStatusCardExpanded;
 
         return Container(
           margin: const EdgeInsets.only(bottom: 10),
           child: QvButton(
             buttonColor: ButtonColor.surfaceContainer,
-            padding: const EdgeInsets.fromLTRB(18, 18, 18, 8),
+            padding: const EdgeInsets.fromLTRB(18, 8, 18, 14),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _ExperienceBar(character: character),
-                const SizedBox(height: 6),
-                _CharacterVitalsRow(character: character),
-                const SizedBox(height: 6),
-                const _SectionHeader(label: 'Skills'),
-                const SizedBox(height: 4),
-                _SkillCooldownRow(
-                  colors: _placeholderSkillColors,
-                  cooldowns: _placeholderSkillCooldowns,
+                // Tapping the exp/vitals block toggles the collapsed state —
+                // scoped to just this GestureDetector (not the whole card)
+                // so tapping a skill button or enemy block below doesn't
+                // also collapse the card.
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => context
+                      .read<TodosOverviewCubit>()
+                      .toggleCombatStatusCardExpanded(),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _ExperienceBar(
+                          character: character, isExpanded: isExpanded),
+                      const SizedBox(height: 6),
+                      _CharacterVitalsRow(character: character),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 6),
-                const _SectionHeader(label: 'Enemies'),
-                const SizedBox(height: 4),
-                _CombatEnemiesSection(state: state),
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeInOut,
+                  alignment: Alignment.topCenter,
+                  child: !isExpanded
+                      ? const SizedBox(width: double.infinity)
+                      : Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const SizedBox(height: 6),
+                            const _SectionHeader(label: 'Skills'),
+                            const SizedBox(height: 4),
+                            _SkillCooldownRow(
+                              colors: _placeholderSkillColors,
+                              cooldowns: _placeholderSkillCooldowns,
+                            ),
+                            const SizedBox(height: 6),
+                            const _SectionHeader(label: 'Enemies'),
+                            const SizedBox(height: 4),
+                            _CombatEnemiesSection(state: state),
+                          ],
+                        ),
+                ),
               ],
             ),
           ),
@@ -136,7 +165,8 @@ class _SectionHeader extends StatelessWidget {
 // since no leveling/exp-curve system exists anywhere in the codebase yet.
 class _ExperienceBar extends StatelessWidget {
   final Character character;
-  const _ExperienceBar({required this.character});
+  final bool isExpanded;
+  const _ExperienceBar({required this.character, required this.isExpanded});
 
   @override
   Widget build(BuildContext context) {
@@ -156,13 +186,26 @@ class _ExperienceBar extends StatelessWidget {
                 fontWeight: FontWeight.w900,
               ),
             ),
-            Text(
-              '${character.currentExp} / $expForNextLevel',
-              style: const TextStyle(
-                color: EXP_COLOR,
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-              ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '${character.currentExp} / $expForNextLevel',
+                  style: const TextStyle(
+                    color: EXP_COLOR,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(width: 2),
+                Icon(
+                  isExpanded
+                      ? Symbols.keyboard_arrow_up
+                      : Symbols.keyboard_arrow_down,
+                  color: EXP_COLOR,
+                  size: 22,
+                ),
+              ],
             ),
           ],
         ),

@@ -202,6 +202,19 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
     ));
   }
 
+  Future<void> toggleCombatStatusCardExpanded() async {
+    final character = state.character;
+    if (character == null) return;
+    final updated = await characterRepository.updateCharacter(
+      character.copyWith(
+        combatStatusCardExpanded: !character.combatStatusCardExpanded,
+      ),
+    );
+    if (!isClosed) {
+      emit(state.copyWith(character: updated));
+    }
+  }
+
   void setSort(TodoSort sort) {
     emit(state.copyWith(sort: sort));
   }
