@@ -75,7 +75,7 @@ class _CombatStatusCardState extends State<CombatStatusCard> {
           margin: const EdgeInsets.only(bottom: 10),
           child: QvButton(
             buttonColor: ButtonColor.surfaceContainer,
-            padding: const EdgeInsets.fromLTRB(18, 8, 18, 14),
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 14),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -91,8 +91,17 @@ class _CombatStatusCardState extends State<CombatStatusCard> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _ExperienceBar(
-                          character: character, isExpanded: isExpanded),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          _ApBadge(character: character),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _ExperienceBar(
+                                character: character, isExpanded: isExpanded),
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 6),
                       _CharacterVitalsRow(character: character),
                     ],
@@ -179,7 +188,7 @@ class _ExperienceBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Lvl ${character.level}',
+              'LVL ${character.level}',
               style: const TextStyle(
                 color: EXP_COLOR,
                 fontSize: 20,
@@ -223,15 +232,52 @@ class _ExperienceBar extends StatelessWidget {
   }
 }
 
-// Row 1 — health bar / AP block / mana bar. Fully real: all three values
-// come straight off the loaded Character.
+// AP badge — now sits to the left of the level/exp block instead of
+// between the health and mana bars.
+class _ApBadge extends StatelessWidget {
+  final Character character;
+  const _ApBadge({required this.character});
+
+  @override
+  Widget build(BuildContext context) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+    return QvInsetBackground(
+      type: QvInsetBackgroundType.surface,
+      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 8),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '${character.actionPoints}',
+            style: TextStyle(
+              color: colorScheme.onSurface,
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              height: 1,
+            ),
+          ),
+          Text(
+            'AP',
+            style: TextStyle(
+              color: colorScheme.onSurface,
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Row 1 — health bar / mana bar, leaning toward the card's outer edges.
+// Fully real: both values come straight off the loaded Character.
 class _CharacterVitalsRow extends StatelessWidget {
   final Character character;
   const _CharacterVitalsRow({required this.character});
 
   @override
   Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -239,14 +285,26 @@ class _CharacterVitalsRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                '${character.currentHealth} / ${character.maxHealth}',
-                textAlign: TextAlign.right,
-                style: const TextStyle(
-                  color: HEALTH_COLOR,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '${character.currentHealth} / ${character.maxHealth}',
+                    style: const TextStyle(
+                      color: HEALTH_COLOR,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    'HP',
+                    style: const TextStyle(
+                      color: HEALTH_COLOR,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 2),
               QvBar(
@@ -260,47 +318,31 @@ class _CharacterVitalsRow extends StatelessWidget {
             ],
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: QvButton(
-            buttonColor: ButtonColor.primary,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '${character.actionPoints}',
-                  style: TextStyle(
-                    color: colorScheme.onPrimary,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    height: 1,
-                  ),
-                ),
-                Text(
-                  'AP',
-                  style: TextStyle(
-                    color: colorScheme.onPrimary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        const SizedBox(width: 8),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                '${character.currentMana} / ${character.maxMana}',
-                textAlign: TextAlign.left,
-                style: const TextStyle(
-                  color: MANA_COLOR,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'MANA',
+                    style: const TextStyle(
+                      color: MANA_COLOR,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    '${character.currentMana} / ${character.maxMana}',
+                    style: const TextStyle(
+                      color: MANA_COLOR,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 2),
               QvBar(
