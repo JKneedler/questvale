@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_encounter_state.dart';
 import 'package:questvale/data/models/encounter.dart';
@@ -7,6 +8,7 @@ import 'package:questvale/data/repositories/character_repository.dart';
 import 'package:questvale/data/repositories/encounter_repository.dart';
 import 'package:questvale/data/repositories/enemy_repository.dart';
 import 'package:questvale/data/repositories/quest_repository.dart';
+import 'package:questvale/services/enemy_attack_scheduling_service.dart';
 import 'package:questvale/services/quest_service.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -16,6 +18,7 @@ class QuestEncounterCubit extends Cubit<QuestEncounterState> {
   late EncounterRepository encounterRepository;
   late EnemyRepository enemyRepository;
   late CharacterRepository characterRepository;
+  late EnemyAttackSchedulingService enemyAttackSchedulingService;
 
   final QuestZone questZone;
 
@@ -31,6 +34,7 @@ class QuestEncounterCubit extends Cubit<QuestEncounterState> {
     enemyRepository = EnemyRepository(db: db);
     characterRepository = CharacterRepository(db: db);
     questService = QuestService(db: db);
+    enemyAttackSchedulingService = EnemyAttackSchedulingService(db: db);
     init();
   }
 
@@ -83,6 +87,15 @@ class QuestEncounterCubit extends Cubit<QuestEncounterState> {
     await encounterRepository.insertEncounter(newEncounter);
     for (var enemy in newEncounter.enemies) {
       await enemyRepository.insertEnemy(enemy);
+      final enemyData =
+          questZone.enemies.firstWhereOrNull((d) => d.id == enemy.enemyDataId);
+      if (enemyData != null) {
+        await enemyAttackSchedulingService.scheduleNextMove(
+          enemy: enemy,
+          enemyData: enemyData,
+          encounter: newEncounter,
+        );
+      }
     }
     return newEncounter;
   }

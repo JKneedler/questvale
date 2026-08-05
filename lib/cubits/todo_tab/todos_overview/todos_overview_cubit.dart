@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_state.dart';
+import 'package:questvale/data/models/scheduled_timer.dart';
 import 'package:questvale/data/models/todo.dart';
 import 'package:questvale/data/models/tag.dart';
 import 'package:questvale/data/providers/game_data.dart';
@@ -10,6 +11,7 @@ import 'package:questvale/data/repositories/character_repository.dart';
 import 'package:questvale/data/repositories/encounter_repository.dart';
 import 'package:questvale/data/repositories/quest_repository.dart';
 import 'package:questvale/services/ap_reward_service.dart';
+import 'package:questvale/services/enemy_attack_scheduling_service.dart';
 import 'package:questvale/services/habit_service.dart';
 import 'package:questvale/services/notification_service.dart';
 
@@ -20,6 +22,7 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
   final EncounterRepository encounterRepository;
   final GameData gameData;
   final PlayerCubit playerCubit;
+  final EnemyAttackSchedulingService enemyAttackSchedulingService;
   late final HabitService habitService;
   late final ApRewardService apRewardService;
 
@@ -29,7 +32,8 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
       this.questRepository,
       this.encounterRepository,
       this.gameData,
-      this.playerCubit)
+      this.playerCubit,
+      this.enemyAttackSchedulingService)
       : super(const TodosOverviewState()) {
     habitService = HabitService();
     apRewardService = ApRewardService(gameData: gameData);
@@ -62,10 +66,28 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
         ? gameData.questZones.firstWhereOrNull((z) => z.id == quest.zoneId)
         : null;
 
+    // Reconcile any enemy attacks that came due while the app wasn't open —
+    // same "checked on every load" idiom as _advanceHabitPeriodIfNeeded
+    // above, rather than a dedicated app-lifecycle/background-timer hook.
+    var reconciledCharacter = character;
+    Map<String, ScheduledTimer> attackTimers = const {};
+    if (encounter != null &&
+        encounter.completedAt == null &&
+        encounter.encounterType.isCombatEncounter()) {
+      final reconciliation = await enemyAttackSchedulingService.reconcile(
+        encounter: encounter,
+        character: reconciledCharacter,
+        enemyDataFor: (enemy) => questZone?.enemies
+            .firstWhereOrNull((data) => data.id == enemy.enemyDataId),
+      );
+      reconciledCharacter = reconciliation.character;
+      attackTimers = reconciliation.attackTimersByEnemyId;
+    }
+
     if (!isClosed) {
       emit(
         TodosOverviewState(
-          character: character,
+          character: reconciledCharacter,
           characterStats: stats,
           todos: todos,
           availableTags: availableTags
@@ -81,6 +103,7 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
           viewMode: state.viewMode,
           activeEncounter: encounter,
           activeQuestZone: questZone,
+          enemyAttackTimers: attackTimers,
         ),
       );
     }

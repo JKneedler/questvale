@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -7,8 +8,10 @@ import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_cubit.da
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_state.dart';
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/enemy.dart';
+import 'package:questvale/data/models/scheduled_timer.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
 import 'package:questvale/helpers/constants.dart';
+import 'package:questvale/helpers/data_formatters.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_bar.dart';
@@ -16,12 +19,12 @@ import 'package:questvale/widgets/qv_card_border.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
 
 // Scaffold for the character/combat status block pinned above the todo
-// list. XP (level/currentExp), health/AP/mana, and in-combat enemy state
-// read real data from TodosOverviewCubit. Skill cooldowns, enemy attack
-// timers, and the XP bar's exp-to-next-level threshold have no real system
-// behind them yet (no leveling curve exists anywhere in the codebase), so
-// those are placeholder values laid out so the real systems can slot in
-// later.
+// list. XP (level/currentExp), health/AP/mana, in-combat enemy state, and
+// enemy attack countdowns read real data from TodosOverviewCubit. Skill
+// cooldowns and the XP bar's exp-to-next-level threshold still have no real
+// system behind them (no leveling curve or live cooldown tracking exists
+// anywhere in the codebase yet), so those remain placeholder values laid
+// out so the real systems can slot in later.
 class CombatStatusCard extends StatefulWidget {
   const CombatStatusCard({super.key});
 
@@ -39,6 +42,7 @@ class _CombatStatusCardState extends State<CombatStatusCard> {
 
   late final List<ButtonColor> _placeholderSkillColors;
   late final List<Duration> _placeholderSkillCooldowns;
+  Timer? _countdownRefreshTimer;
 
   @override
   void initState() {
@@ -62,6 +66,20 @@ class _CombatStatusCardState extends State<CombatStatusCard> {
     // Guarantee at least one ready (no-cooldown) slot so both rectangle
     // styles are represented.
     _placeholderSkillCooldowns[random.nextInt(_skillSlotCount)] = Duration.zero;
+
+    // Purely presentational — recomputes nextTriggerAt - now() on a plain
+    // UI timer, no business logic here. Hour/day-scale timers don't need
+    // per-second precision, per the scheduling engine's UI countdown notes.
+    _countdownRefreshTimer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => setState(() {}),
+    );
+  }
+
+  @override
+  void dispose() {
+    _countdownRefreshTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -362,23 +380,6 @@ class _CharacterVitalsRow extends StatelessWidget {
   }
 }
 
-// Countdown display shared by skill cooldowns and enemy attack timers: hh:mm
-// once there's at least an hour left, dropping to mm:ss once it's down to
-// minutes so the last stretch reads with second-level precision.
-String _formatCountdown(Duration remaining) {
-  final totalSeconds = remaining.inSeconds;
-  String pad(int n) => n.toString().padLeft(2, '0');
-  if (totalSeconds >= Duration.secondsPerHour) {
-    final hours = totalSeconds ~/ Duration.secondsPerHour;
-    final minutes =
-        (totalSeconds % Duration.secondsPerHour) ~/ Duration.secondsPerMinute;
-    return '${pad(hours)}:${pad(minutes)}';
-  }
-  final minutes = totalSeconds ~/ Duration.secondsPerMinute;
-  final seconds = totalSeconds % Duration.secondsPerMinute;
-  return '${pad(minutes)}:${pad(seconds)}';
-}
-
 // Row 2 — 5 skill-cooldown buttons. Placeholder colors/cooldowns only; no
 // live skill-cooldown tracking exists yet (see class doc comment above).
 class _SkillCooldownRow extends StatelessWidget {
@@ -423,7 +424,7 @@ class _SkillCooldownSlot extends StatelessWidget {
       child: Center(
         child: onCooldown
             ? Text(
-                _formatCountdown(cooldown),
+                DataFormatters.formatCountdown(cooldown),
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 16,
@@ -458,6 +459,7 @@ class _CombatEnemiesSection extends StatelessWidget {
                     .map((enemy) => _EnemyCombatBlock(
                           enemy: enemy,
                           enemyData: state.enemyDataFor(enemy),
+                          attackTimer: state.attackTimerFor(enemy),
                         ))
                     .toList(),
               ),
@@ -477,43 +479,22 @@ class _CombatEnemiesSection extends StatelessWidget {
   }
 }
 
-// Placeholder for the enemy's next-move type — no such system exists yet
-// (see class doc comment above); this stands in for whatever real enum
-// eventually classifies an enemy move as attack/buff/debuff/etc.
-enum _EnemyMoveType {
-  attack,
-  buff,
-  debuff;
-
-  String get label {
-    switch (this) {
-      case _EnemyMoveType.attack:
-        return 'Attack';
-      case _EnemyMoveType.buff:
-        return 'Buff';
-      case _EnemyMoveType.debuff:
-        return 'Debuff';
-    }
-  }
-}
-
 class _EnemyCombatBlock extends StatelessWidget {
   final Enemy enemy;
   final EnemyData? enemyData;
-  const _EnemyCombatBlock({required this.enemy, required this.enemyData});
+  final ScheduledTimer? attackTimer;
+  const _EnemyCombatBlock(
+      {required this.enemy, required this.enemyData, required this.attackTimer});
 
   @override
   Widget build(BuildContext context) {
     final isDead = enemy.currentHealth <= 0;
-    // Stable per-enemy placeholders (seeded off the enemy id, salted
-    // differently per field so they don't move in lockstep) so neither
-    // jumps around on every reload — no live attack-timer or move-type
-    // system exists yet. Attacks land on an hours-scale cadence, not
-    // seconds.
-    final placeholderAttackTime =
-        Duration(seconds: Random(enemy.id.hashCode).nextInt(24 * 3600) + 1);
-    final placeholderMoveType = _EnemyMoveType.values[
-        Random(enemy.id.hashCode + 1).nextInt(_EnemyMoveType.values.length)];
+    final now = DateTime.now();
+    final attackCountdown = attackTimer == null
+        ? null
+        : (attackTimer!.nextTriggerAt.isAfter(now)
+            ? attackTimer!.nextTriggerAt.difference(now)
+            : Duration.zero);
 
     final colorScheme = Theme.of(context).colorScheme;
     return Opacity(
@@ -559,27 +540,36 @@ class _EnemyCombatBlock extends StatelessWidget {
                             fontWeight: FontWeight.w600,
                           ),
                         )
-                      : Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              placeholderMoveType.label,
+                      : attackTimer == null || attackCountdown == null
+                          ? Text(
+                              '—',
                               style: TextStyle(
                                 color: Colors.white.withValues(alpha: 0.7),
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            Text(
-                              _formatCountdown(placeholderAttackTime),
-                              style: const TextStyle(
-                                color: Colors.white,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                               ),
+                            )
+                          : Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  attackTimer!.payload,
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.7),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                Text(
+                                  DataFormatters.formatCountdown(attackCountdown),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
                 ),
               ),
             ],

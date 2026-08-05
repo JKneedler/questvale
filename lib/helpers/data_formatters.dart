@@ -78,6 +78,24 @@ class DataFormatters {
 
   static String weekdayName(int weekday) => _weekdayNames[weekday - 1];
 
+  // Shared by any hour/day-scale countdown display (skill cooldowns, enemy
+  // attack timers): hh:mm once there's at least an hour left, dropping to
+  // mm:ss once it's down to minutes so the last stretch reads with
+  // second-level precision.
+  static String formatCountdown(Duration remaining) {
+    final totalSeconds = remaining.inSeconds;
+    String pad(int n) => n.toString().padLeft(2, '0');
+    if (totalSeconds >= Duration.secondsPerHour) {
+      final hours = totalSeconds ~/ Duration.secondsPerHour;
+      final minutes =
+          (totalSeconds % Duration.secondsPerHour) ~/ Duration.secondsPerMinute;
+      return '${pad(hours)}:${pad(minutes)}';
+    }
+    final minutes = totalSeconds ~/ Duration.secondsPerMinute;
+    final seconds = totalSeconds % Duration.secondsPerMinute;
+    return '${pad(minutes)}:${pad(seconds)}';
+  }
+
   static String formatRepeatInterval(int interval, HabitTimeframe timeframe) {
     String unit;
     switch (timeframe) {

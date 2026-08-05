@@ -5,6 +5,7 @@ import 'package:questvale/cubits/world_tab/questing/combat/combat_state.dart';
 import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/providers/game_data_models/skill_data.dart';
 import 'package:questvale/data/repositories/enemy_repository.dart';
+import 'package:questvale/data/repositories/scheduled_timer_repository.dart';
 import 'package:questvale/data/skills/base_active_skill.dart';
 import 'package:questvale/services/combat_service.dart';
 import 'package:sqflite/sqflite.dart';
@@ -12,11 +13,13 @@ import 'package:sqflite/sqflite.dart';
 class CombatCubit extends Cubit<CombatState> {
   final String encounterId;
   late EnemyRepository enemyRepository;
+  late ScheduledTimerRepository scheduledTimerRepository;
   late CombatService combatService;
 
   CombatCubit({required this.encounterId, required Database db})
       : super(CombatState(enemies: [])) {
     enemyRepository = EnemyRepository(db: db);
+    scheduledTimerRepository = ScheduledTimerRepository(db: db);
     combatService = CombatService(db: db);
     init();
   }
@@ -27,6 +30,8 @@ class CombatCubit extends Cubit<CombatState> {
 
   Future<void> reload() async {
     final enemies = await enemyRepository.getEnemiesByEncounterId(encounterId);
+    final timers =
+        await scheduledTimerRepository.getTimersByEncounterId(encounterId);
     CombatStatus newStatus = state.status;
     if (state.status != CombatStatus.complete) {
       if (enemies.every((enemy) => enemy.currentHealth <= 0)) {
@@ -42,6 +47,7 @@ class CombatCubit extends Cubit<CombatState> {
         targetingSkill: null,
         target: SkillTarget.none,
         inspectingEnemyIndex: -1,
+        attackTimers: {for (final t in timers) t.ownerId: t},
       ));
     }
   }

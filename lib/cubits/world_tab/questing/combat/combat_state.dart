@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:questvale/data/models/enemy.dart';
+import 'package:questvale/data/models/scheduled_timer.dart';
 import 'package:questvale/data/skills/base_active_skill.dart';
 
 enum CombatStatus {
@@ -43,13 +44,20 @@ class CombatState extends Equatable {
   final BaseActiveSkill? targetingSkill;
   final int inspectingEnemyIndex;
 
+  // Real enemy-attack timers for this encounter, keyed by Enemy.id —
+  // reloaded alongside enemies in CombatCubit.reload().
+  final Map<String, ScheduledTimer> attackTimers;
+
   const CombatState({
     required this.enemies,
     this.status = CombatStatus.idle,
     this.target = SkillTarget.none,
     this.targetingSkill,
     this.inspectingEnemyIndex = -1,
+    this.attackTimers = const {},
   });
+
+  ScheduledTimer? attackTimerFor(Enemy enemy) => attackTimers[enemy.id];
 
   CombatState copyWith({
     List<Enemy>? enemies,
@@ -57,6 +65,7 @@ class CombatState extends Equatable {
     SkillTarget? target,
     BaseActiveSkill? targetingSkill,
     int? inspectingEnemyIndex,
+    Map<String, ScheduledTimer>? attackTimers,
   }) {
     return CombatState(
         enemies: enemies ?? this.enemies,
@@ -64,10 +73,17 @@ class CombatState extends Equatable {
         target: target ?? this.target,
         targetingSkill: targetingSkill ?? this.targetingSkill,
         inspectingEnemyIndex:
-            inspectingEnemyIndex ?? this.inspectingEnemyIndex);
+            inspectingEnemyIndex ?? this.inspectingEnemyIndex,
+        attackTimers: attackTimers ?? this.attackTimers);
   }
 
   @override
-  List<Object?> get props =>
-      [enemies, status, target, targetingSkill, inspectingEnemyIndex];
+  List<Object?> get props => [
+        enemies,
+        status,
+        target,
+        targetingSkill,
+        inspectingEnemyIndex,
+        attackTimers
+      ];
 }

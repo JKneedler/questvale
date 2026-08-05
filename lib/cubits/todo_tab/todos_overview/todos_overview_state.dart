@@ -4,6 +4,7 @@ import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/character_stats.dart';
 import 'package:questvale/data/models/encounter.dart';
 import 'package:questvale/data/models/enemy.dart';
+import 'package:questvale/data/models/scheduled_timer.dart';
 import 'package:questvale/data/models/todo.dart';
 import 'package:questvale/data/models/tag.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
@@ -76,6 +77,11 @@ class TodosOverviewState extends Equatable {
   final Encounter? activeEncounter;
   final QuestZone? activeQuestZone;
 
+  // Real, live enemy-attack timers for the current encounter, keyed by
+  // Enemy.id — reconciled on every load in TodosOverviewCubit.loadCharacter.
+  // Empty (not just absent) when not in combat.
+  final Map<String, ScheduledTimer> enemyAttackTimers;
+
   const TodosOverviewState({
     this.character,
     this.characterStats,
@@ -88,6 +94,7 @@ class TodosOverviewState extends Equatable {
     this.viewMode = TodosViewMode.list,
     this.activeEncounter,
     this.activeQuestZone,
+    this.enemyAttackTimers = const {},
   });
 
   TodosOverviewState copyWith({
@@ -110,6 +117,7 @@ class TodosOverviewState extends Equatable {
       viewMode: viewMode ?? this.viewMode,
       activeEncounter: activeEncounter,
       activeQuestZone: activeQuestZone,
+      enemyAttackTimers: enemyAttackTimers,
     );
   }
 
@@ -122,6 +130,8 @@ class TodosOverviewState extends Equatable {
 
   EnemyData? enemyDataFor(Enemy enemy) => activeQuestZone?.enemies
       .firstWhereOrNull((data) => data.id == enemy.enemyDataId);
+
+  ScheduledTimer? attackTimerFor(Enemy enemy) => enemyAttackTimers[enemy.id];
 
   // "Today"/"This Week" are scoped by due date but don't hide completed
   // items — per the design, completion only dims a row; only the active
@@ -225,5 +235,6 @@ class TodosOverviewState extends Equatable {
         viewMode,
         activeEncounter,
         activeQuestZone,
+        enemyAttackTimers,
       ];
 }

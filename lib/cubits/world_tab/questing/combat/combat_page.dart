@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
@@ -8,9 +11,13 @@ import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_encoun
 import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_flee_confirmation_modal.dart';
 import 'package:questvale/cubits/theme/theme_cubit.dart';
 import 'package:questvale/data/models/enemy.dart';
+import 'package:questvale/data/models/scheduled_timer.dart';
+import 'package:questvale/data/providers/game_data_models/enemy_attack_data.dart';
+import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
 import 'package:questvale/data/providers/game_data_models/skill_data.dart';
 import 'package:questvale/data/skills/base_active_skill.dart';
 import 'package:questvale/helpers/constants.dart';
+import 'package:questvale/helpers/data_formatters.dart';
 import 'package:questvale/widgets/qv_animated_transition.dart';
 import 'package:questvale/widgets/qv_blinking.dart';
 import 'package:questvale/widgets/qv_button.dart';
@@ -617,7 +624,13 @@ class EnemyInfoBox extends StatelessWidget {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      EnemyNextAttackSlice(),
+                      EnemyNextAttackSlice(
+                        attackTimer: context
+                            .read<CombatCubit>()
+                            .state
+                            .attackTimerFor(enemy),
+                        enemyData: enemyData,
+                      ),
                       EnemyStatusEffectsSlice(),
                       Text(enemyData.rarity.name.toUpperCase()),
                       Text(enemyData.enemyType.name.toUpperCase()),
@@ -662,13 +675,56 @@ class EnemyInfoBox extends StatelessWidget {
   }
 }
 
-class EnemyNextAttackSlice extends StatelessWidget {
-  const EnemyNextAttackSlice({super.key});
+class EnemyNextAttackSlice extends StatefulWidget {
+  final ScheduledTimer? attackTimer;
+  final EnemyData enemyData;
+
+  const EnemyNextAttackSlice(
+      {super.key, required this.attackTimer, required this.enemyData});
+
+  @override
+  State<EnemyNextAttackSlice> createState() => _EnemyNextAttackSliceState();
+}
+
+class _EnemyNextAttackSliceState extends State<EnemyNextAttackSlice> {
+  Timer? _countdownRefreshTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Purely presentational — recomputes nextTriggerAt - now() on a plain
+    // UI timer while this box is open, no business logic here. Hour/day
+    // -scale timers don't need per-second precision.
+    _countdownRefreshTimer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => setState(() {}),
+    );
+  }
+
+  @override
+  void dispose() {
+    _countdownRefreshTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     final themeId = context.watch<ThemeCubit>().state.theme.id;
+
+    final timer = widget.attackTimer;
+    EnemyAttackData? attack;
+    String countdownLabel = '—';
+    if (timer != null) {
+      final now = DateTime.now();
+      final remaining = timer.nextTriggerAt.isAfter(now)
+          ? timer.nextTriggerAt.difference(now)
+          : Duration.zero;
+      countdownLabel = DataFormatters.formatCountdown(remaining);
+      attack = widget.enemyData.attacks
+          .firstWhereOrNull((a) => a.name == timer.payload);
+    }
+
     return Column(
       children: [
         Align(
@@ -699,7 +755,7 @@ class EnemyNextAttackSlice extends StatelessWidget {
             direction: Axis.horizontal,
             children: [
               Expanded(
-                  child: Text('1:12',
+                  child: Text(countdownLabel,
                       style: TextStyle(
                           fontSize: 20, color: Colors.grey[100], height: 1),
                       textAlign: TextAlign.center)),
@@ -708,12 +764,12 @@ class EnemyNextAttackSlice extends StatelessWidget {
               Expanded(
                   flex: 3,
                   child: Text(
-                    'Slam',
+                    attack?.name ?? '—',
                     style: TextStyle(
                         fontSize: 20, color: colorScheme.primary, height: 1),
                   )),
               Expanded(
-                  child: Text('8-12',
+                  child: Text(attack == null ? '—' : '${attack.damage}',
                       style: TextStyle(
                           fontSize: 20, color: colorScheme.primary, height: 1),
                       textAlign: TextAlign.center)),
