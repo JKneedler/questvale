@@ -35,7 +35,6 @@ class AddTodoView extends StatelessWidget {
           ),
           body: TodoFormBody(
             characterId: state.characterId,
-            showCompletionToggle: false,
             autofocusName: true,
             fields: TodoFormFields(
               name: state.name,

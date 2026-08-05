@@ -6,6 +6,7 @@ import 'package:questvale/helpers/data_formatters.dart';
 import 'package:questvale/cubits/todo_tab/edit_todo/edit_todo_page.dart';
 import 'package:questvale/widgets/qv_ap_toast.dart';
 import 'package:questvale/widgets/qv_button.dart';
+import 'package:questvale/widgets/qv_confirmation_modal.dart';
 import 'package:questvale/widgets/qv_check_box.dart';
 import '../../../data/models/todo.dart';
 
@@ -62,16 +63,38 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
                     final isMultiCheck = widget.todo.isHabit &&
                         widget.todo.allowsMultipleCompletions;
                     final isCompletingNow = !widget.todo.isCompleted;
-                    if (!isMultiCheck && isCompletingNow) {
-                      setState(() => _fadingOut = true);
-                      await Future.delayed(const Duration(milliseconds: 300));
-                      if (!mounted) return;
+                    // Multi-check habits never "un-complete" via a tap —
+                    // every tap on one is a fresh completion attempt, same
+                    // as a normal todo/single-check habit going incomplete
+                    // -> complete.
+                    final isEarningAttempt = isMultiCheck || isCompletingNow;
+
+                    Future<void> complete() async {
+                      if (!isMultiCheck && isCompletingNow) {
+                        setState(() => _fadingOut = true);
+                        await Future.delayed(const Duration(milliseconds: 300));
+                        if (!mounted) return;
+                      }
+                      final apEarned = widget.todo.isHabit
+                          ? await todoCubit.completeHabitOnce(widget.todo)
+                          : await todoCubit.toggleCompletion(widget.todo);
+                      if (apEarned > 0 && mounted) {
+                        showApToast(context, apEarned);
+                      }
                     }
-                    final apEarned = widget.todo.isHabit
-                        ? await todoCubit.completeHabitOnce(widget.todo)
-                        : await todoCubit.toggleCompletion(widget.todo);
-                    if (apEarned > 0 && mounted) {
-                      showApToast(context, apEarned);
+
+                    if (isEarningAttempt && !todoCubit.state.isInActiveCombat) {
+                      await QvConfirmationModal.showModal(
+                        context,
+                        title: 'Not in combat',
+                        description: "You're not in combat right now, so "
+                            "completing this task won't earn any AP. "
+                            "Complete it anyway?",
+                        confirmLabel: 'Complete Anyway',
+                        onConfirm: complete,
+                      );
+                    } else {
+                      await complete();
                     }
                   },
                   child: Material(
@@ -155,8 +178,7 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
                             if (widget.todo.dueDate != null)
                               Text(
                                 DataFormatters.formatDateTime(
-                                    widget.todo.dueDate!,
-                                    widget.todo.hasTime),
+                                    widget.todo.dueDate!, widget.todo.hasTime),
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: isPastDue

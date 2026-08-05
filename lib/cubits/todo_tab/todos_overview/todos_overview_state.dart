@@ -1,8 +1,13 @@
+import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/character_stats.dart';
+import 'package:questvale/data/models/encounter.dart';
+import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/models/todo.dart';
 import 'package:questvale/data/models/tag.dart';
+import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
+import 'package:questvale/data/providers/game_data_models/quest_zone.dart';
 
 enum TodoFilter {
   none,
@@ -66,6 +71,11 @@ class TodosOverviewState extends Equatable {
   final TodoSort sort;
   final TodosViewMode viewMode;
 
+  // Null when the character has no in-progress quest/encounter — reflects
+  // the real quest/encounter repositories, not a placeholder.
+  final Encounter? activeEncounter;
+  final QuestZone? activeQuestZone;
+
   const TodosOverviewState({
     this.character,
     this.characterStats,
@@ -76,6 +86,8 @@ class TodosOverviewState extends Equatable {
     this.filterPriority,
     this.sort = TodoSort.dueDate,
     this.viewMode = TodosViewMode.list,
+    this.activeEncounter,
+    this.activeQuestZone,
   });
 
   TodosOverviewState copyWith({
@@ -96,8 +108,20 @@ class TodosOverviewState extends Equatable {
       filterPriority: filterPriority,
       sort: sort ?? this.sort,
       viewMode: viewMode ?? this.viewMode,
+      activeEncounter: activeEncounter,
+      activeQuestZone: activeQuestZone,
     );
   }
+
+  // Real check: mirrors the encounter-in-progress logic quest_encounter_cubit
+  // already uses (combat-type encounter that hasn't been completed yet).
+  bool get isInActiveCombat =>
+      activeEncounter != null &&
+      activeEncounter!.completedAt == null &&
+      activeEncounter!.encounterType.isCombatEncounter();
+
+  EnemyData? enemyDataFor(Enemy enemy) => activeQuestZone?.enemies
+      .firstWhereOrNull((data) => data.id == enemy.enemyDataId);
 
   // "Today"/"This Week" are scoped by due date but don't hide completed
   // items — per the design, completion only dims a row; only the active
@@ -199,5 +223,7 @@ class TodosOverviewState extends Equatable {
         filterPriority,
         sort,
         viewMode,
+        activeEncounter,
+        activeQuestZone,
       ];
 }

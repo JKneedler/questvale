@@ -3,6 +3,7 @@ import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/settings/settings_state.dart';
 import 'package:questvale/cubits/theme/theme_cubit.dart';
 import 'package:questvale/data/models/character.dart';
+import 'package:questvale/data/models/character_skill.dart';
 import 'package:questvale/data/models/character_stats.dart';
 import 'package:questvale/data/models/encounter.dart';
 import 'package:questvale/data/providers/game_data.dart';
@@ -13,6 +14,7 @@ import 'package:questvale/data/repositories/quest_repository.dart';
 import 'package:questvale/data/repositories/todo_repository.dart';
 import 'package:questvale/services/equipment_service.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:uuid/uuid.dart';
 
 class SettingsCubit extends Cubit<SettingsState> {
   final Database db;
@@ -76,8 +78,8 @@ class SettingsCubit extends Cubit<SettingsState> {
   }
 
   Future<void> deleteAllEquipment() async {
-    final updated = await characterRepository
-        .updateCharacter(_unequipped(state.character));
+    final updated =
+        await characterRepository.updateCharacter(_unequipped(state.character));
     await equipmentRepository.deleteAllEquipmentForCharacter(updated.id);
     emit(state.copyWith(character: updated));
     await playerCubit.loadCharacter();
@@ -86,8 +88,7 @@ class SettingsCubit extends Cubit<SettingsState> {
   Future<void> cancelQuest() async {
     final quest = await questRepository.getQuest(state.character.id);
     if (quest == null) return;
-    final encounter =
-        await encounterRepository.getEncounterByQuestId(quest.id);
+    final encounter = await encounterRepository.getEncounterByQuestId(quest.id);
     if (encounter != null) {
       await encounterRepository.enemyRepository
           .deleteEnemiesByEncounterId(encounter.id);
@@ -100,6 +101,27 @@ class SettingsCubit extends Cubit<SettingsState> {
 
   Future<void> resetCharacter() async {
     final c = state.character;
+
+    // Clear out any invested/leveled skills first, then recreate exactly
+    // the loadout QuestvaleDB.initializeDB() seeds a brand-new character
+    // with, rather than leaving the character with no active skills at
+    // all.
+    await characterRepository.deleteAllSkillsForCharacter(c.id);
+    final activeSkillSlot1 = CharacterSkill(
+      id: const Uuid().v4(),
+      characterId: c.id,
+      skillId: 'mage-1-arcane_bolt',
+      level: 1,
+    );
+    final activeSkillSlot2 = CharacterSkill(
+      id: const Uuid().v4(),
+      characterId: c.id,
+      skillId: 'mage-1-elemental_surge',
+      level: 1,
+    );
+    await characterRepository.insertCharacterSkill(activeSkillSlot1);
+    await characterRepository.insertCharacterSkill(activeSkillSlot2);
+
     final reset = Character(
       id: c.id,
       name: c.name,
@@ -110,14 +132,14 @@ class SettingsCubit extends Cubit<SettingsState> {
       currentHealth: (c.level * 10) + c.characterClass.baseMaxHealth,
       currentMana: (c.level * 10) + 10,
       actionPoints: 0,
-      // equipped* and activeSkillSlot* omitted -> null (unequipped, no
-      // active skills). skills defaults to const [].
+      // equipped* omitted -> null (unequipped). skills defaults to const [].
+      activeSkillSlot1: activeSkillSlot1,
+      activeSkillSlot2: activeSkillSlot2,
       dailyApEarned: 0,
       themeId: c.themeId,
     );
     final updated = await characterRepository.updateCharacter(reset);
     await equipmentRepository.deleteAllEquipmentForCharacter(updated.id);
-    await characterRepository.deleteAllSkillsForCharacter(updated.id);
     await characterRepository
         .updateCharacterStats(CharacterStats(characterId: updated.id));
     emit(state.copyWith(character: updated));

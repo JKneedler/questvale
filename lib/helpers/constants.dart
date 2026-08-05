@@ -182,8 +182,11 @@ const STANDARD_BORDER_MIN_SIZE = Size(36, 36);
 const METAL_CORNER_BORDER_SLICE = Rect.fromLTWH(28, 28, 8, 8);
 const METAL_CORNER_BORDER_MIN_SIZE = Size(60, 60);
 
-const HEALTH_BORDER_SLICE = Rect.fromLTWH(4, 4, 56, 56);
-const HEALTH_BORDER_MIN_SIZE = Size(12, 12);
+const SMALL_BAR_SLICE = Rect.fromLTWH(8, 8, 48, 48);
+const SMALL_BAR_MIN_SIZE = Size(20, 20);
+
+const MINI_BAR_SLICE = Rect.fromLTWH(6, 6, 52, 52);
+const MINI_BAR_MIN_SIZE = Size(22, 22);
 
 // Combat
 const BASE_HEALTH = 100;

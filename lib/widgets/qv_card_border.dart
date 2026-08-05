@@ -61,28 +61,34 @@ class QvCardBorder extends StatelessWidget {
         width: width > 0 ? width : null,
         child: Stack(
           children: [
-            Center(
-              child: FractionallySizedBox(
-                widthFactor: widthFactor,
-                heightFactor: heightFactor,
-                child: Container(
-                  color: bgColor,
+            // Positioned (not a plain Center) so this layer is ignored for
+            // the Stack's own intrinsic sizing — only the border+child
+            // Container below drives that, sized off child's content. That
+            // keeps this safe in unbounded-height contexts (e.g. a
+            // ListView.builder item), where a non-positioned
+            // FractionallySizedBox here would otherwise crash.
+            Positioned.fill(
+              child: Center(
+                child: FractionallySizedBox(
+                  widthFactor: widthFactor,
+                  heightFactor: heightFactor,
+                  child: Container(
+                    color: bgColor,
+                  ),
                 ),
               ),
             ),
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage(getBorderImage()),
-                    centerSlice: STANDARD_BORDER_SLICE,
-                    fit: BoxFit.fill,
-                    filterQuality: FilterQuality.none,
-                  ),
+            Container(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage(getBorderImage()),
+                  centerSlice: STANDARD_BORDER_SLICE,
+                  fit: BoxFit.fill,
+                  filterQuality: FilterQuality.none,
                 ),
-                padding: padding,
-                child: child,
               ),
+              padding: padding,
+              child: child,
             ),
           ],
         ),

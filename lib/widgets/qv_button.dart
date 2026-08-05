@@ -14,7 +14,10 @@ enum ButtonColor {
   uncommon,
   rare,
   legendary,
-  epic;
+  epic,
+  fireRed,
+  iceBlue,
+  arcanePurple;
 
   static ButtonColor getColor(Rarity rarity) {
     switch (rarity) {
@@ -59,14 +62,21 @@ enum ButtonColor {
         return 'images/ui/buttons/button-rarity-legendary.png';
       case ButtonColor.epic:
         return 'images/ui/buttons/button-rarity-epic.png';
+      case ButtonColor.fireRed:
+        return 'images/ui/buttons/button-fireRed.png';
+      case ButtonColor.iceBlue:
+        return 'images/ui/buttons/button-iceBlue.png';
+      case ButtonColor.arcanePurple:
+        return 'images/ui/buttons/button-arcanePurple.png';
     }
   }
 
   // Pressed-state textures exist for every registered theme's primary/
   // secondary/surface/surfaceContainer assets (generated via the
-  // retheme-color Light/Dark-swap technique). Rarity/silver buttons don't
-  // have a pressed variant, so QvButton falls back to the normal texture
-  // for those.
+  // retheme-color Light/Dark-swap technique), plus the skill-colored
+  // buttons below (same technique, flat non-theme files). Rarity/silver
+  // buttons don't have a pressed variant, so QvButton falls back to the
+  // normal texture for those.
   String? pressedAssetPath(String themeId) {
     switch (this) {
       case ButtonColor.primary:
@@ -77,6 +87,12 @@ enum ButtonColor {
         return 'images/ui/buttons/$themeId/button-surface-pressed.png';
       case ButtonColor.surfaceContainer:
         return 'images/ui/buttons/$themeId/button-surface-container-pressed.png';
+      case ButtonColor.fireRed:
+        return 'images/ui/buttons/button-fireRed-pressed.png';
+      case ButtonColor.iceBlue:
+        return 'images/ui/buttons/button-iceBlue-pressed.png';
+      case ButtonColor.arcanePurple:
+        return 'images/ui/buttons/button-arcanePurple-pressed.png';
       default:
         return null;
     }

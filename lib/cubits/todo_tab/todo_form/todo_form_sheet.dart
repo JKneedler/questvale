@@ -67,6 +67,18 @@ class TodoFormSheet extends StatelessWidget {
                               const SizedBox(height: 8),
                               footer!,
                             ],
+                            // DraggableScrollableSheet's own extent doesn't
+                            // shrink for the keyboard, so without this the
+                            // scrollable has no genuine extra room below its
+                            // last child — TodoFormBody's scroll-into-view
+                            // for the focused New Tag field can compute a
+                            // target offset that's clamped short of actually
+                            // clearing the keyboard. This spacer grows with
+                            // the keyboard's own inset, giving that scroll
+                            // somewhere real to land.
+                            SizedBox(
+                                height:
+                                    MediaQuery.of(context).viewInsets.bottom),
                           ],
                         ),
                       ),
