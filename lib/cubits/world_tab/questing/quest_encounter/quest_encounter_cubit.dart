@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_encounter_state.dart';
 import 'package:questvale/data/models/encounter.dart';
@@ -7,6 +8,8 @@ import 'package:questvale/data/repositories/character_repository.dart';
 import 'package:questvale/data/repositories/encounter_repository.dart';
 import 'package:questvale/data/repositories/enemy_repository.dart';
 import 'package:questvale/data/repositories/quest_repository.dart';
+import 'package:questvale/services/enemy_attack_scheduling_service.dart';
+import 'package:questvale/services/notification_service.dart';
 import 'package:questvale/services/quest_service.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -16,6 +19,7 @@ class QuestEncounterCubit extends Cubit<QuestEncounterState> {
   late EncounterRepository encounterRepository;
   late EnemyRepository enemyRepository;
   late CharacterRepository characterRepository;
+  late EnemyAttackSchedulingService enemyAttackSchedulingService;
 
   final QuestZone questZone;
 
@@ -31,6 +35,7 @@ class QuestEncounterCubit extends Cubit<QuestEncounterState> {
     enemyRepository = EnemyRepository(db: db);
     characterRepository = CharacterRepository(db: db);
     questService = QuestService(db: db);
+    enemyAttackSchedulingService = EnemyAttackSchedulingService(db: db);
     init();
   }
 
@@ -83,6 +88,15 @@ class QuestEncounterCubit extends Cubit<QuestEncounterState> {
     await encounterRepository.insertEncounter(newEncounter);
     for (var enemy in newEncounter.enemies) {
       await enemyRepository.insertEnemy(enemy);
+      final enemyData =
+          questZone.enemies.firstWhereOrNull((d) => d.id == enemy.enemyDataId);
+      if (enemyData != null) {
+        await enemyAttackSchedulingService.scheduleNextMove(
+          enemy: enemy,
+          enemyData: enemyData,
+          encounter: newEncounter,
+        );
+      }
     }
     return newEncounter;
   }
@@ -143,11 +157,25 @@ class QuestEncounterCubit extends Cubit<QuestEncounterState> {
     }
   }
 
+  // Cancels any still-pending attack-incoming notifications for `encounterId`
+  // before clearing its ScheduledTimers, so a defeated/abandoned encounter's
+  // enemies can't notify the player about an attack that will never land.
+  Future<void> _clearEncounterTimers(String encounterId) async {
+    final timers = await enemyAttackSchedulingService.scheduledTimerRepository
+        .getTimersByEncounterId(encounterId);
+    for (final timer in timers) {
+      await NotificationService().cancelEnemyAttackWarning(timer.id);
+    }
+    await enemyAttackSchedulingService.scheduledTimerRepository
+        .deleteTimersByEncounterId(encounterId);
+  }
+
   Future<void> _cleanEncounter() async {
     final quest = state.quest;
     final encounter = await encounterRepository.getEncounterByQuestId(quest.id);
     if (encounter != null) {
       await enemyRepository.deleteEnemiesByEncounterId(encounter.id);
+      await _clearEncounterTimers(encounter.id);
       await encounterRepository.deleteEncounter(encounter);
     }
   }
@@ -167,6 +195,7 @@ class QuestEncounterCubit extends Cubit<QuestEncounterState> {
     if (encounter != null) {
       await encounterRepository.deleteEncounter(encounter);
       await enemyRepository.deleteEnemiesByEncounterId(encounter.id);
+      await _clearEncounterTimers(encounter.id);
     }
     emit(state.copyWith(questStatus: QuestStatus.questDeleted));
   }

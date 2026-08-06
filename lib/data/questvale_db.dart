@@ -8,6 +8,7 @@ import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/data/models/equipment_encounter_reward.dart';
 import 'package:questvale/data/models/quest.dart';
+import 'package:questvale/data/models/scheduled_timer.dart';
 import 'package:questvale/data/models/stat_modifier.dart';
 import 'package:questvale/data/models/todo.dart';
 import 'package:questvale/data/models/todo_tag.dart';
@@ -77,6 +78,7 @@ class QuestvaleDB {
       await db.execute(StatModifier.createTableSQL);
 
       await db.execute(Enemy.createTableSQL);
+      await db.execute(ScheduledTimer.createTableSQL);
     }, onUpgrade: (db, oldVersion, newVersion) async {
       // TodoTag/CharacterTag were never added to a version-gated migration
       // block when the tags feature shipped, so any install that upgraded
@@ -183,6 +185,9 @@ class QuestvaleDB {
         await db.execute(
             'ALTER TABLE ${Character.characterTableName} ADD COLUMN ${Character.combatStatusCardExpandedColumnName} BOOLEAN NOT NULL DEFAULT 1');
       }
-    }, version: 11);
+      if (oldVersion < 12) {
+        await db.execute(ScheduledTimer.createTableSQL);
+      }
+    }, version: 12);
   }
 }

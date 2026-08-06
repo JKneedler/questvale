@@ -9,6 +9,7 @@ import 'package:questvale/data/repositories/todo_repository.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
 import 'package:questvale/data/repositories/encounter_repository.dart';
 import 'package:questvale/data/repositories/quest_repository.dart';
+import 'package:questvale/services/enemy_attack_scheduling_service.dart';
 import 'package:sqflite/sqflite.dart';
 
 class TodosOverviewPage extends StatelessWidget {
@@ -26,6 +27,7 @@ class TodosOverviewPage extends StatelessWidget {
             EncounterRepository(db: context.read<Database>()),
             context.read<GameData>(),
             context.read<PlayerCubit>(),
+            EnemyAttackSchedulingService(db: context.read<Database>()),
           ),
         ),
         BlocProvider(create: (context) => TodosCalendarCubit()),

@@ -4,6 +4,7 @@ import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/character_stats.dart';
 import 'package:questvale/data/models/encounter.dart';
 import 'package:questvale/data/models/enemy.dart';
+import 'package:questvale/data/models/scheduled_timer.dart';
 import 'package:questvale/data/models/todo.dart';
 import 'package:questvale/data/models/tag.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
@@ -76,6 +77,17 @@ class TodosOverviewState extends Equatable {
   final Encounter? activeEncounter;
   final QuestZone? activeQuestZone;
 
+  // Real, live enemy-attack timers for the current encounter, keyed by
+  // Enemy.id — reconciled on every load in TodosOverviewCubit.loadCharacter.
+  // Empty (not just absent) when not in combat.
+  final Map<String, ScheduledTimer> enemyAttackTimers;
+
+  // Total HP just lost to enemy attacks resolved by the most recent
+  // loadCharacter() call — null when that call resolved no attacks. A
+  // BlocListener uses this to fire a one-shot damage-taken toast; it's not
+  // "current damage state" so much as an event riding along on this emit.
+  final int? lastEnemyDamageTaken;
+
   const TodosOverviewState({
     this.character,
     this.characterStats,
@@ -88,6 +100,8 @@ class TodosOverviewState extends Equatable {
     this.viewMode = TodosViewMode.list,
     this.activeEncounter,
     this.activeQuestZone,
+    this.enemyAttackTimers = const {},
+    this.lastEnemyDamageTaken,
   });
 
   TodosOverviewState copyWith({
@@ -110,6 +124,8 @@ class TodosOverviewState extends Equatable {
       viewMode: viewMode ?? this.viewMode,
       activeEncounter: activeEncounter,
       activeQuestZone: activeQuestZone,
+      enemyAttackTimers: enemyAttackTimers,
+      lastEnemyDamageTaken: lastEnemyDamageTaken,
     );
   }
 
@@ -122,6 +138,8 @@ class TodosOverviewState extends Equatable {
 
   EnemyData? enemyDataFor(Enemy enemy) => activeQuestZone?.enemies
       .firstWhereOrNull((data) => data.id == enemy.enemyDataId);
+
+  ScheduledTimer? attackTimerFor(Enemy enemy) => enemyAttackTimers[enemy.id];
 
   // "Today"/"This Week" are scoped by due date but don't hide completed
   // items — per the design, completion only dims a row; only the active
@@ -225,5 +243,7 @@ class TodosOverviewState extends Equatable {
         viewMode,
         activeEncounter,
         activeQuestZone,
+        enemyAttackTimers,
+        lastEnemyDamageTaken,
       ];
 }
