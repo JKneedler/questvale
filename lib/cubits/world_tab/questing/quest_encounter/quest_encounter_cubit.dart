@@ -9,6 +9,7 @@ import 'package:questvale/data/repositories/encounter_repository.dart';
 import 'package:questvale/data/repositories/enemy_repository.dart';
 import 'package:questvale/data/repositories/quest_repository.dart';
 import 'package:questvale/services/enemy_attack_scheduling_service.dart';
+import 'package:questvale/services/notification_service.dart';
 import 'package:questvale/services/quest_service.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -156,11 +157,25 @@ class QuestEncounterCubit extends Cubit<QuestEncounterState> {
     }
   }
 
+  // Cancels any still-pending attack-incoming notifications for `encounterId`
+  // before clearing its ScheduledTimers, so a defeated/abandoned encounter's
+  // enemies can't notify the player about an attack that will never land.
+  Future<void> _clearEncounterTimers(String encounterId) async {
+    final timers = await enemyAttackSchedulingService.scheduledTimerRepository
+        .getTimersByEncounterId(encounterId);
+    for (final timer in timers) {
+      await NotificationService().cancelEnemyAttackWarning(timer.id);
+    }
+    await enemyAttackSchedulingService.scheduledTimerRepository
+        .deleteTimersByEncounterId(encounterId);
+  }
+
   Future<void> _cleanEncounter() async {
     final quest = state.quest;
     final encounter = await encounterRepository.getEncounterByQuestId(quest.id);
     if (encounter != null) {
       await enemyRepository.deleteEnemiesByEncounterId(encounter.id);
+      await _clearEncounterTimers(encounter.id);
       await encounterRepository.deleteEncounter(encounter);
     }
   }
@@ -180,6 +195,7 @@ class QuestEncounterCubit extends Cubit<QuestEncounterState> {
     if (encounter != null) {
       await encounterRepository.deleteEncounter(encounter);
       await enemyRepository.deleteEnemiesByEncounterId(encounter.id);
+      await _clearEncounterTimers(encounter.id);
     }
     emit(state.copyWith(questStatus: QuestStatus.questDeleted));
   }

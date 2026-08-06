@@ -8,6 +8,7 @@ import 'package:questvale/data/providers/game_data_models/enemy_attack_data.dart
 import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
 import 'package:questvale/data/repositories/scheduled_timer_repository.dart';
 import 'package:questvale/services/combat_service.dart';
+import 'package:questvale/services/notification_service.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 
@@ -29,6 +30,11 @@ class ReconciliationResult {
 // without a database; scheduleNextMove/reconcile are the DB-touching
 // wrappers around that math.
 class EnemyAttackSchedulingService {
+  // Copy isn't the point for this pass (per the ticket) — generic content,
+  // enemy name included since it's already on hand. Not user-configurable
+  // yet; a settings UI for lead time is explicitly out of scope.
+  static const attackWarningLeadTime = Duration(minutes: 15);
+
   final Database db;
   late final ScheduledTimerRepository scheduledTimerRepository;
   late final CombatService combatService;
@@ -126,6 +132,9 @@ class EnemyAttackSchedulingService {
 
   // Picks a move for `enemy` and persists a fresh timer for it, replacing
   // any stale one that owner already had (e.g. re-arming after an attack).
+  // Also (re)schedules the attack-incoming notification for this timer —
+  // this is the single choke point used for both initial spawn scheduling
+  // and every re-arm, so timer and notification lifecycles always match.
   Future<ScheduledTimer> scheduleNextMove({
     required Enemy enemy,
     required EnemyData enemyData,
@@ -143,19 +152,35 @@ class EnemyAttackSchedulingService {
     );
     final existing = await scheduledTimerRepository.getTimerForOwner(
         enemy.id, ScheduledTimerKind.enemyMove);
+    final ScheduledTimer persisted;
     if (existing != null) {
-      await scheduledTimerRepository.updateTimer(timer.copyWith(id: existing.id));
-      return timer.copyWith(id: existing.id);
+      persisted = timer.copyWith(id: existing.id);
+      await scheduledTimerRepository.updateTimer(persisted);
+    } else {
+      persisted = timer;
+      await scheduledTimerRepository.insertTimer(persisted);
     }
-    await scheduledTimerRepository.insertTimer(timer);
-    return timer;
+    await NotificationService().scheduleEnemyAttackWarning(
+      persisted,
+      leadTime: attackWarningLeadTime,
+      title: 'Enemy Attack Incoming',
+      body: '${enemyData.name} is about to attack!',
+    );
+    return persisted;
   }
 
-  // The replay engine: processes every ScheduledTimer for `encounter` whose
-  // nextTriggerAt has passed, in chronological order (never a single
-  // elapsed-time subtraction), applying damage and re-arming each enemy's
-  // next move as it goes. Safe to call on every load — a no-op when
-  // nothing is overdue.
+  // The replay engine: processes each living enemy's overdue ScheduledTimer
+  // (nextTriggerAt has passed), applying damage and re-arming its next move
+  // chained from `now` — not from the missed deadline. That cap is
+  // deliberate: an enemy resolves at most one attack per reconcile() call
+  // no matter how long the app was closed, so a missed day (or several)
+  // costs exactly one hit rather than compounding every elapsed cooldown
+  // cycle into a pile of damage the moment the player returns. It's also
+  // what guarantees at most one ScheduledTimer — and so at most one
+  // attack-incoming notification — is ever pending per enemy at a time.
+  // Multiple simultaneously-overdue enemies are still each resolved, still
+  // soonest-first via nextDueTimer(). Safe to call on every load — a no-op
+  // when nothing is overdue.
   Future<ReconciliationResult> reconcile({
     required Encounter encounter,
     required Character character,
@@ -194,13 +219,15 @@ class EnemyAttackSchedulingService {
 
       if (enemy == null || enemy.currentHealth <= 0) {
         // Dead/missing enemies don't get to land a last hit from a stale
-        // timer — just clear it.
+        // timer — just clear it (and any warning notification riding on it).
+        await NotificationService().cancelEnemyAttackWarning(due.id);
         await scheduledTimerRepository.deleteTimersByOwnerId(due.ownerId);
         continue;
       }
 
       final enemyData = enemyDataFor(enemy);
       if (enemyData == null || enemyData.attacks.isEmpty) {
+        await NotificationService().cancelEnemyAttackWarning(due.id);
         await scheduledTimerRepository.deleteTimersByOwnerId(due.ownerId);
         continue;
       }
@@ -212,13 +239,14 @@ class EnemyAttackSchedulingService {
       currentCharacter =
           await combatService.applyEnemyAttackDamage(attack, currentCharacter);
 
-      // Chain from the missed deadline rather than `now`, so a long-closed
-      // app doesn't grant the enemy's next attack a grace-period bonus.
+      // Chain from `now`, not the missed deadline — see the reconcile()
+      // doc-comment. This is what caps the enemy to one resolved attack per
+      // reconcile() call regardless of how overdue it was.
       final nextTimer = await scheduleNextMove(
         enemy: enemy,
         enemyData: enemyData,
         encounter: encounter,
-        from: due.nextTriggerAt,
+        from: now,
         random: random,
       );
       timers = [...timers, nextTimer];

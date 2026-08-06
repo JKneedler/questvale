@@ -1,4 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:questvale/data/models/scheduled_timer.dart';
 import 'package:questvale/data/models/todo_reminder.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -13,6 +14,9 @@ class NotificationService {
 
   static const _androidChannelId = 'todo_reminders';
   static const _androidChannelName = 'Task & Habit Reminders';
+
+  static const _enemyAttackChannelId = 'enemy_attack_warnings';
+  static const _enemyAttackChannelName = 'Enemy Attack Warnings';
 
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
@@ -78,5 +82,43 @@ class NotificationService {
     await _plugin.cancel(_notificationId(reminderId));
   }
 
-  int _notificationId(String reminderId) => reminderId.hashCode & 0x7fffffff;
+  // Warns before an enemy's ScheduledTimer (see EnemyAttackSchedulingService)
+  // fires. Reconciliation caps an enemy to at most one pending timer at a
+  // time and always chains its id forward across re-arms (see
+  // scheduleNextMove), so scheduling under `timer.id` here naturally
+  // replaces the previous warning for that enemy — no separate bookkeeping
+  // needed to know "does this enemy already have one scheduled."
+  Future<void> scheduleEnemyAttackWarning(
+    ScheduledTimer timer, {
+    required Duration leadTime,
+    required String title,
+    String? body,
+  }) async {
+    final fireAt = timer.nextTriggerAt.subtract(leadTime);
+    if (fireAt.isBefore(DateTime.now())) return;
+
+    await _plugin.zonedSchedule(
+      _notificationId(timer.id),
+      title,
+      body,
+      tz.TZDateTime.from(fireAt, tz.UTC),
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          _enemyAttackChannelId,
+          _enemyAttackChannelName,
+          channelDescription: 'Warnings before an enemy attacks',
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
+        iOS: DarwinNotificationDetails(),
+      ),
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+    );
+  }
+
+  Future<void> cancelEnemyAttackWarning(String timerId) async {
+    await _plugin.cancel(_notificationId(timerId));
+  }
+
+  int _notificationId(String id) => id.hashCode & 0x7fffffff;
 }
