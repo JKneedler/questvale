@@ -37,8 +37,12 @@ class CombatPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<CombatCubit>(
-        create: (context) =>
-            CombatCubit(encounterId: encounterId, db: context.read<Database>()),
+        create: (context) => CombatCubit(
+              encounterId: encounterId,
+              questZone: context.read<QuestEncounterCubit>().questZone,
+              playerCubit: context.read<PlayerCubit>(),
+              db: context.read<Database>(),
+            ),
         child: const CombatView());
   }
 }
@@ -692,12 +696,24 @@ class _EnemyNextAttackSliceState extends State<EnemyNextAttackSlice> {
   @override
   void initState() {
     super.initState();
-    // Purely presentational — recomputes nextTriggerAt - now() on a plain
-    // UI timer while this box is open, no business logic here. Hour/day
-    // -scale timers don't need per-second precision.
+    // Recomputes nextTriggerAt - now() every second, so the countdown
+    // visibly ticks down rather than jumping in chunks — purely
+    // presentational when nothing has expired yet. But once the timer has
+    // actually reached zero, ticking the display alone would freeze it at
+    // 00:00 forever: nothing else re-triggers reconciliation while this
+    // box is open. Route through CombatCubit.reload() (which reconciles)
+    // instead.
     _countdownRefreshTimer = Timer.periodic(
-      const Duration(seconds: 30),
-      (_) => setState(() {}),
+      const Duration(seconds: 1),
+      (_) {
+        if (!mounted) return;
+        final timer = widget.attackTimer;
+        if (timer != null && !timer.nextTriggerAt.isAfter(DateTime.now())) {
+          context.read<CombatCubit>().reload();
+        } else {
+          setState(() {});
+        }
+      },
     );
   }
 

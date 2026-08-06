@@ -67,12 +67,32 @@ class _CombatStatusCardState extends State<CombatStatusCard> {
     // styles are represented.
     _placeholderSkillCooldowns[random.nextInt(_skillSlotCount)] = Duration.zero;
 
-    // Purely presentational — recomputes nextTriggerAt - now() on a plain
-    // UI timer, no business logic here. Hour/day-scale timers don't need
-    // per-second precision, per the scheduling engine's UI countdown notes.
+    // Recomputes nextTriggerAt - now() every second, so the countdown
+    // visibly ticks down rather than jumping in chunks — purely
+    // presentational when nothing has expired yet. But once an enemy's
+    // timer has actually reached zero, ticking the *display* forever isn't
+    // enough: nothing else re-triggers reconciliation, so the countdown
+    // would otherwise freeze at 00:00 indefinitely instead of resolving
+    // the attack and arming the next one. Route through the real reload in
+    // that case.
     _countdownRefreshTimer = Timer.periodic(
-      const Duration(seconds: 30),
-      (_) => setState(() {}),
+      const Duration(seconds: 1),
+      (_) {
+        if (!mounted) return;
+        final cubit = context.read<TodosOverviewCubit>();
+        final now = DateTime.now();
+        final hasExpiredAttackTimer = cubit.state.activeEncounter?.enemies
+                .any((enemy) {
+              final timer = cubit.state.attackTimerFor(enemy);
+              return timer != null && !timer.nextTriggerAt.isAfter(now);
+            }) ??
+            false;
+        if (hasExpiredAttackTimer) {
+          cubit.loadCharacter();
+        } else {
+          setState(() {});
+        }
+      },
     );
   }
 

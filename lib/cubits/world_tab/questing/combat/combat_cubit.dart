@@ -1,26 +1,43 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/world_tab/questing/combat/combat_state.dart';
 import 'package:questvale/data/models/enemy.dart';
+import 'package:questvale/data/providers/game_data_models/quest_zone.dart';
 import 'package:questvale/data/providers/game_data_models/skill_data.dart';
+import 'package:questvale/data/repositories/character_repository.dart';
+import 'package:questvale/data/repositories/encounter_repository.dart';
 import 'package:questvale/data/repositories/enemy_repository.dart';
 import 'package:questvale/data/repositories/scheduled_timer_repository.dart';
 import 'package:questvale/data/skills/base_active_skill.dart';
 import 'package:questvale/services/combat_service.dart';
+import 'package:questvale/services/enemy_attack_scheduling_service.dart';
 import 'package:sqflite/sqflite.dart';
 
 class CombatCubit extends Cubit<CombatState> {
   final String encounterId;
+  final QuestZone questZone;
+  final PlayerCubit playerCubit;
   late EnemyRepository enemyRepository;
   late ScheduledTimerRepository scheduledTimerRepository;
+  late EncounterRepository encounterRepository;
+  late CharacterRepository characterRepository;
   late CombatService combatService;
+  late EnemyAttackSchedulingService enemyAttackSchedulingService;
 
-  CombatCubit({required this.encounterId, required Database db})
+  CombatCubit(
+      {required this.encounterId,
+      required this.questZone,
+      required this.playerCubit,
+      required Database db})
       : super(CombatState(enemies: [])) {
     enemyRepository = EnemyRepository(db: db);
     scheduledTimerRepository = ScheduledTimerRepository(db: db);
+    encounterRepository = EncounterRepository(db: db);
+    characterRepository = CharacterRepository(db: db);
     combatService = CombatService(db: db);
+    enemyAttackSchedulingService = EnemyAttackSchedulingService(db: db);
     init();
   }
 
@@ -28,10 +45,25 @@ class CombatCubit extends Cubit<CombatState> {
     reload();
   }
 
+  // Reloading also reconciles any overdue enemy attack timers (same engine
+  // TodosOverviewCubit uses) rather than just re-reading whatever's in the
+  // DB — otherwise an attack timer that expires while this page is open
+  // would sit frozen at zero forever, since nothing else in this cubit's
+  // tree ever resolves it. playerCubit.loadCharacter() keeps the HP/mana
+  // bars at the bottom of this page in sync with any damage reconciliation
+  // just applied.
   Future<void> reload() async {
-    final enemies = await enemyRepository.getEnemiesByEncounterId(encounterId);
-    final timers =
-        await scheduledTimerRepository.getTimersByEncounterId(encounterId);
+    final encounter = await encounterRepository.getEncounterById(encounterId);
+    final character = await characterRepository.getSingleCharacter();
+    final reconciliation = await enemyAttackSchedulingService.reconcile(
+      encounter: encounter,
+      character: character,
+      enemyDataFor: (enemy) => questZone.enemies
+          .firstWhereOrNull((data) => data.id == enemy.enemyDataId),
+    );
+    await playerCubit.loadCharacter();
+
+    final enemies = encounter.enemies;
     CombatStatus newStatus = state.status;
     if (state.status != CombatStatus.complete) {
       if (enemies.every((enemy) => enemy.currentHealth <= 0)) {
@@ -47,7 +79,7 @@ class CombatCubit extends Cubit<CombatState> {
         targetingSkill: null,
         target: SkillTarget.none,
         inspectingEnemyIndex: -1,
-        attackTimers: {for (final t in timers) t.ownerId: t},
+        attackTimers: reconciliation.attackTimersByEnemyId,
       ));
     }
   }
