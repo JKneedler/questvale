@@ -55,12 +55,25 @@ class CombatService {
   // EnemyAttackSchedulingService). Flat damage straight off the static
   // attack data, matching applyDamage's existing lack of stat recalculation
   // above rather than inventing a separate defense formula here.
-  Future<Character> applyEnemyAttackDamage(
+  Future<EnemyAttackDamageResult> applyEnemyAttackDamage(
       EnemyAttackData attack, Character character) async {
     final newHealth = (character.currentHealth - attack.damage)
         .clamp(0, character.maxHealth)
         .toInt();
+    // The amount actually taken, not the raw attack stat — clamped at 0 HP
+    // means a killing blow can deal less than its listed damage.
+    final damageDealt = character.currentHealth - newHealth;
     final updated = character.copyWith(currentHealth: newHealth);
-    return await characterRepository.updateCharacter(updated);
+    final persisted = await characterRepository.updateCharacter(updated);
+    return EnemyAttackDamageResult(
+        character: persisted, damageDealt: damageDealt);
   }
+}
+
+class EnemyAttackDamageResult {
+  final Character character;
+  final int damageDealt;
+
+  EnemyAttackDamageResult(
+      {required this.character, required this.damageDealt});
 }

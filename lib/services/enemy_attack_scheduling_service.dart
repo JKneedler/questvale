@@ -13,14 +13,19 @@ import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 
 // The result of reconciling an encounter's overdue enemy-attack timers: the
-// character after every overdue attack has been applied, plus each living
-// enemy's now-current (or freshly (re)armed) timer, keyed by Enemy.id.
+// character after every overdue attack has been applied, each living
+// enemy's now-current (or freshly (re)armed) timer keyed by Enemy.id, and
+// the total HP actually lost across every attack resolved by this call (0
+// when nothing was due) — callers use that to show a damage-taken toast.
 class ReconciliationResult {
   final Character character;
   final Map<String, ScheduledTimer> attackTimersByEnemyId;
+  final int totalDamageDealt;
 
   ReconciliationResult(
-      {required this.character, required this.attackTimersByEnemyId});
+      {required this.character,
+      required this.attackTimersByEnemyId,
+      this.totalDamageDealt = 0});
 }
 
 // Builds and replays ScheduledTimers (kind: enemyMove) for enemy attacks —
@@ -190,6 +195,7 @@ class EnemyAttackSchedulingService {
     final enemiesById = {for (final e in encounter.enemies) e.id: e};
     var timers = await scheduledTimerRepository.getTimersByEncounterId(encounter.id);
     var currentCharacter = character;
+    var totalDamageDealt = 0;
     final now = DateTime.now();
 
     // Self-heals any living enemy with no timer at all — e.g. an encounter
@@ -236,8 +242,10 @@ class EnemyAttackSchedulingService {
         orElse: () => enemyData.attacks.first,
       );
 
-      currentCharacter =
+      final damageResult =
           await combatService.applyEnemyAttackDamage(attack, currentCharacter);
+      currentCharacter = damageResult.character;
+      totalDamageDealt += damageResult.damageDealt;
 
       // Chain from `now`, not the missed deadline — see the reconcile()
       // doc-comment. This is what caps the enemy to one resolved attack per
@@ -255,6 +263,7 @@ class EnemyAttackSchedulingService {
     return ReconciliationResult(
       character: currentCharacter,
       attackTimersByEnemyId: {for (final t in timers) t.ownerId: t},
+      totalDamageDealt: totalDamageDealt,
     );
   }
 }

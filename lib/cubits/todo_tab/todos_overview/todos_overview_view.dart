@@ -16,6 +16,7 @@ import 'package:questvale/data/models/todo.dart';
 import 'package:questvale/widgets/qv_app_bar.dart';
 import 'package:questvale/widgets/qv_background.dart';
 import 'package:questvale/widgets/qv_button.dart';
+import 'package:questvale/widgets/qv_damage_toast.dart';
 import 'package:questvale/widgets/qv_fading_scrollable.dart';
 
 class TodosOverviewView extends StatelessWidget {
@@ -28,14 +29,26 @@ class TodosOverviewView extends StatelessWidget {
     final todoCubit = context.read<TodosOverviewCubit>();
     ColorScheme colorScheme = Theme.of(context).colorScheme;
 
-    return BlocListener<NavCubit, NavState>(
-      // The World tab is where combat actually happens, and IndexedStack
-      // keeps every tab mounted forever — TodosOverviewCubit's quest/
-      // encounter snapshot (feeding CombatStatusCard's enemy row) would
-      // otherwise go stale the moment the player leaves and returns.
-      listenWhen: (previous, current) =>
-          current.tab == _todoTabIndex && previous.tab != _todoTabIndex,
-      listener: (context, state) => todoCubit.loadCharacter(),
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<NavCubit, NavState>(
+          // The World tab is where combat actually happens, and
+          // IndexedStack keeps every tab mounted forever —
+          // TodosOverviewCubit's quest/encounter snapshot (feeding
+          // CombatStatusCard's enemy row) would otherwise go stale the
+          // moment the player leaves and returns.
+          listenWhen: (previous, current) =>
+              current.tab == _todoTabIndex && previous.tab != _todoTabIndex,
+          listener: (context, state) => todoCubit.loadCharacter(),
+        ),
+        BlocListener<TodosOverviewCubit, TodosOverviewState>(
+          listenWhen: (previous, current) =>
+              current.lastEnemyDamageTaken != null &&
+              current.lastEnemyDamageTaken != previous.lastEnemyDamageTaken,
+          listener: (context, state) =>
+              showDamageToast(context, state.lastEnemyDamageTaken!),
+        ),
+      ],
       child: Scaffold(
         floatingActionButton: QvButton(
           width: 60,

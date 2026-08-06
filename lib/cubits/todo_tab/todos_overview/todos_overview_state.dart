@@ -82,6 +82,12 @@ class TodosOverviewState extends Equatable {
   // Empty (not just absent) when not in combat.
   final Map<String, ScheduledTimer> enemyAttackTimers;
 
+  // Total HP just lost to enemy attacks resolved by the most recent
+  // loadCharacter() call — null when that call resolved no attacks. A
+  // BlocListener uses this to fire a one-shot damage-taken toast; it's not
+  // "current damage state" so much as an event riding along on this emit.
+  final int? lastEnemyDamageTaken;
+
   const TodosOverviewState({
     this.character,
     this.characterStats,
@@ -95,6 +101,7 @@ class TodosOverviewState extends Equatable {
     this.activeEncounter,
     this.activeQuestZone,
     this.enemyAttackTimers = const {},
+    this.lastEnemyDamageTaken,
   });
 
   TodosOverviewState copyWith({
@@ -118,6 +125,7 @@ class TodosOverviewState extends Equatable {
       activeEncounter: activeEncounter,
       activeQuestZone: activeQuestZone,
       enemyAttackTimers: enemyAttackTimers,
+      lastEnemyDamageTaken: lastEnemyDamageTaken,
     );
   }
 
@@ -236,5 +244,6 @@ class TodosOverviewState extends Equatable {
         activeEncounter,
         activeQuestZone,
         enemyAttackTimers,
+        lastEnemyDamageTaken,
       ];
 }

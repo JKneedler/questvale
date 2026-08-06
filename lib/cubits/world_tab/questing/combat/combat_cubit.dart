@@ -80,6 +80,9 @@ class CombatCubit extends Cubit<CombatState> {
         target: SkillTarget.none,
         inspectingEnemyIndex: -1,
         attackTimers: reconciliation.attackTimersByEnemyId,
+        lastEnemyDamageTaken: reconciliation.totalDamageDealt > 0
+            ? reconciliation.totalDamageDealt
+            : null,
       ));
     }
   }

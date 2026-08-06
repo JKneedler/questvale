@@ -71,6 +71,7 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
     // above, rather than a dedicated app-lifecycle/background-timer hook.
     var reconciledCharacter = character;
     Map<String, ScheduledTimer> attackTimers = const {};
+    int? damageTaken;
     if (encounter != null &&
         encounter.completedAt == null &&
         encounter.encounterType.isCombatEncounter()) {
@@ -82,6 +83,9 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
       );
       reconciledCharacter = reconciliation.character;
       attackTimers = reconciliation.attackTimersByEnemyId;
+      damageTaken = reconciliation.totalDamageDealt > 0
+          ? reconciliation.totalDamageDealt
+          : null;
     }
 
     if (!isClosed) {
@@ -104,6 +108,7 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
           activeEncounter: encounter,
           activeQuestZone: questZone,
           enemyAttackTimers: attackTimers,
+          lastEnemyDamageTaken: damageTaken,
         ),
       );
     }

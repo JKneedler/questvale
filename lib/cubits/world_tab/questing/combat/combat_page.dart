@@ -22,6 +22,7 @@ import 'package:questvale/widgets/qv_animated_transition.dart';
 import 'package:questvale/widgets/qv_blinking.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
+import 'package:questvale/widgets/qv_damage_toast.dart';
 import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
 import 'package:questvale/widgets/qv_metal_corner_border.dart';
@@ -63,15 +64,26 @@ class CombatView extends StatelessWidget {
     final themeId = context.watch<ThemeCubit>().state.theme.id;
     return BlocBuilder<CombatCubit, CombatState>(
         builder: (context, combatState) {
-      return BlocListener<CombatCubit, CombatState>(
-        listenWhen: (prev, next) =>
-            prev.status != CombatStatus.complete &&
-            next.status == CombatStatus.complete,
-        listener: (context, combatState) async {
-          if (combatState.status == CombatStatus.complete) {
-            await context.read<QuestEncounterCubit>().completeEncounter();
-          }
-        },
+      return MultiBlocListener(
+        listeners: [
+          BlocListener<CombatCubit, CombatState>(
+            listenWhen: (prev, next) =>
+                prev.status != CombatStatus.complete &&
+                next.status == CombatStatus.complete,
+            listener: (context, combatState) async {
+              if (combatState.status == CombatStatus.complete) {
+                await context.read<QuestEncounterCubit>().completeEncounter();
+              }
+            },
+          ),
+          BlocListener<CombatCubit, CombatState>(
+            listenWhen: (prev, next) =>
+                next.lastEnemyDamageTaken != null &&
+                next.lastEnemyDamageTaken != prev.lastEnemyDamageTaken,
+            listener: (context, combatState) =>
+                showDamageToast(context, combatState.lastEnemyDamageTaken!),
+          ),
+        ],
         child: BlocBuilder<PlayerCubit, PlayerState>(
             builder: (context, playerState) {
           final character = playerState.character;
