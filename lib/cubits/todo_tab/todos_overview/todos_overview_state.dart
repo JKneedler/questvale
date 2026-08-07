@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/character_stats.dart';
+import 'package:questvale/data/models/mage_motes.dart';
 import 'package:questvale/data/models/encounter.dart';
 import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/models/scheduled_timer.dart';
@@ -64,6 +65,9 @@ enum TodosViewMode { list, calendar }
 class TodosOverviewState extends Equatable {
   final Character? character;
   final CharacterStats? characterStats;
+  // Null for non-Mage characters — see PlayerState.mageMotes for why this
+  // isn't a generic class-resource field.
+  final MageMotes? mageMotes;
   final List<Todo> todos;
   final List<Tag> availableTags;
   final TodoFilter filter;
@@ -91,6 +95,7 @@ class TodosOverviewState extends Equatable {
   const TodosOverviewState({
     this.character,
     this.characterStats,
+    this.mageMotes,
     this.todos = const [],
     this.availableTags = const [],
     this.filter = TodoFilter.none,
@@ -107,6 +112,7 @@ class TodosOverviewState extends Equatable {
   TodosOverviewState copyWith({
     Character? character,
     CharacterStats? characterStats,
+    MageMotes? mageMotes,
     List<Todo>? todos,
     List<Tag>? availableTags,
     TodoSort? sort,
@@ -115,6 +121,7 @@ class TodosOverviewState extends Equatable {
     return TodosOverviewState(
       character: character ?? this.character,
       characterStats: characterStats ?? this.characterStats,
+      mageMotes: mageMotes ?? this.mageMotes,
       todos: todos ?? this.todos,
       availableTags: availableTags ?? this.availableTags,
       filter: filter,
@@ -236,6 +243,7 @@ class TodosOverviewState extends Equatable {
         availableTags,
         character ?? '',
         characterStats,
+        mageMotes,
         filter,
         filterTag,
         filterPriority,

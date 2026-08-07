@@ -2,6 +2,7 @@ import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/character_skill.dart';
 import 'package:questvale/data/models/character_stats.dart';
 import 'package:questvale/data/models/character_tag.dart';
+import 'package:questvale/data/models/mage_motes.dart';
 import 'package:questvale/data/models/todo_tag.dart';
 import 'package:questvale/data/repositories/equipment_repository.dart';
 import 'package:questvale/helpers/constants.dart';
@@ -187,7 +188,6 @@ class CharacterRepository {
       gold: map[Character.goldColumnName] as int,
       currentExp: map[Character.currentExpColumnName] as int,
       currentHealth: map[Character.currentHealthColumnName] as int,
-      currentMana: map[Character.currentManaColumnName] as int,
       actionPoints: map[Character.actionPointsColumnName] as int,
       equippedWeapon: weapon,
       equippedHelmet: helmet,
@@ -243,6 +243,39 @@ class CharacterRepository {
       stats.toMap(),
       where: '${CharacterStats.characterIdColumnName} = ?',
       whereArgs: [stats.characterId],
+    );
+  }
+
+  // MAGE MOTES METHODS
+  // Same lazy-create-on-first-read shape as getCharacterStats above — a
+  // character (in practice, any Mage) with no row yet just means "no motes
+  // banked," not a missing-data error.
+  Future<MageMotes> getMageMotes(String characterId) async {
+    final maps = await db.query(
+      MageMotes.mageMotesTableName,
+      where: '${MageMotes.characterIdColumnName} = ?',
+      whereArgs: [characterId],
+      limit: 1,
+    );
+    if (maps.isEmpty) {
+      final motes = MageMotes(characterId: characterId);
+      await db.insert(MageMotes.mageMotesTableName, motes.toMap());
+      return motes;
+    }
+    final map = maps[0];
+    return MageMotes(
+      characterId: map[MageMotes.characterIdColumnName] as String,
+      fireMotes: map[MageMotes.fireMotesColumnName] as int? ?? 0,
+      iceMotes: map[MageMotes.iceMotesColumnName] as int? ?? 0,
+    );
+  }
+
+  Future<void> updateMageMotes(MageMotes motes) async {
+    await db.update(
+      MageMotes.mageMotesTableName,
+      motes.toMap(),
+      where: '${MageMotes.characterIdColumnName} = ?',
+      whereArgs: [motes.characterId],
     );
   }
 

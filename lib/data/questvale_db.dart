@@ -14,6 +14,7 @@ import 'package:questvale/data/models/todo.dart';
 import 'package:questvale/data/models/todo_tag.dart';
 import 'package:questvale/data/models/todo_reminder.dart';
 import 'package:questvale/data/models/character_tag.dart';
+import 'package:questvale/data/models/mage_motes.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/shared_enums.dart';
@@ -30,6 +31,7 @@ class QuestvaleDB {
       await db.execute(CharacterTag.createTableSQL);
       await db.execute(Character.createTableSQL);
       await db.execute(CharacterStats.createTableSQL);
+      await db.execute(MageMotes.createTableSQL);
       final CharacterRepository characterRepo = CharacterRepository(db: db);
       final characterId = Uuid().v4();
       final activeSkillSlot1 = CharacterSkill(
@@ -41,7 +43,7 @@ class QuestvaleDB {
       final activeSkillSlot2 = CharacterSkill(
         id: Uuid().v4(),
         characterId: characterId,
-        skillId: 'mage-1-elemental_surge',
+        skillId: 'mage-1-firebolt',
         level: 1,
       );
       characterRepo.insertCharacter(
@@ -53,7 +55,6 @@ class QuestvaleDB {
           gold: 1997,
           currentExp: 0,
           currentHealth: 20,
-          currentMana: 10,
           actionPoints: 10,
           skills: [],
           activeSkillSlot1: activeSkillSlot1,
@@ -62,6 +63,8 @@ class QuestvaleDB {
       );
       await db.insert(CharacterStats.characterStatsTableName,
           CharacterStats(characterId: characterId).toMap());
+      await db.insert(MageMotes.mageMotesTableName,
+          MageMotes(characterId: characterId).toMap());
       await db.execute(CharacterSkill.createTableSQL);
       characterRepo.insertCharacterSkill(
         activeSkillSlot1,
@@ -188,6 +191,24 @@ class QuestvaleDB {
       if (oldVersion < 12) {
         await db.execute(ScheduledTimer.createTableSQL);
       }
-    }, version: 12);
+      if (oldVersion < 13) {
+        // Mage's Mana -> Motes rework: new per-class resource table (see
+        // MageMotes doc comment), plus dropping the now-retired Mana
+        // columns off Character. Every install below version 13 always had
+        // currentMana (it's been NOT NULL since the very first schema), so
+        // this drop needs no existence check unlike some earlier ones.
+        await db.execute(MageMotes.createTableSQL);
+        final characterIds = await db.query(Character.characterTableName,
+            columns: [Character.idColumnName]);
+        for (final row in characterIds) {
+          await db.insert(
+              MageMotes.mageMotesTableName,
+              MageMotes(characterId: row[Character.idColumnName] as String)
+                  .toMap());
+        }
+        await db.execute(
+            'ALTER TABLE ${Character.characterTableName} DROP COLUMN currentMana');
+      }
+    }, version: 13);
   }
 }

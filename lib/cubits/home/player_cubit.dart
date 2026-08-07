@@ -1,8 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/player_state.dart';
+import 'package:questvale/data/models/mage_motes.dart';
 import 'package:questvale/data/models/player_combat_stats.dart';
 import 'package:questvale/data/providers/game_data.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
+import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/services/skill_service.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -46,11 +48,15 @@ class PlayerCubit extends Cubit<PlayerState> {
       playerLevel: character.level,
       equipments: equipments,
     );
+    final MageMotes? mageMotes = character.characterClass == CharacterClass.mage
+        ? await characterRepository.getMageMotes(character.id)
+        : null;
     if (!isClosed) {
       emit(state.copyWith(
           character: character,
           playerSkills: playerSkills,
-          playerCombatStats: playerCombatStats));
+          playerCombatStats: playerCombatStats,
+          mageMotes: mageMotes));
     }
   }
 }

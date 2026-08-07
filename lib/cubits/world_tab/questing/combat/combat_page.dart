@@ -18,6 +18,7 @@ import 'package:questvale/data/providers/game_data_models/skill_data.dart';
 import 'package:questvale/data/skills/base_active_skill.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/data_formatters.dart';
+import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_animated_transition.dart';
 import 'package:questvale/widgets/qv_blinking.dart';
 import 'package:questvale/widgets/qv_button.dart';
@@ -27,6 +28,7 @@ import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
 import 'package:questvale/widgets/qv_metal_corner_border.dart';
 import 'package:questvale/widgets/qv_bar.dart';
+import 'package:questvale/widgets/qv_mote_display.dart';
 import 'package:questvale/widgets/qv_resource_bar.dart';
 import 'package:questvale/widgets/qv_skill_button.dart';
 import 'package:sqflite/sqflite.dart';
@@ -313,12 +315,10 @@ class CombatView extends StatelessWidget {
                       ),
                     ),
                     Expanded(
-                      child: QvResourceBar(
-                        color: MANA_COLOR,
-                        maxValue: character.maxMana,
-                        currentValue: character.currentMana,
-                        alignment: Alignment.centerRight,
-                      ),
+                      child: character.characterClass == CharacterClass.mage &&
+                              playerState.mageMotes != null
+                          ? QvMoteDisplay(motes: playerState.mageMotes!)
+                          : const SizedBox.shrink(),
                     ),
                   ],
                 ),

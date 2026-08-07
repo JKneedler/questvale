@@ -21,9 +21,21 @@ const ENCOUNTER_FIRST_PLAY_DELAY = 1000; // 1 second
 const SCROLL_FADE_DISTANCE = 12.0;
 
 const HEALTH_COLOR = Color(0xffFF4646);
+// Mana is fully retired for Mage (replaced by Motes below) and no other
+// class has ever used it. Left defined in case a future class resource
+// reuses the asset slot; QvBarResource.mana/the mana-*.png bar assets are
+// otherwise dead as of the Mote rework.
 const MANA_COLOR = Color(0xff4679FF);
 const RAGE_COLOR = Color(0xffFF6231);
 const FOCUS_COLOR = Color(0xff5CE1A6);
+const FIRE_MOTE_COLOR = Color(0xffFF6B3D);
+const ICE_MOTE_COLOR = Color(0xff3DA9FF);
+// The Mote *system's* own color (label/count text on QvMoteDisplay) — kept
+// distinct from the two per-element pip colors above, which stay Fire/Ice
+// as normal. Reuses SkillButtonColor.arcanePurple's existing hex so the
+// "arcane" identity stays a single source of truth rather than a second
+// unrelated purple.
+const MOTE_LABEL_COLOR = Color(0xFF6A2BAA);
 const EXP_COLOR = Color(0xffFFD966);
 
 const GOLD_COLOR = Color(0xffFFD966);
@@ -196,3 +208,7 @@ const BASE_RESOURCE_REGEN_PER_LEVEL = 1;
 const BASE_CRIT_CHANCE = .05;
 const BASE_CRIT_DAMAGE_MULTIPLIER = 2;
 const BASE_STATUS_EFFECT_CHANCE = .05;
+
+// Mage's Mote resource: a shared cap across both elements (not per-element)
+// — see the vault's Mage skill tree. A mote generated past this fizzles.
+const MOTE_CAP = 3;

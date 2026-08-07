@@ -14,7 +14,6 @@ class Character extends Equatable {
   static const goldColumnName = 'gold';
   static const currentExpColumnName = 'currentExp';
   static const currentHealthColumnName = 'currentHealth';
-  static const currentManaColumnName = 'currentMana';
   static const actionPointsColumnName = 'actionPoints';
   static const equippedWeaponColumnName = 'equippedWeapon';
   static const equippedHelmetColumnName = 'equippedHelmet';
@@ -43,7 +42,6 @@ class Character extends Equatable {
 			${Character.goldColumnName} INTEGER NOT NULL,
 			${Character.currentExpColumnName} INTEGER NOT NULL,
 			${Character.currentHealthColumnName} INTEGER NOT NULL,
-			${Character.currentManaColumnName} INTEGER NOT NULL,
 			${Character.actionPointsColumnName} INTEGER NOT NULL,
       ${Character.equippedWeaponColumnName} VARCHAR,
       ${Character.equippedHelmetColumnName} VARCHAR,
@@ -72,7 +70,6 @@ class Character extends Equatable {
   final int gold;
   final int currentExp;
   final int currentHealth;
-  final int currentMana;
   final int actionPoints;
   final Equipment? equippedWeapon;
   final Equipment? equippedHelmet;
@@ -101,7 +98,6 @@ class Character extends Equatable {
     required this.gold,
     required this.currentExp,
     required this.currentHealth,
-    required this.currentMana,
     required this.actionPoints,
     this.equippedWeapon,
     this.equippedHelmet,
@@ -125,10 +121,6 @@ class Character extends Equatable {
 
   int get maxHealth {
     return (level * 10) + characterClass.baseMaxHealth;
-  }
-
-  int get maxMana {
-    return (level * 10) + 10;
   }
 
   List<Equipment> get equippedEquipmentList => [
@@ -189,7 +181,6 @@ class Character extends Equatable {
       Character.goldColumnName: gold,
       Character.currentExpColumnName: currentExp,
       Character.currentHealthColumnName: currentHealth,
-      Character.currentManaColumnName: currentMana,
       Character.actionPointsColumnName: actionPoints,
       Character.equippedWeaponColumnName: equippedWeapon?.id,
       Character.equippedHelmetColumnName: equippedHelmet?.id,
@@ -215,7 +206,7 @@ class Character extends Equatable {
 
   @override
   String toString() {
-    return 'Character {id: $id, name: $name, characterClass: $characterClass, level: $level, gold: $gold, currentExp: $currentExp, currentHealth: $currentHealth, currentMana: $currentMana, actionPoints: $actionPoints, equippedWeapon: $equippedWeapon, equippedHelmet: $equippedHelmet, equippedChestplate: $equippedChestplate, equippedGloves: $equippedGloves, equippedBoots: $equippedBoots, equippedAmulet: $equippedAmulet, equippedRing1: $equippedRing1, equippedRing2: $equippedRing2, skills: $skills, activeSkillSlot1: $activeSkillSlot1, activeSkillSlot2: $activeSkillSlot2, activeSkillSlot3: $activeSkillSlot3, activeSkillSlot4: $activeSkillSlot4, activeSkillSlot5: $activeSkillSlot5}';
+    return 'Character {id: $id, name: $name, characterClass: $characterClass, level: $level, gold: $gold, currentExp: $currentExp, currentHealth: $currentHealth, actionPoints: $actionPoints, equippedWeapon: $equippedWeapon, equippedHelmet: $equippedHelmet, equippedChestplate: $equippedChestplate, equippedGloves: $equippedGloves, equippedBoots: $equippedBoots, equippedAmulet: $equippedAmulet, equippedRing1: $equippedRing1, equippedRing2: $equippedRing2, skills: $skills, activeSkillSlot1: $activeSkillSlot1, activeSkillSlot2: $activeSkillSlot2, activeSkillSlot3: $activeSkillSlot3, activeSkillSlot4: $activeSkillSlot4, activeSkillSlot5: $activeSkillSlot5}';
   }
 
   Character copyWith({
@@ -225,7 +216,6 @@ class Character extends Equatable {
     int? gold,
     int? currentExp,
     int? currentHealth,
-    int? currentMana,
     int? actionPoints,
     Equipment? equippedWeapon,
     Equipment? equippedHelmet,
@@ -254,7 +244,6 @@ class Character extends Equatable {
       gold: gold ?? this.gold,
       currentExp: currentExp ?? this.currentExp,
       currentHealth: currentHealth ?? this.currentHealth,
-      currentMana: currentMana ?? this.currentMana,
       actionPoints: actionPoints ?? this.actionPoints,
       equippedWeapon: equippedWeapon ?? this.equippedWeapon,
       equippedHelmet: equippedHelmet ?? this.equippedHelmet,
@@ -287,7 +276,6 @@ class Character extends Equatable {
         gold,
         currentExp,
         currentHealth,
-        currentMana,
         actionPoints,
         equippedWeapon,
         equippedHelmet,

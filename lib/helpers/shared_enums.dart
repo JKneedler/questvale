@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:questvale/helpers/constants.dart';
 
 enum CharacterClass {
   warrior,
@@ -68,6 +69,25 @@ enum Rarity {
         return 'images/ui/buttons/button-rarity-epic.png';
       case Rarity.legendary:
         return 'images/ui/buttons/button-rarity-legendary.png';
+    }
+  }
+}
+
+// Mage's two mote colors — deliberately the same hexes as DamageType's
+// fire/ice (the vault's Color Palette notes they're meant to match), kept
+// as its own enum rather than reusing DamageType since a mote's element and
+// a skill's damage type are conceptually distinct, even though every Tier 1
+// skill happens to couple them 1:1.
+enum MoteElement {
+  fire,
+  ice;
+
+  Color get color {
+    switch (this) {
+      case MoteElement.fire:
+        return FIRE_MOTE_COLOR;
+      case MoteElement.ice:
+        return ICE_MOTE_COLOR;
     }
   }
 }

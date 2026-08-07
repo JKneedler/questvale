@@ -13,6 +13,7 @@ import 'package:questvale/data/repositories/scheduled_timer_repository.dart';
 import 'package:questvale/data/skills/base_active_skill.dart';
 import 'package:questvale/services/combat_service.dart';
 import 'package:questvale/services/enemy_attack_scheduling_service.dart';
+import 'package:questvale/services/mote_service.dart';
 import 'package:sqflite/sqflite.dart';
 
 class CombatCubit extends Cubit<CombatState> {
@@ -25,6 +26,7 @@ class CombatCubit extends Cubit<CombatState> {
   late CharacterRepository characterRepository;
   late CombatService combatService;
   late EnemyAttackSchedulingService enemyAttackSchedulingService;
+  late MoteService moteService;
 
   CombatCubit(
       {required this.encounterId,
@@ -38,6 +40,7 @@ class CombatCubit extends Cubit<CombatState> {
     characterRepository = CharacterRepository(db: db);
     combatService = CombatService(db: db);
     enemyAttackSchedulingService = EnemyAttackSchedulingService(db: db);
+    moteService = MoteService(characterRepository: characterRepository);
     init();
   }
 
@@ -183,9 +186,10 @@ class CombatCubit extends Cubit<CombatState> {
 
   Future<void> onAttackButtonTap(BuildContext context) async {
     final CombatState previousState = state;
-    final playerCombatStats =
-        context.read<PlayerCubit>().state.playerCombatStats;
-    if (playerCombatStats == null) {
+    final playerState = context.read<PlayerCubit>().state;
+    final playerCombatStats = playerState.playerCombatStats;
+    final character = playerState.character;
+    if (playerCombatStats == null || character == null) {
       return;
     }
     if (previousState.status == CombatStatus.targetingSkill &&
@@ -199,9 +203,15 @@ class CombatCubit extends Cubit<CombatState> {
           previousState.enemies[previousState.target.getEnemyIndex()]
         ];
       }
+      // Resolved once here (not inside each skill's own execute) since
+      // every cast needs it regardless of whether that particular skill
+      // cares — moteInteraction == none short-circuits to a cheap no-op in
+      // MoteService for non-mote skills.
+      final moteResult = await moteService.resolve(
+          previousState.targetingSkill!.data, character.id);
       // TODO: Handle attack
-      await previousState.targetingSkill!
-          .execute(combatService, playerCombatStats, targettedEnemies);
+      await previousState.targetingSkill!.execute(
+          combatService, playerCombatStats, targettedEnemies, moteResult);
       reload();
     }
   }

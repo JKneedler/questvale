@@ -6,12 +6,14 @@ import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/character_skill.dart';
 import 'package:questvale/data/models/character_stats.dart';
 import 'package:questvale/data/models/encounter.dart';
+import 'package:questvale/data/models/mage_motes.dart';
 import 'package:questvale/data/providers/game_data.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
 import 'package:questvale/data/repositories/encounter_repository.dart';
 import 'package:questvale/data/repositories/equipment_repository.dart';
 import 'package:questvale/data/repositories/quest_repository.dart';
 import 'package:questvale/data/repositories/todo_repository.dart';
+import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/services/equipment_service.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
@@ -116,7 +118,7 @@ class SettingsCubit extends Cubit<SettingsState> {
     final activeSkillSlot2 = CharacterSkill(
       id: const Uuid().v4(),
       characterId: c.id,
-      skillId: 'mage-1-elemental_surge',
+      skillId: 'mage-1-firebolt',
       level: 1,
     );
     await characterRepository.insertCharacterSkill(activeSkillSlot1);
@@ -130,7 +132,6 @@ class SettingsCubit extends Cubit<SettingsState> {
       gold: 0,
       currentExp: 0,
       currentHealth: (c.level * 10) + c.characterClass.baseMaxHealth,
-      currentMana: (c.level * 10) + 10,
       actionPoints: 0,
       // equipped* omitted -> null (unequipped). skills defaults to const [].
       activeSkillSlot1: activeSkillSlot1,
@@ -142,6 +143,10 @@ class SettingsCubit extends Cubit<SettingsState> {
     await equipmentRepository.deleteAllEquipmentForCharacter(updated.id);
     await characterRepository
         .updateCharacterStats(CharacterStats(characterId: updated.id));
+    if (updated.characterClass == CharacterClass.mage) {
+      await characterRepository
+          .updateMageMotes(MageMotes(characterId: updated.id));
+    }
     emit(state.copyWith(character: updated));
     await playerCubit.loadCharacter();
   }
@@ -160,7 +165,6 @@ class SettingsCubit extends Cubit<SettingsState> {
       gold: c.gold,
       currentExp: c.currentExp,
       currentHealth: c.currentHealth,
-      currentMana: c.currentMana,
       actionPoints: c.actionPoints,
       skills: c.skills,
       activeSkillSlot1: c.activeSkillSlot1,
