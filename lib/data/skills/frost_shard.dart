@@ -4,9 +4,9 @@ import 'package:questvale/data/skills/base_active_skill.dart';
 import 'package:questvale/services/combat_service.dart';
 import 'package:questvale/services/mote_service.dart';
 
-class ArcaneBolt extends BaseActiveSkill {
-  ArcaneBolt({
-    super.id = 'mage-1-arcane_bolt',
+class FrostShard extends BaseActiveSkill {
+  FrostShard({
+    super.id = 'mage-1-frost_shard',
     required super.data,
     required super.level,
   });
@@ -15,9 +15,10 @@ class ArcaneBolt extends BaseActiveSkill {
   String get description =>
       data.description.replaceAll('x%', percentText(data.primaryBaseValue));
 
-  // Deliberately mote-free (see SkillData.moteInteraction on this skill's
-  // data) — moteResult is always MoteInteractionResult.none for Arcane
-  // Bolt, so it's unused here.
+  // Ice's mote generator, symmetric with Firebolt. The 20% Slow proc
+  // chance (data.secondaryBaseValue) is captured as data for the same
+  // not-yet-built reason as Firebolt's Burn proc — see that class's doc
+  // comment.
   @override
   Future<void> execute(
       CombatService combatService,

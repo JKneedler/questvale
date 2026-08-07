@@ -1,4 +1,5 @@
 import 'package:questvale/data/models/equipment.dart';
+import 'package:questvale/helpers/shared_enums.dart';
 
 enum StatModifierType {
   attackPower, // flat attack power addition
@@ -23,9 +24,48 @@ enum StatModifierType {
   goldGain, // percentage gold gain addition
   fireImmunity, // boolean fire immunity addition
   iceImmunity, // boolean ice immunity addition
-  poisonImmunity; // boolean poison immunity addition
+  poisonImmunity, // boolean poison immunity addition
+  // Mage's Mote-axis analog to attackPower (see the vault's Mage skill
+  // tree) — percentage bonus to a mote-consumer skill's payoff. Added at
+  // the end of this enum, not alongside attackPower above, since .index is
+  // persisted per equipment's StatModifier rows and reordering would
+  // silently reinterpret every already-saved modifier as the wrong type.
+  motePotency; // percentage bonus to consumed-mote skill effects
 
+  // Which class this modifier is meaningful for — null (the default, and
+  // every type above motePotency) means every class can roll it, same as
+  // it's always worked. A handful of types only make sense for one class's
+  // kit (Mote Potency needs a Mage's Mote system to do anything), so they
+  // narrow this instead of getting their own copy of the per-slot lists
+  // below. This is a filter composed with availableStatModifierTypes, not
+  // a separate per-class table — the slot lists stay the single source of
+  // truth for "what's thematically right for this slot"; class-gating is
+  // an orthogonal, sparse overlay on top.
+  CharacterClass? get classRestriction {
+    switch (this) {
+      case StatModifierType.motePotency:
+      case StatModifierType.fireDamage:
+      case StatModifierType.iceDamage:
+        return CharacterClass.mage;
+      default:
+        return null;
+    }
+  }
+
+  // characterClass is required (not optional) so no caller can forget to
+  // filter and let e.g. a Warrior roll a Mote Potency modifier by omission
+  // — every real call site already has a Character/class in scope anyway.
   static List<StatModifierType> availableStatModifierTypes(
+      EquipmentSlot equipmentSlot, CharacterClass characterClass) {
+    final forSlot = _statModifierTypesForSlot(equipmentSlot);
+    return forSlot
+        .where((type) =>
+            type.classRestriction == null ||
+            type.classRestriction == characterClass)
+        .toList();
+  }
+
+  static List<StatModifierType> _statModifierTypesForSlot(
       EquipmentSlot equipmentSlot) {
     switch (equipmentSlot) {
       case EquipmentSlot.weapon:
@@ -39,6 +79,7 @@ enum StatModifierType {
           StatModifierType.critDamage,
           StatModifierType.lifeSteal,
           StatModifierType.statusEffectChance,
+          StatModifierType.motePotency,
         ];
       case EquipmentSlot.head:
         return [
@@ -65,6 +106,7 @@ enum StatModifierType {
           StatModifierType.fireDamage,
           StatModifierType.iceDamage,
           StatModifierType.poisonDamage,
+          StatModifierType.motePotency,
         ];
       case EquipmentSlot.feet:
         return [
@@ -150,6 +192,8 @@ enum StatModifierType {
         return 1.0;
       case StatModifierType.poisonImmunity:
         return 1.0;
+      case StatModifierType.motePotency:
+        return tier * .05;
       default:
         return 0.0;
     }
@@ -203,6 +247,8 @@ enum StatModifierType {
         return 1.0;
       case StatModifierType.poisonImmunity:
         return 1.0;
+      case StatModifierType.motePotency:
+        return tier * .05;
       default:
         return 0.0;
     }
@@ -265,8 +311,9 @@ enum StatModifierType {
         return 'Ice Immunity';
       case StatModifierType.poisonImmunity:
         return 'Poison Immunity';
+      case StatModifierType.motePotency:
+        return 'Mote Potency';
     }
-    return '';
   }
 }
 

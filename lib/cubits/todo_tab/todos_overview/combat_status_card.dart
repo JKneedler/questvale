@@ -8,6 +8,7 @@ import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_cubit.da
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_state.dart';
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/enemy.dart';
+import 'package:questvale/data/models/mage_motes.dart';
 import 'package:questvale/data/models/scheduled_timer.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
 import 'package:questvale/helpers/constants.dart';
@@ -17,6 +18,7 @@ import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_bar.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
+import 'package:questvale/widgets/qv_mote_display.dart';
 
 // Scaffold for the character/combat status block pinned above the todo
 // list. XP (level/currentExp), health/AP/mana, in-combat enemy state, and
@@ -142,7 +144,8 @@ class _CombatStatusCardState extends State<CombatStatusCard> {
                         ],
                       ),
                       const SizedBox(height: 6),
-                      _CharacterVitalsRow(character: character),
+                      _CharacterVitalsRow(
+                          character: character, mageMotes: state.mageMotes),
                     ],
                   ),
                 ),
@@ -309,11 +312,16 @@ class _ApBadge extends StatelessWidget {
   }
 }
 
-// Row 1 — health bar / mana bar, leaning toward the card's outer edges.
-// Fully real: both values come straight off the loaded Character.
+// Row 1 — health bar / class-resource block, leaning toward the card's
+// outer edges. Health comes straight off the loaded Character; the
+// class-resource side is class-conditional (Motes for Mage today; Warrior's
+// Rage/Rogue's Focus will slot in here the same way once those trees
+// exist — see MageMotes' doc comment for why each gets its own model
+// instead of a shared one).
 class _CharacterVitalsRow extends StatelessWidget {
   final Character character;
-  const _CharacterVitalsRow({required this.character});
+  final MageMotes? mageMotes;
+  const _CharacterVitalsRow({required this.character, this.mageMotes});
 
   @override
   Widget build(BuildContext context) {
@@ -357,44 +365,11 @@ class _CharacterVitalsRow extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'MANA',
-                    style: const TextStyle(
-                      color: MANA_COLOR,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    '${character.currentMana} / ${character.maxMana}',
-                    style: const TextStyle(
-                      color: MANA_COLOR,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 2),
-              QvBar(
-                currentValue: character.currentMana,
-                maxValue: character.maxMana,
-                resource: QvBarResource.mana,
-                size: QvBarSize.mini,
-                height: 20,
-                child: const SizedBox.shrink(),
-              ),
-            ],
-          ),
-        ),
+        if (character.characterClass == CharacterClass.mage &&
+            mageMotes != null) ...[
+          const SizedBox(width: 8),
+          Expanded(child: QvMoteDisplay(motes: mageMotes!)),
+        ],
       ],
     );
   }

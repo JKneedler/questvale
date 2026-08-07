@@ -57,4 +57,11 @@ class PlayerCombatStats {
   get fireImmunity => statModifierStats.isFireImmune;
   get iceImmunity => statModifierStats.isIceImmune;
   get poisonImmunity => statModifierStats.isPoisonImmune;
+  // Bonus effect from consumed Motes (Ember Burst/Hoarfrost Burst), gear's
+  // Mote-axis analog to attackPower. Modeled through the stat layer same as
+  // every sibling getter above, but — like all of them — not yet actually
+  // applied in combat: CombatService.applyDamage is still a flat
+  // placeholder (see its own TODO) that doesn't consult playerCombatStats
+  // at all yet, for any stat, Mote Potency included.
+  get motePotency => statModifierStats.additionalMotePotencyPercentage;
 }

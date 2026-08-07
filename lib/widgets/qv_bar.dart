@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/theme/theme_cubit.dart';
@@ -109,11 +111,23 @@ class QvBar extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            FractionallySizedBox(
-              widthFactor: fraction,
-              child: Container(
+            // A plain FractionallySizedBox(widthFactor: fraction) can paint
+            // this fill narrower than size.minSize once currentValue/
+            // maxValue is a small enough ratio (e.g. a character down at
+            // 7/160 HP) — the same "corners overlap and paintImage throws"
+            // failure the outer ConstrainedBox above already guards the
+            // whole bar against, just hitting the inner fill instead. Floor
+            // a nonzero fraction's rendered width at the safe minimum
+            // rather than crash every frame; a genuinely empty bar
+            // (fraction == 0) stays at 0 width instead of showing a
+            // phantom sliver of fill.
+            LayoutBuilder(builder: (context, constraints) {
+              final rawWidth = constraints.maxWidth * fraction;
+              final fillWidth =
+                  fraction <= 0 ? 0.0 : math.max(rawWidth, size.minSize.width);
+              return Container(
+                width: fillWidth,
                 height: double.infinity,
-                width: double.infinity,
                 decoration: BoxDecoration(
                   image: DecorationImage(
                     image: AssetImage(barAssetPath),
@@ -122,8 +136,8 @@ class QvBar extends StatelessWidget {
                     filterQuality: FilterQuality.none,
                   ),
                 ),
-              ),
-            ),
+              );
+            }),
             Center(child: child),
           ],
         ),

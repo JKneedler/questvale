@@ -10,6 +10,7 @@ import 'package:questvale/data/repositories/todo_repository.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
 import 'package:questvale/data/repositories/encounter_repository.dart';
 import 'package:questvale/data/repositories/quest_repository.dart';
+import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/services/ap_reward_service.dart';
 import 'package:questvale/services/enemy_attack_scheduling_service.dart';
 import 'package:questvale/services/habit_service.dart';
@@ -43,6 +44,9 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
   Future<void> loadCharacter() async {
     final character = await characterRepository.getSingleCharacter();
     var stats = await characterRepository.getCharacterStats(character.id);
+    final mageMotes = character.characterClass == CharacterClass.mage
+        ? await characterRepository.getMageMotes(character.id)
+        : null;
     var todos = await todoRepository.getTodosByCharacterId(character.id);
     todos = await Future.wait(todos.map(_advanceHabitPeriodIfNeeded));
 
@@ -93,6 +97,7 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
         TodosOverviewState(
           character: reconciledCharacter,
           characterStats: stats,
+          mageMotes: mageMotes,
           todos: todos,
           availableTags: availableTags
               .map((tag) => Tag(

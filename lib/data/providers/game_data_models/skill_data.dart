@@ -64,6 +64,18 @@ enum SkillDamageType {
       }[this]!;
 }
 
+// What a skill does to the caster's Mote bank on a successful cast — see
+// the vault's Mage skill tree. Deliberately independent of damageType (a
+// skill's element and its mote behavior are separate axes, even though
+// every Tier 1 skill happens to couple them): Frost Armor is Ice-flavored
+// but touches no motes at all, hence `none` as a real, common value rather
+// than moteElement simply being left null on non-Mage skills only.
+enum MoteInteractionType {
+  none,
+  generate,
+  consume,
+}
+
 class SkillData {
   final String id;
   final CharacterClass characterClass;
@@ -75,13 +87,18 @@ class SkillData {
   final SkillType type;
   final SkillDamageType? damageType;
   final int? apCost;
-  final int? cooldown;
-  final int? manaCost;
+  // Hours; fractional (e.g. 0.5 for Firebolt) — not every Tier 1 cooldown
+  // lands on a whole hour, unlike enemy attack timers so far.
+  final double? cooldown;
   final SkillTargetingType? targetingType;
   final double? primaryBaseValue;
   final double? primaryValueScaler;
   final double? secondaryBaseValue;
   final double? secondaryValueScaler;
+  // Defaults to none/null for every non-Mage skill, and for Mage skills
+  // that don't touch the bank (Arcane Bolt, Frost Armor, the passives).
+  final MoteInteractionType moteInteraction;
+  final MoteElement? moteElement;
 
   const SkillData({
     required this.id,
@@ -95,17 +112,18 @@ class SkillData {
     this.damageType,
     this.apCost,
     this.cooldown,
-    this.manaCost,
     this.targetingType,
     this.primaryBaseValue,
     this.primaryValueScaler,
     this.secondaryBaseValue,
     this.secondaryValueScaler,
+    this.moteInteraction = MoteInteractionType.none,
+    this.moteElement,
   });
 
   @override
   String toString() {
-    return 'SkillData(id: $id, characterClass: $characterClass, tier: $tier, name: $name, description: $description, iconPath: $iconPath, type: $type, damageType: $damageType, apCost: $apCost, cooldown: $cooldown, manaCost: $manaCost, targetingType: $targetingType, primaryBaseValue: $primaryBaseValue, primaryValueScaler: $primaryValueScaler, secondaryBaseValue: $secondaryBaseValue, secondaryValueScaler: $secondaryValueScaler)';
+    return 'SkillData(id: $id, characterClass: $characterClass, tier: $tier, name: $name, description: $description, iconPath: $iconPath, type: $type, damageType: $damageType, apCost: $apCost, cooldown: $cooldown, targetingType: $targetingType, primaryBaseValue: $primaryBaseValue, primaryValueScaler: $primaryValueScaler, secondaryBaseValue: $secondaryBaseValue, secondaryValueScaler: $secondaryValueScaler, moteInteraction: $moteInteraction, moteElement: $moteElement)';
   }
 
   factory SkillData.fromJson(Map<String, dynamic> json) {
@@ -122,8 +140,7 @@ class SkillData {
           ? SkillDamageType.values[json['damageType'] as int]
           : null,
       apCost: json['apCost'] as int?,
-      cooldown: json['cooldown'] as int?,
-      manaCost: json['manaCost'] as int?,
+      cooldown: (json['cooldown'] as num?)?.toDouble(),
       targetingType: json['targetingType'] != null
           ? SkillTargetingType.values[json['targetingType'] as int]
           : null,
@@ -131,6 +148,12 @@ class SkillData {
       primaryValueScaler: json['primaryValueScaler'] as double?,
       secondaryBaseValue: json['secondaryBaseValue'] as double?,
       secondaryValueScaler: json['secondaryValueScaler'] as double?,
+      moteInteraction: json['moteInteraction'] != null
+          ? MoteInteractionType.values[json['moteInteraction'] as int]
+          : MoteInteractionType.none,
+      moteElement: json['moteElement'] != null
+          ? MoteElement.values[json['moteElement'] as int]
+          : null,
     );
   }
 }

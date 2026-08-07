@@ -4,9 +4,9 @@ import 'package:questvale/data/skills/base_active_skill.dart';
 import 'package:questvale/services/combat_service.dart';
 import 'package:questvale/services/mote_service.dart';
 
-class ArcaneBolt extends BaseActiveSkill {
-  ArcaneBolt({
-    super.id = 'mage-1-arcane_bolt',
+class Firebolt extends BaseActiveSkill {
+  Firebolt({
+    super.id = 'mage-1-firebolt',
     required super.data,
     required super.level,
   });
@@ -15,9 +15,12 @@ class ArcaneBolt extends BaseActiveSkill {
   String get description =>
       data.description.replaceAll('x%', percentText(data.primaryBaseValue));
 
-  // Deliberately mote-free (see SkillData.moteInteraction on this skill's
-  // data) — moteResult is always MoteInteractionResult.none for Arcane
-  // Bolt, so it's unused here.
+  // Fire's mote generator (see SkillData.moteInteraction/moteElement on
+  // this skill's data — CombatCubit already resolved the generate call
+  // into moteResult before this runs). Damage is real; the 20% Burn proc
+  // chance (data.secondaryBaseValue) is captured as data for whenever the
+  // vault's Status Effects system gets a runtime model in this codebase —
+  // there's nothing to apply Burn to yet, so it isn't rolled here.
   @override
   Future<void> execute(
       CombatService combatService,

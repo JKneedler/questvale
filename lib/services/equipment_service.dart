@@ -35,9 +35,10 @@ class EquipmentService {
     );
   }
 
-  Future<void> upgradeEquipment(Equipment equipment) async {
-    final newStatModifier =
-        generateRandomTestStatModifier(equipment.id, equipment.type.slot);
+  Future<void> upgradeEquipment(
+      Equipment equipment, CharacterClass characterClass) async {
+    final newStatModifier = generateRandomTestStatModifier(
+        equipment.id, equipment.type.slot, characterClass);
     await statModifiersRepository.insertStatModifier(newStatModifier);
     final upgradedEquipment = equipment.copyWith(
       rarity: Rarity.values[equipment.rarity.index + 1],
@@ -58,8 +59,8 @@ class EquipmentService {
     final armorValue = equipmentType.slot != EquipmentSlot.weapon
         ? Random().nextInt(10) + 1
         : 0;
-    final statModifier =
-        generateRandomTestStatModifier(equipmentId, equipmentType.slot);
+    final statModifier = generateRandomTestStatModifier(
+        equipmentId, equipmentType.slot, character.characterClass);
     return Equipment(
       id: equipmentId,
       characterId: character.id,
@@ -73,10 +74,10 @@ class EquipmentService {
     );
   }
 
-  StatModifier generateRandomTestStatModifier(
-      String equipmentId, EquipmentSlot equipmentSlot) {
-    final availableStatModifierTypes =
-        StatModifierType.availableStatModifierTypes(equipmentSlot);
+  StatModifier generateRandomTestStatModifier(String equipmentId,
+      EquipmentSlot equipmentSlot, CharacterClass characterClass) {
+    final availableStatModifierTypes = StatModifierType
+        .availableStatModifierTypes(equipmentSlot, characterClass);
     final statModifierType = availableStatModifierTypes[
         Random().nextInt(availableStatModifierTypes.length)];
     final statModifier = StatModifier(

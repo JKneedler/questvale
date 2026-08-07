@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:questvale/data/models/character.dart';
+import 'package:questvale/data/models/mage_motes.dart';
 import 'package:questvale/data/models/player_combat_stats.dart';
 import 'package:questvale/data/skills/base_active_skill.dart';
 
@@ -42,22 +43,29 @@ class PlayerState extends Equatable {
   final Character? character;
   final PlayerSkills? playerSkills;
   final PlayerCombatStats? playerCombatStats;
+  // Null for non-Mage characters (and briefly while loading) — Warrior/Rogue
+  // will get their own analogous class-resource fields once those trees
+  // exist, rather than this one being repurposed for them.
+  final MageMotes? mageMotes;
 
   const PlayerState({
     required this.character,
     required this.playerSkills,
     required this.playerCombatStats,
+    this.mageMotes,
   });
 
   PlayerState copyWith({
     Character? character,
     PlayerSkills? playerSkills,
     PlayerCombatStats? playerCombatStats,
+    MageMotes? mageMotes,
   }) {
     return PlayerState(
       character: character ?? this.character,
       playerSkills: playerSkills ?? this.playerSkills,
       playerCombatStats: playerCombatStats ?? this.playerCombatStats,
+      mageMotes: mageMotes ?? this.mageMotes,
     );
   }
 
@@ -66,5 +74,6 @@ class PlayerState extends Equatable {
         character,
         playerSkills,
         playerCombatStats,
+        mageMotes,
       ];
 }
