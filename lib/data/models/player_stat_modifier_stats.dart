@@ -25,6 +25,7 @@ class PlayerStatModifierStats {
   final bool isFireImmune;
   final bool isIceImmune;
   final bool isPoisonImmune;
+  final double additionalMotePotencyPercentage;
 
   PlayerStatModifierStats({
     required this.baseAttackPower,
@@ -50,6 +51,7 @@ class PlayerStatModifierStats {
     required this.isFireImmune,
     required this.isIceImmune,
     required this.isPoisonImmune,
+    required this.additionalMotePotencyPercentage,
   });
 
   // Include an additional parameter for stat modifiers from passive skills (BasePassiveSkill)
@@ -77,6 +79,7 @@ class PlayerStatModifierStats {
     bool isFireImmune = false;
     bool isIceImmune = false;
     bool isPoisonImmune = false;
+    double additionalMotePotencyPercentage = 0;
 
     for (var equipment in equipments) {
       for (var statModifier in equipment.statModifiers) {
@@ -169,6 +172,10 @@ class PlayerStatModifierStats {
           case StatModifierType.poisonImmunity:
             isPoisonImmune = true;
             break;
+          case StatModifierType.motePotency:
+            additionalMotePotencyPercentage +=
+                statModifier.type.equipmentTierValue(equipment.tier);
+            break;
           default:
             break;
         }
@@ -201,6 +208,7 @@ class PlayerStatModifierStats {
       isFireImmune: isFireImmune,
       isIceImmune: isIceImmune,
       isPoisonImmune: isPoisonImmune,
+      additionalMotePotencyPercentage: additionalMotePotencyPercentage,
     );
   }
 }

@@ -45,7 +45,8 @@ class ForgeCubit extends Cubit<ForgeState> {
     final equipment = state.selectedEquipment;
     if (equipment != null && equipment.rarity != Rarity.legendary) {
       if (character.gold >= equipment.rarity.goldCost) {
-        await equipmentService.upgradeEquipment(equipment);
+        await equipmentService.upgradeEquipment(
+            equipment, character.characterClass);
         await characterRepository.updateCharacter(character.copyWith(
           gold: character.gold - equipment.rarity.goldCost,
         ));
