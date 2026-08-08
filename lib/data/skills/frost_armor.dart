@@ -23,7 +23,7 @@ class FrostArmor extends BaseActiveSkill {
 
   @override
   String get description =>
-      data.description.replaceAll('x%', percentText(data.primaryBaseValue));
+      data.description.replaceAll('x%', percentText(data.shieldEffect?.baseValue));
 
   @override
   Future<void> execute(
@@ -32,7 +32,8 @@ class FrostArmor extends BaseActiveSkill {
       List<Enemy> targettedEnemies,
       SkillCastContext context) async {
     final magnitude =
-        ((data.primaryBaseValue ?? 0) * playerCombatStats.maxHealth).round();
+        ((data.shieldEffect?.baseValue ?? 0) * playerCombatStats.maxHealth)
+            .round();
     await combatService.statusEffectService.applyShield(
       targetId: context.caster.id,
       encounterId: context.encounterId,

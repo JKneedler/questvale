@@ -8,11 +8,12 @@
     "iconPath": "images/skills/arcane_bolt.png",
     "buttonColor": 0,
     "type": 0,
-    "damageType": 0,
     "apCost": 1,
     "cooldown": 0,
     "targetingType": 1,
-    "primaryBaseValue": 1.0
+    "effects": [
+      { "kind": 0, "baseValue": 1.0, "damageType": 0 }
+    ]
   },
   {
     "id": "mage-1-firebolt",
@@ -23,13 +24,13 @@
     "iconPath": "images/skills/firebolt.png",
     "buttonColor": 1,
     "type": 0,
-    "damageType": 2,
     "apCost": 1,
     "cooldown": 0.5,
     "targetingType": 1,
-    "primaryBaseValue": 1.5,
-    "primaryValueScaler": 0.375,
-    "secondaryBaseValue": 0.2,
+    "effects": [
+      { "kind": 0, "baseValue": 1.5, "valueScaler": 0.375, "damageType": 2 },
+      { "kind": 2, "baseValue": 0.2, "statusEffectType": 0 }
+    ],
     "moteInteraction": 1,
     "moteElement": 0
   },
@@ -42,13 +43,13 @@
     "iconPath": "images/skills/ice_spike.png",
     "buttonColor": 2,
     "type": 0,
-    "damageType": 3,
     "apCost": 1,
     "cooldown": 1,
     "targetingType": 1,
-    "primaryBaseValue": 1.4,
-    "primaryValueScaler": 0.35,
-    "secondaryBaseValue": 0.2,
+    "effects": [
+      { "kind": 0, "baseValue": 1.4, "valueScaler": 0.35, "damageType": 3 },
+      { "kind": 2, "baseValue": 0.2, "statusEffectType": 1 }
+    ],
     "moteInteraction": 1,
     "moteElement": 1
   },
@@ -61,12 +62,12 @@
     "iconPath": "images/skills/elemental_surge.png",
     "buttonColor": 1,
     "type": 0,
-    "damageType": 2,
     "apCost": 2,
     "cooldown": 3,
     "targetingType": 1,
-    "primaryBaseValue": 0.8,
-    "primaryValueScaler": 0.15,
+    "effects": [
+      { "kind": 0, "baseValue": 0.8, "valueScaler": 0.15, "damageType": 2 }
+    ],
     "moteInteraction": 2,
     "moteElement": 0
   },
@@ -79,14 +80,13 @@
     "iconPath": "images/skills/frostfire_infusion.png",
     "buttonColor": 2,
     "type": 0,
-    "damageType": 3,
     "apCost": 2,
     "cooldown": 4,
     "targetingType": 1,
-    "primaryBaseValue": 0.7,
-    "primaryValueScaler": 0.1,
-    "secondaryBaseValue": 0.1,
-    "secondaryValueScaler": 0.02,
+    "effects": [
+      { "kind": 0, "baseValue": 0.7, "valueScaler": 0.1, "damageType": 3 },
+      { "kind": 1, "baseValue": 0.1, "valueScaler": 0.02 }
+    ],
     "moteInteraction": 2,
     "moteElement": 1
   },
@@ -102,8 +102,9 @@
     "apCost": 2,
     "cooldown": 6,
     "targetingType": 0,
-    "primaryBaseValue": 0.15,
-    "primaryValueScaler": 0.0625
+    "effects": [
+      { "kind": 1, "baseValue": 0.15, "valueScaler": 0.0625 }
+    ]
   },
   {
     "id": "mage-1-mote_potency",
@@ -114,8 +115,9 @@
     "iconPath": "images/skills/elemental_ascencion.png",
     "buttonColor": 3,
     "type": 1,
-    "primaryBaseValue": 0.1,
-    "primaryValueScaler": 0.0375
+    "effects": [
+      { "kind": 3, "baseValue": 0.1, "valueScaler": 0.0375 }
+    ]
   },
   {
     "id": "mage-1-elemental_affinity",
@@ -126,8 +128,10 @@
     "iconPath": "images/skills/ice_spike.png",
     "buttonColor": 3,
     "type": 1,
-    "primaryBaseValue": 0.05,
-    "primaryValueScaler": 0.0375
+    "effects": [
+      { "kind": 3, "baseValue": 0.05, "valueScaler": 0.0375, "statModifierType": 2 },
+      { "kind": 3, "baseValue": 0.05, "valueScaler": 0.0375, "statModifierType": 3 }
+    ]
   },
   {
     "id": "mage-1-ice_ward",
@@ -138,7 +142,8 @@
     "iconPath": "images/skills/frostfire_infusion.png",
     "buttonColor": 2,
     "type": 1,
-    "primaryBaseValue": 0.05,
-    "primaryValueScaler": 0.0375
+    "effects": [
+      { "kind": 3, "baseValue": 0.05, "valueScaler": 0.0375 }
+    ]
   }
 ]

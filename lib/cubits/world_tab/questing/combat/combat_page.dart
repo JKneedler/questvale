@@ -893,8 +893,8 @@ class TargetEnemySkillBox extends StatelessWidget {
           children: [
             Text(skill.data.name),
             Text(skill.description),
-            Text('Damage: ${(skill.data.primaryBaseValue! * playerCombatStats.attackPowerFor(skill.data.damageType ?? SkillDamageType.physical)).toStringAsFixed(0)}'),
-            Text('Damage Type: ${skill.data.damageType?.name}'),
+            Text('Damage: ${((skill.data.damageEffect?.baseValue ?? 0) * playerCombatStats.attackPowerFor(skill.data.damageEffect?.damageType ?? SkillDamageType.physical)).toStringAsFixed(0)}'),
+            Text('Damage Type: ${skill.data.damageEffect?.damageType?.name}'),
             Expanded(child: Container()),
             QvButton(
               width: double.infinity,

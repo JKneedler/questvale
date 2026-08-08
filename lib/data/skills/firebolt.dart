@@ -1,8 +1,10 @@
 import 'dart:math';
 
+import 'package:collection/collection.dart';
 import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/models/player_combat_stats.dart';
 import 'package:questvale/data/skills/base_active_skill.dart';
+import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/services/combat_service.dart';
 
 class Firebolt extends BaseActiveSkill {
@@ -24,16 +26,17 @@ class Firebolt extends BaseActiveSkill {
   }) : random = random ?? Random();
 
   @override
-  String get description =>
-      data.description.replaceAll('x%', percentText(data.primaryBaseValue));
+  String get description => data.description
+      .replaceAll('x%', percentText(data.damageEffect?.baseValue));
 
   // Fire's mote generator (see SkillData.moteInteraction/moteElement on
   // this skill's data — CombatService.castSkill already resolved the
   // generate call into context.moteResult before this runs). Burn's 20%
-  // proc chance (data.secondaryBaseValue) is the reference DoT case for
-  // the Skill System Foundations ticket's status-effect runtime model —
-  // rolled here, applied via StatusEffectService if it lands. Skipped
-  // entirely if the hit killed the target (nothing left to burn).
+  // proc chance (the statusEffectChance component tagged burn) is the
+  // reference DoT case for the Skill System Foundations ticket's
+  // status-effect runtime model — rolled here, applied via
+  // StatusEffectService if it lands. Skipped entirely if the hit killed
+  // the target (nothing left to burn).
   @override
   Future<void> execute(
       CombatService combatService,
@@ -45,7 +48,10 @@ class Firebolt extends BaseActiveSkill {
     if (targettedEnemies.isEmpty || damageResults.isEmpty) return;
     if (damageResults.first.didKill) return;
 
-    final procChance = data.secondaryBaseValue ?? 0;
+    final procChance = data.statusEffectChances
+            .firstWhereOrNull((e) => e.statusEffectType == StatusEffectType.burn)
+            ?.baseValue ??
+        0;
     if (random.nextDouble() >= procChance) return;
 
     // Snapshotted now, at cast time — Burn ticks later reuse this exact

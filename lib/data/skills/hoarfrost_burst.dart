@@ -12,15 +12,15 @@ class HoarfrostBurst extends BaseActiveSkill {
   });
 
   @override
-  String get description =>
-      data.description.replaceAll('x%', percentText(data.primaryBaseValue));
+  String get description => data.description
+      .replaceAll('x%', percentText(data.damageEffect?.baseValue));
 
   // Ice's mote payoff, symmetric with Ember Burst — damage scales with
   // Ice motes consumed (see EmberBurst's doc comment for the 0-consumed
-  // case). The shield half (data.secondaryBaseValue, per mote consumed,
-  // same %-of-max-HP-per-mote shape as the damage half) is this skill's
-  // second consumer of StatusEffectService.applyShield alongside Frost
-  // Armor (Skill System Foundations, subtask 4) — reuses FrostArmor.
+  // case). The shield half (the shield-kind effect component, per mote
+  // consumed, same %-of-max-HP-per-mote shape as the damage half) is this
+  // skill's second consumer of StatusEffectService.applyShield alongside
+  // Frost Armor (Skill System Foundations, subtask 4) — reuses FrostArmor.
   // shieldDuration rather than inventing its own number, since the vault
   // doesn't specify one for this skill.
   @override
@@ -30,13 +30,14 @@ class HoarfrostBurst extends BaseActiveSkill {
       List<Enemy> targettedEnemies,
       SkillCastContext context) async {
     final motesConsumed = context.moteResult.motesConsumed;
-    final multiplier = (data.primaryBaseValue ?? 0) * motesConsumed;
+    final multiplier = (data.damageEffect?.baseValue ?? 0) * motesConsumed;
     await basicEnemyDamage(combatService, playerCombatStats, targettedEnemies,
         damageMultiplierOverride: multiplier);
 
-    final shieldMagnitude =
-        ((data.secondaryBaseValue ?? 0) * motesConsumed * playerCombatStats.maxHealth)
-            .round();
+    final shieldMagnitude = ((data.shieldEffect?.baseValue ?? 0) *
+            motesConsumed *
+            playerCombatStats.maxHealth)
+        .round();
     await combatService.statusEffectService.applyShield(
       targetId: context.caster.id,
       encounterId: context.encounterId,

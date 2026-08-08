@@ -11,8 +11,8 @@ class ArcaneBolt extends BaseActiveSkill {
   });
 
   @override
-  String get description =>
-      data.description.replaceAll('x%', percentText(data.primaryBaseValue));
+  String get description => data.description
+      .replaceAll('x%', percentText(data.damageEffect?.baseValue));
 
   // Deliberately mote-free (see SkillData.moteInteraction on this skill's
   // data) — context.moteResult is always MoteInteractionResult.none for

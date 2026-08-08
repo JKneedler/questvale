@@ -1,9 +1,11 @@
 import 'dart:math';
 
+import 'package:collection/collection.dart';
 import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/models/player_combat_stats.dart';
 import 'package:questvale/data/models/scheduled_timer.dart';
 import 'package:questvale/data/skills/base_active_skill.dart';
+import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/services/combat_service.dart';
 
 class FrostShard extends BaseActiveSkill {
@@ -24,15 +26,15 @@ class FrostShard extends BaseActiveSkill {
   }) : random = random ?? Random();
 
   @override
-  String get description =>
-      data.description.replaceAll('x%', percentText(data.primaryBaseValue));
+  String get description => data.description
+      .replaceAll('x%', percentText(data.damageEffect?.baseValue));
 
   // Ice's mote generator, symmetric with Firebolt. Slow's 20% proc chance
-  // (data.secondaryBaseValue) is the reference rate-modifier case for the
-  // Skill System Foundations ticket's status-effect runtime model —
-  // rolled here, applied via StatusEffectService if it lands. Only ever
-  // targets an enemy's enemyMove timer so far — nothing casts Slow at a
-  // player yet.
+  // (the statusEffectChance component tagged slow) is the reference
+  // rate-modifier case for the Skill System Foundations ticket's
+  // status-effect runtime model — rolled here, applied via
+  // StatusEffectService if it lands. Only ever targets an enemy's
+  // enemyMove timer so far — nothing casts Slow at a player yet.
   @override
   Future<void> execute(
       CombatService combatService,
@@ -44,7 +46,10 @@ class FrostShard extends BaseActiveSkill {
     if (targettedEnemies.isEmpty || damageResults.isEmpty) return;
     if (damageResults.first.didKill) return;
 
-    final procChance = data.secondaryBaseValue ?? 0;
+    final procChance = data.statusEffectChances
+            .firstWhereOrNull((e) => e.statusEffectType == StatusEffectType.slow)
+            ?.baseValue ??
+        0;
     if (random.nextDouble() >= procChance) return;
 
     await combatService.statusEffectService.applySlow(

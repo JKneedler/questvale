@@ -11,8 +11,8 @@ class EmberBurst extends BaseActiveSkill {
   });
 
   @override
-  String get description =>
-      data.description.replaceAll('x%', percentText(data.primaryBaseValue));
+  String get description => data.description
+      .replaceAll('x%', percentText(data.damageEffect?.baseValue));
 
   // Fire's mote payoff — CombatService.castSkill already resolved the
   // consume-all call into context.moteResult before this runs, so
@@ -28,7 +28,7 @@ class EmberBurst extends BaseActiveSkill {
       List<Enemy> targettedEnemies,
       SkillCastContext context) async {
     final multiplier =
-        (data.primaryBaseValue ?? 0) * context.moteResult.motesConsumed;
+        (data.damageEffect?.baseValue ?? 0) * context.moteResult.motesConsumed;
     await basicEnemyDamage(combatService, playerCombatStats, targettedEnemies,
         damageMultiplierOverride: multiplier);
   }

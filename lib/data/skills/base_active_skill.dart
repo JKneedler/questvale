@@ -16,9 +16,10 @@ abstract class BaseActiveSkill {
 
   String get description;
 
-  // Shared 'x%' description-template formatter — primaryBaseValue etc. are
-  // stored as fractions (1.5 == 150%), so every skill needs the same *100
-  // conversion when substituting into its description string.
+  // Shared 'x%' description-template formatter — a SkillEffectComponent's
+  // baseValue is stored as a fraction (1.5 == 150%), so every skill needs
+  // the same *100 conversion when substituting into its description
+  // string.
   String percentText(double? value) => '${((value ?? 0) * 100).round()}%';
 
   // context is everything CombatService.castSkill already resolved before
@@ -38,21 +39,21 @@ abstract class BaseActiveSkill {
 
   // damageMultiplierOverride lets a mote-consumer skill (Ember Burst,
   // Hoarfrost Burst) pass a multiplier computed from motesConsumed instead
-  // of the flat data.primaryBaseValue every other skill uses as-is.
+  // of the flat data.damageEffect.baseValue every other skill uses as-is.
   Future<List<DamageResult>> basicEnemyDamage(
       CombatService combatService,
       PlayerCombatStats playerCombatStats,
       List<Enemy> enemies, {
     double? damageMultiplierOverride,
   }) async {
+    final damageEffect = data.damageEffect;
     List<DamageResult> damageResults = [];
     for (int i = 0; i < enemies.length; i++) {
       if (data.targetingType == SkillTargetingType.singleEnemy && i != 0) break;
 
       final damageData = DamageData(
-          damageMultiplier:
-              damageMultiplierOverride ?? data.primaryBaseValue ?? 1,
-          damageType: data.damageType ?? SkillDamageType.physical);
+          damageMultiplier: damageMultiplierOverride ?? damageEffect?.baseValue ?? 1,
+          damageType: damageEffect?.damageType ?? SkillDamageType.physical);
       final damageResult = await combatService.applyDamage(
           damageData, playerCombatStats, enemies[i].id);
       print(
