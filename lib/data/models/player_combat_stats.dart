@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/data/models/player_stat_modifier_stats.dart';
+import 'package:questvale/data/models/stat_modifier.dart';
 import 'package:questvale/data/providers/game_data_models/skill_data.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/shared_enums.dart';
@@ -16,15 +17,22 @@ class PlayerCombatStats {
   final DamageType weaponDamageType;
   // List<StatusEffect> activeStatusEffects;
 
+  // passiveModifiers is pre-flattened by the caller (see
+  // PlayerCubit.loadCharacter — one BasePassiveSkill.statModifiers(...)
+  // call per equipped passive CharacterSkill, concatenated) rather than
+  // this class knowing about BasePassiveSkill/SkillService itself; it stays
+  // a plain stats/data object, same as it already is for equipments.
   PlayerCombatStats({
     required this.playerLevel,
     required this.characterClass,
     required List<Equipment> equipments,
+    List<StatModifier> passiveModifiers = const [],
   }) : weaponDamageType = equipments
                 .firstWhereOrNull((e) => e.type.slot == EquipmentSlot.weapon)
                 ?.damageType ??
             DamageType.physical {
-    statModifierStats = PlayerStatModifierStats.fromStatModifiers(equipments);
+    statModifierStats = PlayerStatModifierStats.fromStatModifiers(equipments,
+        passiveModifiers: passiveModifiers);
   }
 
   get physicalAttackPower =>

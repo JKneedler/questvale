@@ -87,6 +87,7 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
         playerLevel: character.level,
         characterClass: character.characterClass,
         equipments: character.equippedEquipmentList,
+        passiveModifiers: playerCubit.skillService.passiveModifiersFor(character),
       );
       final reconciliation = await enemyAttackSchedulingService.reconcile(
         encounter: encounter,
