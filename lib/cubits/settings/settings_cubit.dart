@@ -6,6 +6,7 @@ import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/character_skill.dart';
 import 'package:questvale/data/models/character_stats.dart';
 import 'package:questvale/data/models/encounter.dart';
+import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/data/models/mage_motes.dart';
 import 'package:questvale/data/providers/game_data.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
@@ -79,10 +80,18 @@ class SettingsCubit extends Cubit<SettingsState> {
     await playerCubit.loadCharacter();
   }
 
+  // Re-equips a fresh starter weapon after clearing everything — leaving
+  // the character fully unequipped would mean 0 base attack power (and so
+  // 0 damage) now that CombatService actually consults it, per the Skill
+  // System Foundations ticket's damage seam.
   Future<void> deleteAllEquipment() async {
-    final updated =
-        await characterRepository.updateCharacter(_unequipped(state.character));
-    await equipmentRepository.deleteAllEquipmentForCharacter(updated.id);
+    final cleared = await characterRepository
+        .updateCharacter(_unequipped(state.character));
+    await equipmentRepository.deleteAllEquipmentForCharacter(cleared.id);
+    final weapon = EquipmentService.generateStarterWeapon(cleared);
+    await equipmentRepository.insertEquipment(weapon);
+    final updated = await characterRepository.updateCharacter(
+        cleared.copyWithEquippedForSlot(EquipmentSlot.weapon, weapon));
     emit(state.copyWith(character: updated));
     await playerCubit.loadCharacter();
   }
@@ -147,7 +156,15 @@ class SettingsCubit extends Cubit<SettingsState> {
       await characterRepository
           .updateMageMotes(MageMotes(characterId: updated.id));
     }
-    emit(state.copyWith(character: updated));
+
+    // Re-equip a starter weapon rather than leaving the reset character
+    // fully unequipped — same reasoning as deleteAllEquipment above.
+    final weapon = EquipmentService.generateStarterWeapon(updated);
+    await equipmentRepository.insertEquipment(weapon);
+    final equipped = await characterRepository.updateCharacter(
+        updated.copyWithEquippedForSlot(EquipmentSlot.weapon, weapon));
+
+    emit(state.copyWith(character: equipped));
     await playerCubit.loadCharacter();
   }
 

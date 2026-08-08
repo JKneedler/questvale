@@ -20,6 +20,46 @@ class EquipmentService {
     statModifiersRepository = StatModifiersRepository(db: db);
   }
 
+  // A deterministic tier-1 weapon (not randomized like
+  // generateRandomTestEquipment) carrying a guaranteed attackPower
+  // StatModifier, for admin actions that need a character to be able to
+  // deal real damage right away (see the Skill System Foundations ticket,
+  // subtask 2) — an unequipped character now has 0 base attack power and
+  // so deals 0 damage, which admin actions like "reset character" and
+  // "delete all equipment" would otherwise leave them stuck at.
+  // generateRandomTestEquipment's random type/stat pick isn't good enough
+  // here: it can land on a non-weapon slot or a stat modifier that isn't
+  // attackPower at all, still leaving damage at 0.
+  //
+  // Pure — no DB — so it's static (matching this codebase's convention for
+  // pure logic, e.g. CombatService.computeRawDamage) and unit testable on
+  // its own (see equipment_service_test.dart).
+  static Equipment generateStarterWeapon(Character character) {
+    final weaponType = EquipmentType.availableEquipmentTypes(
+            character.characterClass)
+        .firstWhere((type) => type.slot == EquipmentSlot.weapon);
+    final equipmentId = Uuid().v4();
+    return Equipment(
+      id: equipmentId,
+      characterId: character.id,
+      rarity: Rarity.common,
+      type: weaponType,
+      tier: 1,
+      attackPower: 0,
+      damageType: DamageType.physical,
+      armorValue: 0,
+      statModifiers: [
+        StatModifier(
+          id: Uuid().v4(),
+          equipmentId: equipmentId,
+          type: StatModifierType.attackPower,
+          location: StatModifierLocation.equipment,
+          tier: 1,
+        ),
+      ],
+    );
+  }
+
   Equipment generateEquipment(
       Character character, QuestZone questZone, EncounterType encounterType) {
     return Equipment(
