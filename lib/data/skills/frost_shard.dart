@@ -2,7 +2,6 @@ import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/models/player_combat_stats.dart';
 import 'package:questvale/data/skills/base_active_skill.dart';
 import 'package:questvale/services/combat_service.dart';
-import 'package:questvale/services/mote_service.dart';
 
 class FrostShard extends BaseActiveSkill {
   FrostShard({
@@ -24,7 +23,7 @@ class FrostShard extends BaseActiveSkill {
       CombatService combatService,
       PlayerCombatStats playerCombatStats,
       List<Enemy> targettedEnemies,
-      MoteInteractionResult moteResult) async {
+      SkillCastContext context) async {
     await basicEnemyDamage(combatService, playerCombatStats, targettedEnemies);
   }
 }

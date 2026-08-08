@@ -1,9 +1,12 @@
 // The shared time-based scheduling primitive — see the vault's
 // "Time-Based Scheduling Engine" architecture note. One record shape is
 // meant to eventually cover enemy moves, status effect duration/ticks, and
-// player skill cooldowns; only enemyMove is a real consumer so far.
+// player skill cooldowns. skillCooldown is armed by CombatService.castSkill
+// (see the Skill System Foundations ticket); status effect kinds
+// (statusEffectTick/statusEffectExpiry) are still unbuilt.
 enum ScheduledTimerKind {
-  enemyMove;
+  enemyMove,
+  skillCooldown;
 }
 
 class ScheduledTimer {

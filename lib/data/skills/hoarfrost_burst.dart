@@ -2,7 +2,6 @@ import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/models/player_combat_stats.dart';
 import 'package:questvale/data/skills/base_active_skill.dart';
 import 'package:questvale/services/combat_service.dart';
-import 'package:questvale/services/mote_service.dart';
 
 class HoarfrostBurst extends BaseActiveSkill {
   HoarfrostBurst({
@@ -22,16 +21,16 @@ class HoarfrostBurst extends BaseActiveSkill {
   // applied here: there's no shield/buff mechanic on Character in this
   // codebase yet (nothing tracks a temporary damage-absorbing pool), so
   // only the damage half of this skill actually fires. Adding that
-  // mechanic is its own piece of work, not something to bolt on inside a
-  // single skill's execute().
+  // mechanic is Skill System Foundations subtask 4 (Shields as a Status
+  // Effect), not something to bolt on inside a single skill's execute().
   @override
   Future<void> execute(
       CombatService combatService,
       PlayerCombatStats playerCombatStats,
       List<Enemy> targettedEnemies,
-      MoteInteractionResult moteResult) async {
+      SkillCastContext context) async {
     final multiplier =
-        (data.primaryBaseValue ?? 0) * moteResult.motesConsumed;
+        (data.primaryBaseValue ?? 0) * context.moteResult.motesConsumed;
     await basicEnemyDamage(combatService, playerCombatStats, targettedEnemies,
         damageMultiplierOverride: multiplier);
   }
