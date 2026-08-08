@@ -32,6 +32,7 @@ class Character extends Equatable {
   static const dailyApEarnedDateColumnName = 'dailyApEarnedDate';
   static const themeIdColumnName = 'themeId';
   static const combatStatusCardExpandedColumnName = 'combatStatusCardExpanded';
+  static const skillPointsColumnName = 'skillPoints';
 
   static const createTableSQL = '''
 		CREATE TABLE ${Character.characterTableName}(
@@ -59,7 +60,8 @@ class Character extends Equatable {
       ${Character.dailyApEarnedColumnName} INTEGER DEFAULT 0,
       ${Character.dailyApEarnedDateColumnName} INTEGER,
       ${Character.themeIdColumnName} TEXT NOT NULL DEFAULT '$DEFAULT_THEME_ID',
-      ${Character.combatStatusCardExpandedColumnName} BOOLEAN NOT NULL DEFAULT 1
+      ${Character.combatStatusCardExpandedColumnName} BOOLEAN NOT NULL DEFAULT 1,
+      ${Character.skillPointsColumnName} INTEGER NOT NULL DEFAULT 0
 		);
 	''';
 
@@ -89,6 +91,7 @@ class Character extends Equatable {
   final DateTime? dailyApEarnedDate;
   final String themeId;
   final bool combatStatusCardExpanded;
+  final int skillPoints;
 
   const Character({
     required this.id,
@@ -117,6 +120,7 @@ class Character extends Equatable {
     this.dailyApEarnedDate,
     this.themeId = DEFAULT_THEME_ID,
     this.combatStatusCardExpanded = true,
+    this.skillPoints = 0,
   });
 
   List<Equipment> get equippedEquipmentList => [
@@ -197,6 +201,7 @@ class Character extends Equatable {
       Character.themeIdColumnName: themeId,
       Character.combatStatusCardExpandedColumnName:
           combatStatusCardExpanded ? 1 : 0,
+      Character.skillPointsColumnName: skillPoints,
     };
   }
 
@@ -231,6 +236,7 @@ class Character extends Equatable {
     DateTime? dailyApEarnedDate,
     String? themeId,
     bool? combatStatusCardExpanded,
+    int? skillPoints,
   }) {
     return Character(
       id: id,
@@ -260,6 +266,7 @@ class Character extends Equatable {
       themeId: themeId ?? this.themeId,
       combatStatusCardExpanded:
           combatStatusCardExpanded ?? this.combatStatusCardExpanded,
+      skillPoints: skillPoints ?? this.skillPoints,
     );
   }
 
@@ -291,5 +298,6 @@ class Character extends Equatable {
         dailyApEarnedDate,
         themeId,
         combatStatusCardExpanded,
+        skillPoints,
       ];
 }

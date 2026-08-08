@@ -217,6 +217,12 @@ class QuestvaleDB {
         // backfill needed (no prior version ever had status effects).
         await db.execute(StatusEffectInstance.createTableSQL);
       }
-    }, version: 14);
+      if (oldVersion < 15) {
+        // Skills UI subtask 1: unspent Skill Points, earned by leveling up
+        // (see LevelingService) and spent unlocking/upgrading skills.
+        await db.execute(
+            'ALTER TABLE ${Character.characterTableName} ADD COLUMN ${Character.skillPointsColumnName} INTEGER NOT NULL DEFAULT 0');
+      }
+    }, version: 15);
   }
 }

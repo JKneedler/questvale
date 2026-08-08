@@ -211,6 +211,7 @@ class CharacterRepository {
       themeId: map[Character.themeIdColumnName] as String? ?? DEFAULT_THEME_ID,
       combatStatusCardExpanded:
           map[Character.combatStatusCardExpandedColumnName] != 0,
+      skillPoints: map[Character.skillPointsColumnName] as int? ?? 0,
     );
     return character;
   }

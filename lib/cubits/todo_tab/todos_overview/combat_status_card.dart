@@ -15,6 +15,7 @@ import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/data_formatters.dart';
 import 'package:questvale/helpers/shared_enums.dart';
+import 'package:questvale/services/leveling_service.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_bar.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
@@ -23,11 +24,15 @@ import 'package:questvale/widgets/qv_mote_display.dart';
 
 // Scaffold for the character/combat status block pinned above the todo
 // list. XP (level/currentExp), health/AP/mana, in-combat enemy state, and
-// enemy attack countdowns read real data from TodosOverviewCubit. Skill
-// cooldowns and the XP bar's exp-to-next-level threshold still have no real
-// system behind them (no leveling curve or live cooldown tracking exists
-// anywhere in the codebase yet), so those remain placeholder values laid
-// out so the real systems can slot in later.
+// enemy attack countdowns read real data from TodosOverviewCubit. Leveling
+// itself is real now (see LevelingService) — completing an encounter can
+// roll currentExp into a level-up and grant Skill Points — but the curve it
+// rolls against is still the same placeholder `level * 100` the exp-needed
+// denominator below always used; real curve design is separate balance
+// work. Skill cooldowns still have no real system behind them (no live
+// cooldown tracking exists anywhere in the codebase yet), so that piece
+// remains a placeholder value laid out so the real system can slot in
+// later.
 class CombatStatusCard extends StatefulWidget {
   const CombatStatusCard({super.key});
 
@@ -212,9 +217,12 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-// Row 0 — full-width XP bar. Level and currentExp are real; the
-// exp-needed-for-next-level denominator is a placeholder (level * 100)
-// since no leveling/exp-curve system exists anywhere in the codebase yet.
+// Row 0 — full-width XP bar. Level and currentExp are real, and now
+// actually roll over into a level-up (see LevelingService) instead of
+// growing unbounded. The exp-needed-for-next-level denominator itself is
+// still a placeholder curve — reads LevelingService.expForLevel rather than
+// re-hardcoding it here, so this can't drift from what actually gates the
+// next level-up.
 class _ExperienceBar extends StatelessWidget {
   final Character character;
   final bool isExpanded;
@@ -222,7 +230,7 @@ class _ExperienceBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final expForNextLevel = character.level * 100;
+    final expForNextLevel = LevelingService.expForLevel(character.level);
 
     return Column(
       mainAxisSize: MainAxisSize.min,

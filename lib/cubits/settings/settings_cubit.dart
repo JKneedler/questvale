@@ -158,6 +158,10 @@ class SettingsCubit extends Cubit<SettingsState> {
       activeSkillSlot2: activeSkillSlot2,
       dailyApEarned: 0,
       themeId: c.themeId,
+      // Invested skills were just wiped above, so any unspent points reset
+      // to 0 too rather than carrying over — consistent with the rest of
+      // this reset.
+      skillPoints: 0,
     );
     final updated = await characterRepository.updateCharacter(reset);
     await equipmentRepository.deleteAllEquipmentForCharacter(updated.id);
@@ -203,6 +207,7 @@ class SettingsCubit extends Cubit<SettingsState> {
       dailyApEarned: c.dailyApEarned,
       dailyApEarnedDate: c.dailyApEarnedDate,
       themeId: c.themeId,
+      skillPoints: c.skillPoints,
     );
   }
 }
