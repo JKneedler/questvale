@@ -284,6 +284,15 @@ class CharacterRepository {
     await db.insert(CharacterSkill.characterSkillTableName, skill.toMap());
   }
 
+  Future<void> updateCharacterSkill(CharacterSkill skill) async {
+    await db.update(
+      CharacterSkill.characterSkillTableName,
+      skill.toMap(),
+      where: '${CharacterSkill.idColumnName} = ?',
+      whereArgs: [skill.id],
+    );
+  }
+
   Future<List<CharacterSkill>> getSkillsByCharacterId(
       String characterId) async {
     final skillMaps = await db.query(

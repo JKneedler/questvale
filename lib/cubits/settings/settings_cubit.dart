@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/settings/settings_state.dart';
@@ -17,6 +18,7 @@ import 'package:questvale/data/repositories/quest_repository.dart';
 import 'package:questvale/data/repositories/todo_repository.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/services/equipment_service.dart';
+import 'package:questvale/services/skill_progression_service.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 
@@ -67,6 +69,40 @@ class SettingsCubit extends Cubit<SettingsState> {
     final updated = await characterRepository.updateCharacter(
       state.character.copyWith(actionPoints: 0, dailyApEarned: 0),
     );
+    emit(state.copyWith(character: updated));
+    await playerCubit.loadCharacter();
+  }
+
+  // Minimal call site for SkillProgressionService — see the Skills UI
+  // ticket's subtask 2, which is deliberately UI-less (the real Skills
+  // Gear-Up screen is subtask 3). Picks the first not-yet-owned skill in
+  // game-data declaration order, a no-op if every skill is already owned
+  // or the next one is tier-locked/unaffordable.
+  Future<void> unlockNextSkill() async {
+    final skillProgressionService =
+        SkillProgressionService(db: db, gameData: gameData);
+    final character = state.character;
+    final nextSkill = gameData.skills.firstWhereOrNull((skill) =>
+        !character.skills.any((owned) => owned.skillId == skill.id));
+    if (nextSkill == null) return;
+    await skillProgressionService.unlockSkill(
+        character: character, skillId: nextSkill.id);
+    final updated = await characterRepository.getCharacterById(character.id);
+    emit(state.copyWith(character: updated));
+    await playerCubit.loadCharacter();
+  }
+
+  // Same minimal-call-site reasoning as unlockNextSkill — upgrades
+  // whichever owned skill happens to be first, a no-op if the character
+  // owns nothing yet or has no Skill Points left.
+  Future<void> upgradeFirstSkill() async {
+    final skillProgressionService =
+        SkillProgressionService(db: db, gameData: gameData);
+    final character = state.character;
+    if (character.skills.isEmpty) return;
+    await skillProgressionService.upgradeSkill(
+        character: character, skillId: character.skills.first.skillId);
+    final updated = await characterRepository.getCharacterById(character.id);
     emit(state.copyWith(character: updated));
     await playerCubit.loadCharacter();
   }
