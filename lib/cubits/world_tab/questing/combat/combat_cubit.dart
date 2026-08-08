@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/world_tab/questing/combat/combat_state.dart';
 import 'package:questvale/data/models/enemy.dart';
+import 'package:questvale/data/models/player_combat_stats.dart';
 import 'package:questvale/data/providers/game_data_models/quest_zone.dart';
 import 'package:questvale/data/providers/game_data_models/skill_data.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
@@ -13,7 +14,7 @@ import 'package:questvale/data/repositories/scheduled_timer_repository.dart';
 import 'package:questvale/data/skills/base_active_skill.dart';
 import 'package:questvale/services/combat_service.dart';
 import 'package:questvale/services/enemy_attack_scheduling_service.dart';
-import 'package:questvale/services/mote_service.dart';
+import 'package:questvale/services/status_effect_service.dart';
 import 'package:sqflite/sqflite.dart';
 
 class CombatCubit extends Cubit<CombatState> {
@@ -26,7 +27,7 @@ class CombatCubit extends Cubit<CombatState> {
   late CharacterRepository characterRepository;
   late CombatService combatService;
   late EnemyAttackSchedulingService enemyAttackSchedulingService;
-  late MoteService moteService;
+  late StatusEffectService statusEffectService;
 
   CombatCubit(
       {required this.encounterId,
@@ -40,7 +41,7 @@ class CombatCubit extends Cubit<CombatState> {
     characterRepository = CharacterRepository(db: db);
     combatService = CombatService(db: db);
     enemyAttackSchedulingService = EnemyAttackSchedulingService(db: db);
-    moteService = MoteService(characterRepository: characterRepository);
+    statusEffectService = StatusEffectService(db: db);
     init();
   }
 
@@ -56,14 +57,31 @@ class CombatCubit extends Cubit<CombatState> {
   // bars at the bottom of this page in sync with any damage reconciliation
   // just applied.
   Future<void> reload() async {
-    final encounter = await encounterRepository.getEncounterById(encounterId);
+    var encounter = await encounterRepository.getEncounterById(encounterId);
     final character = await characterRepository.getSingleCharacter();
+    // Built locally from `character` (just fetched above) rather than read
+    // off playerCubit.state — that state reflects the *previous* reload
+    // (playerCubit.loadCharacter() runs after this, further down), so
+    // building fresh here avoids reconciling against a stale maxHealth.
+    final playerCombatStats = PlayerCombatStats(
+      playerLevel: character.level,
+      characterClass: character.characterClass,
+      equipments: character.equippedEquipmentList,
+    );
     final reconciliation = await enemyAttackSchedulingService.reconcile(
       encounter: encounter,
       character: character,
+      playerCombatStats: playerCombatStats,
       enemyDataFor: (enemy) => questZone.enemies
           .firstWhereOrNull((data) => data.id == enemy.enemyDataId),
     );
+    // Own reconcile pass for Burn ticks/Slow expiry — a separate call
+    // rather than one unified dispatcher, since only these two non-
+    // enemyMove kinds exist so far (see ScheduledTimerKind's doc comment).
+    // May just have changed enemy HP (Burn), which the `encounter` fetched
+    // above predates — re-fetch after it runs.
+    await statusEffectService.reconcile(encounter: encounter);
+    encounter = await encounterRepository.getEncounterById(encounterId);
     await playerCubit.loadCharacter();
 
     final enemies = encounter.enemies;
@@ -203,15 +221,23 @@ class CombatCubit extends Cubit<CombatState> {
           previousState.enemies[previousState.target.getEnemyIndex()]
         ];
       }
-      // Resolved once here (not inside each skill's own execute) since
-      // every cast needs it regardless of whether that particular skill
-      // cares — moteInteraction == none short-circuits to a cheap no-op in
-      // MoteService for non-mote skills.
-      final moteResult = await moteService.resolve(
-          previousState.targetingSkill!.data, character.id);
-      // TODO: Handle attack
-      await previousState.targetingSkill!.execute(
-          combatService, playerCombatStats, targettedEnemies, moteResult);
+      // AP check/spend, cooldown check/arm, and class-resource resolution
+      // (Mote generation/consumption for Mage) all happen inside castSkill
+      // now — see CombatService.castSkill's doc comment. A blocked cast
+      // (insufficient AP or still on cooldown) does nothing and isn't
+      // reloaded; real UI feedback for why is its own later pass (see the
+      // Skill System Foundations ticket) — for now it's just a no-op.
+      final result = await combatService.castSkill(
+        skill: previousState.targetingSkill!,
+        character: character,
+        playerCombatStats: playerCombatStats,
+        targets: targettedEnemies,
+        encounterId: encounterId,
+      );
+      if (!result.wasCast) {
+        print('Skill cast blocked: ${result.blockReason}');
+        return;
+      }
       reload();
     }
   }

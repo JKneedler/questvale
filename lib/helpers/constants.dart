@@ -201,7 +201,8 @@ const MINI_BAR_SLICE = Rect.fromLTWH(6, 6, 52, 52);
 const MINI_BAR_MIN_SIZE = Size(22, 22);
 
 // Combat
-const BASE_HEALTH = 100;
+// No flat BASE_HEALTH here — max HP's base term is per-class
+// (CharacterClass.baseMaxHealth), read by PlayerCombatStats.maxHealth.
 const BASE_HEALTH_PER_LEVEL = 10;
 const BASE_RESOURCE_REGEN = 10;
 const BASE_RESOURCE_REGEN_PER_LEVEL = 1;

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/encounter.dart';
 import 'package:questvale/data/models/enemy.dart';
+import 'package:questvale/data/models/player_combat_stats.dart';
 import 'package:questvale/data/models/scheduled_timer.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_attack_data.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
@@ -189,11 +190,18 @@ class EnemyAttackSchedulingService {
   Future<ReconciliationResult> reconcile({
     required Encounter encounter,
     required Character character,
+    required PlayerCombatStats playerCombatStats,
     required EnemyData? Function(Enemy enemy) enemyDataFor,
     Random? random,
   }) async {
     final enemiesById = {for (final e in encounter.enemies) e.id: e};
-    var timers = await scheduledTimerRepository.getTimersByEncounterId(encounter.id);
+    // getTimersByEncounterId returns every kind sharing this encounter,
+    // not just enemyMove (skillCooldown/statusEffect* timers are stored the
+    // same way) — filter to the one kind this reconcile() actually knows
+    // how to process. See ScheduledTimerKind's doc comment.
+    var timers = (await scheduledTimerRepository.getTimersByEncounterId(encounter.id))
+        .where((t) => t.kind == ScheduledTimerKind.enemyMove)
+        .toList();
     var currentCharacter = character;
     var totalDamageDealt = 0;
     final now = DateTime.now();
@@ -242,8 +250,8 @@ class EnemyAttackSchedulingService {
         orElse: () => enemyData.attacks.first,
       );
 
-      final damageResult =
-          await combatService.applyEnemyAttackDamage(attack, currentCharacter);
+      final damageResult = await combatService.applyEnemyAttackDamage(
+          attack, currentCharacter, playerCombatStats);
       currentCharacter = damageResult.character;
       totalDamageDealt += damageResult.damageDealt;
 

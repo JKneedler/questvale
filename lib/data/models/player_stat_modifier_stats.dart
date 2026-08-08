@@ -54,8 +54,18 @@ class PlayerStatModifierStats {
     required this.additionalMotePotencyPercentage,
   });
 
-  // Include an additional parameter for stat modifiers from passive skills (BasePassiveSkill)
-  static PlayerStatModifierStats fromStatModifiers(List<Equipment> equipments) {
+  // Equipment and equipped passive skills both feed this same accumulator
+  // (Skill System Foundations ticket, subtask 5) — the only difference is
+  // which tier-value formula prices a given StatModifier's contribution:
+  // equipment-sourced ones scale by the item's own tier
+  // (equipmentTierValue), passive-sourced ones by the skill's level
+  // (skillTierValue, via the StatModifier's own `tier` field — see
+  // BasePassiveSkill.statModifiers). passiveModifiers defaults to empty so
+  // every existing non-passive call site is unaffected.
+  static PlayerStatModifierStats fromStatModifiers(
+    List<Equipment> equipments, {
+    List<StatModifier> passiveModifiers = const [],
+  }) {
     double baseAttackPower = 0;
     double physicalDamageMultiplier = 0;
     double fireDamageMultiplier = 0;
@@ -81,105 +91,96 @@ class PlayerStatModifierStats {
     bool isPoisonImmune = false;
     double additionalMotePotencyPercentage = 0;
 
+    // One accumulation switch shared by both sources below — each source
+    // resolves its own `value` (equipmentTierValue vs skillTierValue)
+    // before calling in, so this only ever deals with "how does this
+    // StatModifierType affect the totals", not where the number came from.
+    void accumulate(StatModifierType type, double value) {
+      switch (type) {
+        case StatModifierType.attackPower:
+          baseAttackPower += value;
+          break;
+        case StatModifierType.physicalDamage:
+          physicalDamageMultiplier += value;
+          break;
+        case StatModifierType.fireDamage:
+          fireDamageMultiplier += value;
+          break;
+        case StatModifierType.iceDamage:
+          iceDamageMultiplier += value;
+          break;
+        case StatModifierType.poisonDamage:
+          poisonDamageMultiplier += value;
+          break;
+        case StatModifierType.critChance:
+          additionalCritChancePercentage += value;
+          break;
+        case StatModifierType.critDamage:
+          additionalCritDamagePercentage += value;
+          break;
+        case StatModifierType.lifeSteal:
+          lifeStealPercentage += value;
+          break;
+        case StatModifierType.apEfficiency:
+          apEfficiencyMultiplier += value;
+          break;
+        case StatModifierType.statusEffectChance:
+          additionalStatusEffectChancePercentage += value;
+          break;
+        case StatModifierType.statusEffectDuration:
+          additionalStatusEffectDurationMultiplier += value;
+          break;
+        case StatModifierType.armor:
+          baseArmor += value;
+          break;
+        case StatModifierType.health:
+          additionalHealth += value;
+          break;
+        case StatModifierType.cooldown:
+          cooldownReductionPercentage += value;
+          break;
+        case StatModifierType.resourceRegen:
+          additionalResourceRegen += value;
+          break;
+        case StatModifierType.flaskPotency:
+          additionalFlaskPotencyPercentage += value;
+          break;
+        case StatModifierType.damageReflection:
+          damageReflectionPercentage += value;
+          break;
+        case StatModifierType.blockChance:
+          blockChancePercentage += value;
+          break;
+        case StatModifierType.expGain:
+          expGainMultiplier += value;
+          break;
+        case StatModifierType.goldGain:
+          goldGainMultiplier += value;
+          break;
+        case StatModifierType.fireImmunity:
+          isFireImmune = true;
+          break;
+        case StatModifierType.iceImmunity:
+          isIceImmune = true;
+          break;
+        case StatModifierType.poisonImmunity:
+          isPoisonImmune = true;
+          break;
+        case StatModifierType.motePotency:
+          additionalMotePotencyPercentage += value;
+          break;
+      }
+    }
+
     for (var equipment in equipments) {
       for (var statModifier in equipment.statModifiers) {
-        switch (statModifier.type) {
-          case StatModifierType.attackPower:
-            baseAttackPower +=
-                statModifier.type.equipmentTierValue(equipment.tier);
-            break;
-          case StatModifierType.physicalDamage:
-            physicalDamageMultiplier +=
-                statModifier.type.equipmentTierValue(equipment.tier);
-            break;
-          case StatModifierType.fireDamage:
-            fireDamageMultiplier +=
-                statModifier.type.equipmentTierValue(equipment.tier);
-            break;
-          case StatModifierType.iceDamage:
-            iceDamageMultiplier +=
-                statModifier.type.equipmentTierValue(equipment.tier);
-            break;
-          case StatModifierType.poisonDamage:
-            poisonDamageMultiplier +=
-                statModifier.type.equipmentTierValue(equipment.tier);
-            break;
-          case StatModifierType.critChance:
-            additionalCritChancePercentage +=
-                statModifier.type.equipmentTierValue(equipment.tier);
-            break;
-          case StatModifierType.critDamage:
-            additionalCritDamagePercentage +=
-                statModifier.type.equipmentTierValue(equipment.tier);
-            break;
-          case StatModifierType.lifeSteal:
-            lifeStealPercentage +=
-                statModifier.type.equipmentTierValue(equipment.tier);
-            break;
-          case StatModifierType.apEfficiency:
-            apEfficiencyMultiplier +=
-                statModifier.type.equipmentTierValue(equipment.tier);
-            break;
-          case StatModifierType.statusEffectChance:
-            additionalStatusEffectChancePercentage +=
-                statModifier.type.equipmentTierValue(equipment.tier);
-            break;
-          case StatModifierType.statusEffectDuration:
-            additionalStatusEffectDurationMultiplier +=
-                statModifier.type.equipmentTierValue(equipment.tier);
-            break;
-          case StatModifierType.armor:
-            baseArmor += statModifier.type.equipmentTierValue(equipment.tier);
-            break;
-          case StatModifierType.health:
-            additionalHealth +=
-                statModifier.type.equipmentTierValue(equipment.tier);
-            break;
-          case StatModifierType.cooldown:
-            cooldownReductionPercentage +=
-                statModifier.type.equipmentTierValue(equipment.tier);
-            break;
-          case StatModifierType.resourceRegen:
-            additionalResourceRegen +=
-                statModifier.type.equipmentTierValue(equipment.tier);
-            break;
-          case StatModifierType.flaskPotency:
-            additionalFlaskPotencyPercentage +=
-                statModifier.type.equipmentTierValue(equipment.tier);
-            break;
-          case StatModifierType.damageReflection:
-            damageReflectionPercentage +=
-                statModifier.type.equipmentTierValue(equipment.tier);
-            break;
-          case StatModifierType.blockChance:
-            blockChancePercentage +=
-                statModifier.type.equipmentTierValue(equipment.tier);
-            break;
-          case StatModifierType.expGain:
-            expGainMultiplier +=
-                statModifier.type.equipmentTierValue(equipment.tier);
-            break;
-          case StatModifierType.goldGain:
-            goldGainMultiplier +=
-                statModifier.type.equipmentTierValue(equipment.tier);
-            break;
-          case StatModifierType.fireImmunity:
-            isFireImmune = true;
-            break;
-          case StatModifierType.iceImmunity:
-            isIceImmune = true;
-            break;
-          case StatModifierType.poisonImmunity:
-            isPoisonImmune = true;
-            break;
-          case StatModifierType.motePotency:
-            additionalMotePotencyPercentage +=
-                statModifier.type.equipmentTierValue(equipment.tier);
-            break;
-          default:
-            break;
-        }
+        accumulate(statModifier.type,
+            statModifier.type.equipmentTierValue(equipment.tier));
       }
+    }
+    for (var statModifier in passiveModifiers) {
+      accumulate(
+          statModifier.type, statModifier.type.skillTierValue(statModifier.tier));
     }
 
     return PlayerStatModifierStats(

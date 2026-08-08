@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_cubit.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_state.dart';
 import 'package:questvale/data/models/character.dart';
@@ -325,6 +326,13 @@ class _CharacterVitalsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Watched directly rather than threaded down from a distant ancestor —
+    // same pattern combat_page.dart's TargetEnemySkillBox already uses.
+    // maxHealth lives on PlayerCombatStats (not Character — see the Skill
+    // System Foundations ticket), since it's the only place gear's Health
+    // stat modifier is actually consulted.
+    final playerCombatStats = context.watch<PlayerCubit>().state.playerCombatStats;
+    if (playerCombatStats == null) return const SizedBox.shrink();
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -336,7 +344,7 @@ class _CharacterVitalsRow extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '${character.currentHealth} / ${character.maxHealth}',
+                    '${character.currentHealth} / ${playerCombatStats.maxHealth}',
                     style: const TextStyle(
                       color: HEALTH_COLOR,
                       fontSize: 18,
@@ -356,7 +364,7 @@ class _CharacterVitalsRow extends StatelessWidget {
               const SizedBox(height: 2),
               QvBar(
                 currentValue: character.currentHealth,
-                maxValue: character.maxHealth,
+                maxValue: playerCombatStats.maxHealth,
                 resource: QvBarResource.health,
                 size: QvBarSize.mini,
                 height: 20,

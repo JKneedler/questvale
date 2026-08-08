@@ -90,7 +90,10 @@ class CombatView extends StatelessWidget {
             builder: (context, playerState) {
           final character = playerState.character;
           final playerSkills = playerState.playerSkills;
-          if (character == null || playerSkills == null) {
+          final playerCombatStats = playerState.playerCombatStats;
+          if (character == null ||
+              playerSkills == null ||
+              playerCombatStats == null) {
             return const SizedBox.shrink();
           }
           return Column(
@@ -249,7 +252,7 @@ class CombatView extends StatelessWidget {
                     Expanded(
                       child: QvResourceBar(
                         color: HEALTH_COLOR,
-                        maxValue: character.maxHealth,
+                        maxValue: playerCombatStats.maxHealth,
                         currentValue: character.currentHealth,
                         alignment: Alignment.centerLeft,
                       ),
@@ -890,9 +893,8 @@ class TargetEnemySkillBox extends StatelessWidget {
           children: [
             Text(skill.data.name),
             Text(skill.description),
-            Text(
-                'Damage: ${(skill.data.primaryBaseValue! * playerCombatStats.physicalAttackPower).toStringAsFixed(0)}'),
-            Text('Damage Type: ${skill.data.damageType?.name}'),
+            Text('Damage: ${((skill.data.damageEffect?.baseValue ?? 0) * playerCombatStats.attackPowerFor(skill.data.damageEffect?.damageType ?? SkillDamageType.physical)).toStringAsFixed(0)}'),
+            Text('Damage Type: ${skill.data.damageEffect?.damageType?.name}'),
             Expanded(child: Container()),
             QvButton(
               width: double.infinity,

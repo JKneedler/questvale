@@ -153,8 +153,77 @@ void main() {
     // in fromStatModifiers.
     expect(stats.additionalMotePotencyPercentage, closeTo(0.1, 1e-9));
 
-    final combatStats =
-        PlayerCombatStats(playerLevel: 1, equipments: [equipment]);
+    final combatStats = PlayerCombatStats(
+        playerLevel: 1,
+        characterClass: CharacterClass.mage,
+        equipments: [equipment]);
     expect(combatStats.motePotency, closeTo(0.1, 1e-9));
+  });
+
+  group('fromStatModifiers — passiveModifiers', () {
+    test('a passive-sourced modifier scales by skillTierValue, not equipmentTierValue',
+        () {
+      // fireDamage's equipmentTierValue and skillTierValue happen to share
+      // the same tier*.05 formula today, so use a type where getting the
+      // wrong lookup would be invisible is avoided by asserting against
+      // the formula directly rather than a hardcoded equal number.
+      const passiveModifier = StatModifier(
+        id: 'passive-1',
+        location: StatModifierLocation.character,
+        characterId: 'char-1',
+        type: StatModifierType.fireDamage,
+        tier: 3,
+      );
+      final stats = PlayerStatModifierStats.fromStatModifiers(
+        const [],
+        passiveModifiers: const [passiveModifier],
+      );
+      expect(stats.fireDamageMultiplier,
+          closeTo(StatModifierType.fireDamage.skillTierValue(3), 1e-9));
+    });
+
+    test('equipment and passive contributions to the same stat both accumulate', () {
+      final equipment = Equipment(
+        id: 'eq-1',
+        characterId: 'char-1',
+        rarity: Rarity.common,
+        type: EquipmentType.wandAndFocus,
+        tier: 1,
+        attackPower: 0,
+        damageType: DamageType.fire,
+        armorValue: 0,
+        statModifiers: const [
+          StatModifier(
+            id: 'mod-1',
+            location: StatModifierLocation.equipment,
+            equipmentId: 'eq-1',
+            type: StatModifierType.iceDamage,
+            tier: 1,
+          ),
+        ],
+      );
+      const passiveModifier = StatModifier(
+        id: 'passive-1',
+        location: StatModifierLocation.character,
+        characterId: 'char-1',
+        type: StatModifierType.iceDamage,
+        tier: 1,
+      );
+      final stats = PlayerStatModifierStats.fromStatModifiers(
+        [equipment],
+        passiveModifiers: const [passiveModifier],
+      );
+      // Both tier-1: equipmentTierValue(1) + skillTierValue(1) = .05 + .05.
+      expect(stats.iceDamageMultiplier, closeTo(0.1, 1e-9));
+    });
+
+    test('an empty passiveModifiers list (the default) changes nothing for existing callers',
+        () {
+      final withDefault = PlayerStatModifierStats.fromStatModifiers(const []);
+      final withExplicitEmpty = PlayerStatModifierStats.fromStatModifiers(
+          const [],
+          passiveModifiers: const []);
+      expect(withDefault.fireDamageMultiplier, withExplicitEmpty.fireDamageMultiplier);
+    });
   });
 }

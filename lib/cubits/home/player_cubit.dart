@@ -44,9 +44,15 @@ class PlayerCubit extends Cubit<PlayerState> {
           : null,
     );
     final equipments = character.equippedEquipmentList;
+    // There's no "equip slot" concept for passives — having the
+    // CharacterSkill row is having it invested/tracked (see the Skill
+    // System Foundations ticket, subtask 5). Elemental Affinity is the
+    // only one that actually returns anything yet.
     final playerCombatStats = PlayerCombatStats(
       playerLevel: character.level,
+      characterClass: character.characterClass,
       equipments: equipments,
+      passiveModifiers: skillService.passiveModifiersFor(character),
     );
     final MageMotes? mageMotes = character.characterClass == CharacterClass.mage
         ? await characterRepository.getMageMotes(character.id)
