@@ -10,6 +10,7 @@ import 'package:questvale/data/models/equipment_encounter_reward.dart';
 import 'package:questvale/data/models/quest.dart';
 import 'package:questvale/data/models/scheduled_timer.dart';
 import 'package:questvale/data/models/stat_modifier.dart';
+import 'package:questvale/data/models/status_effect_instance.dart';
 import 'package:questvale/data/models/todo.dart';
 import 'package:questvale/data/models/todo_tag.dart';
 import 'package:questvale/data/models/todo_reminder.dart';
@@ -82,6 +83,7 @@ class QuestvaleDB {
 
       await db.execute(Enemy.createTableSQL);
       await db.execute(ScheduledTimer.createTableSQL);
+      await db.execute(StatusEffectInstance.createTableSQL);
     }, onUpgrade: (db, oldVersion, newVersion) async {
       // TodoTag/CharacterTag were never added to a version-gated migration
       // block when the tags feature shipped, so any install that upgraded
@@ -209,6 +211,12 @@ class QuestvaleDB {
         await db.execute(
             'ALTER TABLE ${Character.characterTableName} DROP COLUMN currentMana');
       }
-    }, version: 13);
+      if (oldVersion < 14) {
+        // Skill System Foundations subtask 3: Burn/Slow's runtime model —
+        // see StatusEffectInstance's doc comment. New table only, no
+        // backfill needed (no prior version ever had status effects).
+        await db.execute(StatusEffectInstance.createTableSQL);
+      }
+    }, version: 14);
   }
 }

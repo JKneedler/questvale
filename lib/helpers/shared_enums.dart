@@ -119,3 +119,21 @@ enum DamageType {
     }
   }
 }
+
+// See the vault's Status Effects note. Only burn/slow are implemented
+// end-to-end this pass (Skill System Foundations subtask 3) — freeze/
+// weakness exist here so the model/enum shape doesn't need revisiting when
+// they're built later, per that subtask's "model should support them
+// generically" scope note.
+enum StatusEffectType {
+  burn,
+  slow,
+  freeze,
+  weakness;
+
+  // Whether this effect ticks on its own recurring ScheduledTimer
+  // (statusEffectTick — deals periodic damage) vs. just sitting inert until
+  // a one-shot statusEffectExpiry timer removes it (every other effect so
+  // far — a rate modifier or a stat modifier, not a DoT).
+  bool get ticks => this == StatusEffectType.burn;
+}

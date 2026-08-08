@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:questvale/data/models/character.dart';
+import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/data/models/player_combat_stats.dart';
 import 'package:questvale/data/models/scheduled_timer.dart';
@@ -7,6 +8,14 @@ import 'package:questvale/data/models/stat_modifier.dart';
 import 'package:questvale/data/providers/game_data_models/skill_data.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/services/combat_service.dart';
+
+Enemy _enemy({String id = 'enemy-1', int currentHealth = 20}) => Enemy(
+      id: id,
+      enemyDataId: 'field_rat',
+      encounterId: 'encounter-1',
+      currentHealth: currentHealth,
+      position: 0,
+    );
 
 Character _character({String id = 'character-1', int actionPoints = 5}) {
   return Character(
@@ -161,6 +170,35 @@ void main() {
       final damageData = DamageData(
           damageMultiplier: 1.375, damageType: SkillDamageType.physical);
       expect(CombatService.computeRawDamage(damageData, stats), 6);
+    });
+  });
+
+  group('resolveDamageAgainstEnemy', () {
+    // Shared by applyDamage (skill hits) and StatusEffectService's Burn
+    // tick resolution — see its own doc comment on why StatusEffectService
+    // can't just call applyDamage/hold a CombatService.
+    test('a hit under current health does not kill', () {
+      final resolved =
+          CombatService.resolveDamageAgainstEnemy(5, _enemy(currentHealth: 20));
+      expect(resolved.result.damageDone, 5);
+      expect(resolved.result.didKill, isFalse);
+      expect(resolved.updatedEnemy.currentHealth, 15);
+    });
+
+    test('a hit exactly at current health kills and reports the full amount', () {
+      final resolved =
+          CombatService.resolveDamageAgainstEnemy(20, _enemy(currentHealth: 20));
+      expect(resolved.result.damageDone, 20);
+      expect(resolved.result.didKill, isTrue);
+      expect(resolved.updatedEnemy.currentHealth, 0);
+    });
+
+    test('overkill reports only the health that was actually there, not the raw damage', () {
+      final resolved =
+          CombatService.resolveDamageAgainstEnemy(999, _enemy(currentHealth: 20));
+      expect(resolved.result.damageDone, 20);
+      expect(resolved.result.didKill, isTrue);
+      expect(resolved.updatedEnemy.currentHealth, 0);
     });
   });
 }

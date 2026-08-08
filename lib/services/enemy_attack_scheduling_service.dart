@@ -193,7 +193,13 @@ class EnemyAttackSchedulingService {
     Random? random,
   }) async {
     final enemiesById = {for (final e in encounter.enemies) e.id: e};
-    var timers = await scheduledTimerRepository.getTimersByEncounterId(encounter.id);
+    // getTimersByEncounterId returns every kind sharing this encounter,
+    // not just enemyMove (skillCooldown/statusEffect* timers are stored the
+    // same way) — filter to the one kind this reconcile() actually knows
+    // how to process. See ScheduledTimerKind's doc comment.
+    var timers = (await scheduledTimerRepository.getTimersByEncounterId(encounter.id))
+        .where((t) => t.kind == ScheduledTimerKind.enemyMove)
+        .toList();
     var currentCharacter = character;
     var totalDamageDealt = 0;
     final now = DateTime.now();

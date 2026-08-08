@@ -13,6 +13,7 @@ import 'package:questvale/data/repositories/scheduled_timer_repository.dart';
 import 'package:questvale/data/skills/base_active_skill.dart';
 import 'package:questvale/services/combat_service.dart';
 import 'package:questvale/services/enemy_attack_scheduling_service.dart';
+import 'package:questvale/services/status_effect_service.dart';
 import 'package:sqflite/sqflite.dart';
 
 class CombatCubit extends Cubit<CombatState> {
@@ -25,6 +26,7 @@ class CombatCubit extends Cubit<CombatState> {
   late CharacterRepository characterRepository;
   late CombatService combatService;
   late EnemyAttackSchedulingService enemyAttackSchedulingService;
+  late StatusEffectService statusEffectService;
 
   CombatCubit(
       {required this.encounterId,
@@ -38,6 +40,7 @@ class CombatCubit extends Cubit<CombatState> {
     characterRepository = CharacterRepository(db: db);
     combatService = CombatService(db: db);
     enemyAttackSchedulingService = EnemyAttackSchedulingService(db: db);
+    statusEffectService = StatusEffectService(db: db);
     init();
   }
 
@@ -53,7 +56,7 @@ class CombatCubit extends Cubit<CombatState> {
   // bars at the bottom of this page in sync with any damage reconciliation
   // just applied.
   Future<void> reload() async {
-    final encounter = await encounterRepository.getEncounterById(encounterId);
+    var encounter = await encounterRepository.getEncounterById(encounterId);
     final character = await characterRepository.getSingleCharacter();
     final reconciliation = await enemyAttackSchedulingService.reconcile(
       encounter: encounter,
@@ -61,6 +64,13 @@ class CombatCubit extends Cubit<CombatState> {
       enemyDataFor: (enemy) => questZone.enemies
           .firstWhereOrNull((data) => data.id == enemy.enemyDataId),
     );
+    // Own reconcile pass for Burn ticks/Slow expiry — a separate call
+    // rather than one unified dispatcher, since only these two non-
+    // enemyMove kinds exist so far (see ScheduledTimerKind's doc comment).
+    // May just have changed enemy HP (Burn), which the `encounter` fetched
+    // above predates — re-fetch after it runs.
+    await statusEffectService.reconcile(encounter: encounter);
+    encounter = await encounterRepository.getEncounterById(encounterId);
     await playerCubit.loadCharacter();
 
     final enemies = encounter.enemies;

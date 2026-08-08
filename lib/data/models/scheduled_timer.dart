@@ -1,12 +1,23 @@
 // The shared time-based scheduling primitive — see the vault's
-// "Time-Based Scheduling Engine" architecture note. One record shape is
-// meant to eventually cover enemy moves, status effect duration/ticks, and
-// player skill cooldowns. skillCooldown is armed by CombatService.castSkill
-// (see the Skill System Foundations ticket); status effect kinds
-// (statusEffectTick/statusEffectExpiry) are still unbuilt.
+// "Time-Based Scheduling Engine" architecture note. One record shape
+// covers enemy moves, status effect duration/ticks, and player skill
+// cooldowns — but each kind is reconciled by its own owning service
+// (EnemyAttackSchedulingService for enemyMove, StatusEffectService for the
+// statusEffect* kinds), not one unified dispatcher yet, since only two
+// non-enemyMove kinds exist so far. Every reconcile() implementation MUST
+// filter its fetched timers down to the kind(s) it actually knows how to
+// handle before processing — timers of every kind sharing one table and one
+// per-encounter query means an unfiltered reconcile() will eventually pull
+// in a kind it wasn't written for.
 enum ScheduledTimerKind {
   enemyMove,
-  skillCooldown;
+  skillCooldown,
+  // Recurring — re-arms itself each tick until its owning effect's
+  // duration is exhausted (Burn). See StatusEffectService.
+  statusEffectTick,
+  // One-shot — fires once to remove an effect that doesn't tick (Slow).
+  // See StatusEffectService.
+  statusEffectExpiry;
 }
 
 class ScheduledTimer {

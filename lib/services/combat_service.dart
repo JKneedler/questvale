@@ -10,6 +10,7 @@ import 'package:questvale/data/repositories/scheduled_timer_repository.dart';
 import 'package:questvale/data/skills/base_active_skill.dart';
 import 'package:questvale/services/class_resource_resolver.dart';
 import 'package:questvale/services/mote_service.dart';
+import 'package:questvale/services/status_effect_service.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 
@@ -25,6 +26,17 @@ class DamageResult {
   final bool didKill;
 
   DamageResult({required this.damageDone, required this.didKill});
+}
+
+// Bundles resolveDamageAgainstEnemy's two outputs — the DamageResult a
+// caller reports, and the Enemy row a caller still needs to persist. No
+// records in this SDK version (<3.0.0), hence a plain class rather than a
+// `(Enemy, DamageResult)` tuple.
+class DamageResolution {
+  final Enemy updatedEnemy;
+  final DamageResult result;
+
+  const DamageResolution({required this.updatedEnemy, required this.result});
 }
 
 // Why a skill cast did or didn't happen — CombatCubit reads this to decide
@@ -59,11 +71,16 @@ class SkillCastContext {
   // Null when the skill has no cooldown (e.g. Arcane Bolt) — no timer is
   // armed for a 0-cooldown skill, since there's nothing to wait out.
   final ScheduledTimer? cooldownTimer;
+  // The encounter this cast happened in — skills that apply a status
+  // effect (Firebolt's Burn, Frost Shard's Slow) need this to scope the
+  // ScheduledTimer they arm, same as cooldownTimer above.
+  final String encounterId;
 
   const SkillCastContext({
     required this.caster,
     required this.skillData,
     required this.resourceResult,
+    required this.encounterId,
     this.cooldownTimer,
   });
 
@@ -86,11 +103,13 @@ class CombatService {
   late CharacterRepository characterRepository;
   late EnemyRepository enemyRepository;
   late ScheduledTimerRepository scheduledTimerRepository;
+  late StatusEffectService statusEffectService;
 
   CombatService({required this.db}) {
     characterRepository = CharacterRepository(db: db);
     enemyRepository = EnemyRepository(db: db);
     scheduledTimerRepository = ScheduledTimerRepository(db: db);
+    statusEffectService = StatusEffectService(db: db);
   }
 
   // The single orchestration point for a skill cast (see the vault's Skill
@@ -148,6 +167,7 @@ class CombatService {
       caster: updatedCharacter,
       skillData: skillData,
       resourceResult: resourceResult,
+      encounterId: encounterId,
       cooldownTimer: cooldownTimer,
     );
 
@@ -223,10 +243,13 @@ class CombatService {
     return (damageData.damageMultiplier * attackPower).round();
   }
 
-  Future<DamageResult> applyDamage(DamageData damageData,
-      PlayerCombatStats playerCombatStats, String enemyId) async {
-    final enemy = await enemyRepository.getEnemyById(enemyId);
-    final damage = computeRawDamage(damageData, playerCombatStats);
+  // The clamp-against-current-HP/did-this-kill-it math, factored out as a
+  // pure function so StatusEffectService's Burn tick resolution can share
+  // it without needing a full CombatService instance — CombatService
+  // itself owns a StatusEffectService (see the constructor above), so
+  // StatusEffectService holding a CombatService back would be a circular
+  // instantiation. Unit testable on its own (see combat_service_test.dart).
+  static DamageResolution resolveDamageAgainstEnemy(int damage, Enemy enemy) {
     int damageDone = 0;
     bool didKill = false;
     if (enemy.currentHealth < damage) {
@@ -237,8 +260,23 @@ class CombatService {
     }
     final newHealth = enemy.currentHealth - damageDone;
     if (newHealth <= 0) didKill = true;
-    await enemyRepository.updateEnemy(enemy.copyWith(currentHealth: newHealth));
-    return DamageResult(damageDone: damageDone, didKill: didKill);
+    return DamageResolution(
+      updatedEnemy: enemy.copyWith(currentHealth: newHealth),
+      result: DamageResult(damageDone: damageDone, didKill: didKill),
+    );
+  }
+
+  Future<DamageResult> applyDamage(DamageData damageData,
+      PlayerCombatStats playerCombatStats, String enemyId) async {
+    final damage = computeRawDamage(damageData, playerCombatStats);
+    return _applyDamageAmount(damage, enemyId);
+  }
+
+  Future<DamageResult> _applyDamageAmount(int damage, String enemyId) async {
+    final enemy = await enemyRepository.getEnemyById(enemyId);
+    final resolved = resolveDamageAgainstEnemy(damage, enemy);
+    await enemyRepository.updateEnemy(resolved.updatedEnemy);
+    return resolved.result;
   }
 
   // Enemy -> player direction, fired when a ScheduledTimer resolves (see
