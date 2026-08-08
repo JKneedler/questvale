@@ -1,6 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:questvale/data/models/character.dart';
+import 'package:questvale/data/models/equipment.dart';
+import 'package:questvale/data/models/player_combat_stats.dart';
 import 'package:questvale/data/models/scheduled_timer.dart';
+import 'package:questvale/data/models/stat_modifier.dart';
 import 'package:questvale/data/providers/game_data_models/skill_data.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/services/combat_service.dart';
@@ -121,4 +124,67 @@ void main() {
       expect(CombatService.isSkillReady(timer, now), isTrue);
     });
   });
+
+  group('computeRawDamage', () {
+    test('multiplies the skill\'s damageMultiplier by the resolved attack power', () {
+      final stats = _statsWithAttackPowerTier(1); // baseAttackPower = 4
+      final damageData = DamageData(
+          damageMultiplier: 1.5, damageType: SkillDamageType.physical);
+      expect(CombatService.computeRawDamage(damageData, stats), 6); // 1.5 * 4
+    });
+
+    test('selects attack power via the damage data\'s declared damage type', () {
+      final stats = _statsWithAttackPowerTier(2); // baseAttackPower = 8
+      final physical = CombatService.computeRawDamage(
+          DamageData(damageMultiplier: 1.0, damageType: SkillDamageType.physical),
+          stats);
+      final fire = CombatService.computeRawDamage(
+          DamageData(damageMultiplier: 1.0, damageType: SkillDamageType.fire),
+          stats);
+      // No elemental multiplier was rolled on this gear, so fire reads the
+      // same base as physical here — attackPowerFor's own test file covers
+      // the case where they actually diverge.
+      expect(physical, 8);
+      expect(fire, 8);
+    });
+
+    test('an ungeared character (0 attack power) deals 0 damage — no fallback minimum', () {
+      final stats = PlayerCombatStats(playerLevel: 1, equipments: const []);
+      final damageData = DamageData(
+          damageMultiplier: 3.0, damageType: SkillDamageType.physical);
+      expect(CombatService.computeRawDamage(damageData, stats), 0);
+    });
+
+    test('rounds rather than truncates', () {
+      final stats = _statsWithAttackPowerTier(1); // baseAttackPower = 4
+      // 1.375 * 4 = 5.5 -> rounds to 6, not truncated to 5.
+      final damageData = DamageData(
+          damageMultiplier: 1.375, damageType: SkillDamageType.physical);
+      expect(CombatService.computeRawDamage(damageData, stats), 6);
+    });
+  });
+}
+
+PlayerCombatStats _statsWithAttackPowerTier(int tier,
+    {DamageType weaponDamageType = DamageType.physical}) {
+  final equipment = Equipment(
+    id: 'weapon-1',
+    characterId: 'character-1',
+    rarity: Rarity.common,
+    type: EquipmentType.wandAndFocus,
+    tier: tier,
+    attackPower: 0,
+    damageType: weaponDamageType,
+    armorValue: 0,
+    statModifiers: [
+      StatModifier(
+        id: 'mod-1',
+        location: StatModifierLocation.equipment,
+        equipmentId: 'weapon-1',
+        type: StatModifierType.attackPower,
+        tier: tier,
+      ),
+    ],
+  );
+  return PlayerCombatStats(playerLevel: 1, equipments: [equipment]);
 }

@@ -53,8 +53,8 @@ abstract class BaseActiveSkill {
           damageMultiplier:
               damageMultiplierOverride ?? data.primaryBaseValue ?? 1,
           damageType: data.damageType ?? SkillDamageType.physical);
-      final damageResult =
-          await combatService.applyDamage(damageData, enemies[i].id);
+      final damageResult = await combatService.applyDamage(
+          damageData, playerCombatStats, enemies[i].id);
       print(
           '${data.name} dealt ${damageResult.damageDone} damage to ${enemies[i].id} and ${damageResult.didKill ? 'killed' : 'did not kill'} it');
       damageResults.add(damageResult);

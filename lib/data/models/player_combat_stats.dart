@@ -1,16 +1,27 @@
+import 'package:collection/collection.dart';
 import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/data/models/player_stat_modifier_stats.dart';
+import 'package:questvale/data/providers/game_data_models/skill_data.dart';
 import 'package:questvale/helpers/constants.dart';
+import 'package:questvale/helpers/shared_enums.dart';
 
 class PlayerCombatStats {
   late PlayerStatModifierStats statModifierStats;
   final int playerLevel;
+  // The equipped weapon's own DamageType — resolves a skill's `weaponType`
+  // damage type (e.g. Arcane Bolt) to whichever element the weapon actually
+  // is. Physical if nothing's equipped in the weapon slot, matching a
+  // fresh/ungeared character rather than throwing.
+  final DamageType weaponDamageType;
   // List<StatusEffect> activeStatusEffects;
 
   PlayerCombatStats({
     required this.playerLevel,
     required List<Equipment> equipments,
-  }) {
+  }) : weaponDamageType = equipments
+                .firstWhereOrNull((e) => e.type.slot == EquipmentSlot.weapon)
+                ?.damageType ??
+            DamageType.physical {
     statModifierStats = PlayerStatModifierStats.fromStatModifiers(equipments);
   }
 
@@ -26,6 +37,39 @@ class PlayerCombatStats {
   get poisonAttackPower =>
       statModifierStats.baseAttackPower *
       (1 + statModifierStats.poisonDamageMultiplier);
+
+  // The single seam CombatService.applyDamage reads to turn a skill's
+  // declared SkillDamageType into an actual number — see the Skill System
+  // Foundations ticket (subtask 2). weaponType defers to whichever element
+  // the equipped weapon rolls; every other case picks its matching getter
+  // above directly.
+  double attackPowerFor(SkillDamageType damageType) {
+    switch (damageType) {
+      case SkillDamageType.weaponType:
+        return _attackPowerForDamageType(weaponDamageType);
+      case SkillDamageType.physical:
+        return physicalAttackPower;
+      case SkillDamageType.fire:
+        return fireAttackPower;
+      case SkillDamageType.ice:
+        return iceAttackPower;
+      case SkillDamageType.poison:
+        return poisonAttackPower;
+    }
+  }
+
+  double _attackPowerForDamageType(DamageType damageType) {
+    switch (damageType) {
+      case DamageType.physical:
+        return physicalAttackPower;
+      case DamageType.fire:
+        return fireAttackPower;
+      case DamageType.ice:
+        return iceAttackPower;
+      case DamageType.poison:
+        return poisonAttackPower;
+    }
+  }
   get critChance =>
       BASE_CRIT_CHANCE + statModifierStats.additionalCritChancePercentage;
   get critDamage =>

@@ -193,12 +193,40 @@ class CombatService {
     return !cooldownTimer.nextTriggerAt.isAfter(now);
   }
 
-  Future<DamageResult> applyDamage(
-      DamageData damageData, String enemyId) async {
+  // The damage-application seam (see the Skill System Foundations ticket,
+  // subtask 2). Base attack power — selected by the skill's declared
+  // SkillDamageType via PlayerCombatStats.attackPowerFor — is the one stat
+  // wired live here. Every other StatModifierType has an equally obvious
+  // slot to be added at, right where this multiplies damageMultiplier by
+  // attackPower, but none of them are consulted yet:
+  //   - crit: roll playerCombatStats.critChance; on a hit, multiply by
+  //     playerCombatStats.critDamage
+  //   - armor: mitigate against the enemy's armor stat (no such field
+  //     exists on Enemy yet either)
+  //   - elemental resistance/weakness/immunity: consult the enemy's
+  //     immunities/resistances/weaknesses against damageData.damageType
+  //   - Mote Potency: scale a mote-consumer skill's damage by
+  //     playerCombatStats.motePotency (deferred to its own pass —
+  //     Ember Burst/Hoarfrost Burst stay unaffected by gear this pass)
+  // damageReflection/lifeSteal/blockChance apply to the player-facing side
+  // of combat (enemy attacks, healing), not here.
+  //
+  // Pure — no DB — so it's unit testable on its own (see
+  // combat_service_test.dart). A fresh/ungeared character has 0 base
+  // attack power and so deals 0 damage until they roll attackPower on
+  // gear — an intentional consequence of wiring the real formula, not a
+  // bug; no artificial floor is added, since that would be balance
+  // tuning this ticket deliberately leaves out.
+  static int computeRawDamage(
+      DamageData damageData, PlayerCombatStats playerCombatStats) {
+    final attackPower = playerCombatStats.attackPowerFor(damageData.damageType);
+    return (damageData.damageMultiplier * attackPower).round();
+  }
+
+  Future<DamageResult> applyDamage(DamageData damageData,
+      PlayerCombatStats playerCombatStats, String enemyId) async {
     final enemy = await enemyRepository.getEnemyById(enemyId);
-    // TODO : Recalculate the player combat stats and apply that to the damage calculation
-    // final damage = damageData.damageMultiplier * playerCombatStats.physicalAttackPower;
-    final int damage = (damageData.damageMultiplier * 10).toInt();
+    final damage = computeRawDamage(damageData, playerCombatStats);
     int damageDone = 0;
     bool didKill = false;
     if (enemy.currentHealth < damage) {
