@@ -90,7 +90,10 @@ class CombatView extends StatelessWidget {
             builder: (context, playerState) {
           final character = playerState.character;
           final playerSkills = playerState.playerSkills;
-          if (character == null || playerSkills == null) {
+          final playerCombatStats = playerState.playerCombatStats;
+          if (character == null ||
+              playerSkills == null ||
+              playerCombatStats == null) {
             return const SizedBox.shrink();
           }
           return Column(
@@ -249,7 +252,7 @@ class CombatView extends StatelessWidget {
                     Expanded(
                       child: QvResourceBar(
                         color: HEALTH_COLOR,
-                        maxValue: character.maxHealth,
+                        maxValue: playerCombatStats.maxHealth,
                         currentValue: character.currentHealth,
                         alignment: Alignment.centerLeft,
                       ),

@@ -46,6 +46,7 @@ class PlayerCubit extends Cubit<PlayerState> {
     final equipments = character.equippedEquipmentList;
     final playerCombatStats = PlayerCombatStats(
       playerLevel: character.level,
+      characterClass: character.characterClass,
       equipments: equipments,
     );
     final MageMotes? mageMotes = character.characterClass == CharacterClass.mage

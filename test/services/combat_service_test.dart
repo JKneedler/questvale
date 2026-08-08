@@ -158,7 +158,10 @@ void main() {
     });
 
     test('an ungeared character (0 attack power) deals 0 damage — no fallback minimum', () {
-      final stats = PlayerCombatStats(playerLevel: 1, equipments: const []);
+      final stats = PlayerCombatStats(
+          playerLevel: 1,
+          characterClass: CharacterClass.mage,
+          equipments: const []);
       final damageData = DamageData(
           damageMultiplier: 3.0, damageType: SkillDamageType.physical);
       expect(CombatService.computeRawDamage(damageData, stats), 0);
@@ -224,5 +227,8 @@ PlayerCombatStats _statsWithAttackPowerTier(int tier,
       ),
     ],
   );
-  return PlayerCombatStats(playerLevel: 1, equipments: [equipment]);
+  return PlayerCombatStats(
+      playerLevel: 1,
+      characterClass: CharacterClass.mage,
+      equipments: [equipment]);
 }

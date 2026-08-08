@@ -40,8 +40,10 @@ void main() {
     test('the resulting weapon gives a character non-zero attack power', () {
       final character = _character(CharacterClass.mage);
       final weapon = EquipmentService.generateStarterWeapon(character);
-      final stats =
-          PlayerCombatStats(playerLevel: character.level, equipments: [weapon]);
+      final stats = PlayerCombatStats(
+          playerLevel: character.level,
+          characterClass: character.characterClass,
+          equipments: [weapon]);
       expect(stats.physicalAttackPower, greaterThan(0));
     });
 

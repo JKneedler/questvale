@@ -284,13 +284,15 @@ class CombatService {
   // attack data, matching applyDamage's existing lack of stat recalculation
   // above rather than inventing a separate defense formula here — the one
   // mitigation that IS applied is an active shield (Frost Armor,
-  // Hoarfrost Burst), consulted before anything touches HP.
-  Future<EnemyAttackDamageResult> applyEnemyAttackDamage(
-      EnemyAttackData attack, Character character) async {
+  // Hoarfrost Burst), consulted before anything touches HP. playerCombatStats
+  // is only consulted for maxHealth (the death clamp) — this is what makes
+  // gear's Health stat modifier actually matter, not just decorative.
+  Future<EnemyAttackDamageResult> applyEnemyAttackDamage(EnemyAttackData attack,
+      Character character, PlayerCombatStats playerCombatStats) async {
     final mitigatedDamage =
         await statusEffectService.absorbDamage(character.id, attack.damage);
     final newHealth = (character.currentHealth - mitigatedDamage)
-        .clamp(0, character.maxHealth)
+        .clamp(0, playerCombatStats.maxHealth)
         .toInt();
     // The amount actually taken, not the raw attack stat — clamped at 0 HP
     // means a killing blow can deal less than its listed damage.

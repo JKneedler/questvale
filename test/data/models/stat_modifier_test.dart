@@ -153,8 +153,10 @@ void main() {
     // in fromStatModifiers.
     expect(stats.additionalMotePotencyPercentage, closeTo(0.1, 1e-9));
 
-    final combatStats =
-        PlayerCombatStats(playerLevel: 1, equipments: [equipment]);
+    final combatStats = PlayerCombatStats(
+        playerLevel: 1,
+        characterClass: CharacterClass.mage,
+        equipments: [equipment]);
     expect(combatStats.motePotency, closeTo(0.1, 1e-9));
   });
 }

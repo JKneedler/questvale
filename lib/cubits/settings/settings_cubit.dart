@@ -8,6 +8,7 @@ import 'package:questvale/data/models/character_stats.dart';
 import 'package:questvale/data/models/encounter.dart';
 import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/data/models/mage_motes.dart';
+import 'package:questvale/data/models/player_combat_stats.dart';
 import 'package:questvale/data/providers/game_data.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
 import 'package:questvale/data/repositories/encounter_repository.dart';
@@ -133,6 +134,16 @@ class SettingsCubit extends Cubit<SettingsState> {
     await characterRepository.insertCharacterSkill(activeSkillSlot1);
     await characterRepository.insertCharacterSkill(activeSkillSlot2);
 
+    // No gear at this point (about to be wiped below anyway), so
+    // PlayerCombatStats.maxHealth here is exactly
+    // characterClass.baseMaxHealth + BASE_HEALTH_PER_LEVEL*level — routed
+    // through the one canonical formula instead of hand-duplicating it, so
+    // this can't drift out of sync with it again.
+    final resetMaxHealth = PlayerCombatStats(
+      playerLevel: c.level,
+      characterClass: c.characterClass,
+      equipments: const [],
+    ).maxHealth;
     final reset = Character(
       id: c.id,
       name: c.name,
@@ -140,7 +151,7 @@ class SettingsCubit extends Cubit<SettingsState> {
       level: c.level,
       gold: 0,
       currentExp: 0,
-      currentHealth: (c.level * 10) + c.characterClass.baseMaxHealth,
+      currentHealth: resetMaxHealth,
       actionPoints: 0,
       // equipped* omitted -> null (unequipped). skills defaults to const [].
       activeSkillSlot1: activeSkillSlot1,

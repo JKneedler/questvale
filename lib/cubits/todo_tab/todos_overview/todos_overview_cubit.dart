@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_state.dart';
+import 'package:questvale/data/models/player_combat_stats.dart';
 import 'package:questvale/data/models/scheduled_timer.dart';
 import 'package:questvale/data/models/todo.dart';
 import 'package:questvale/data/models/tag.dart';
@@ -79,9 +80,18 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
     if (encounter != null &&
         encounter.completedAt == null &&
         encounter.encounterType.isCombatEncounter()) {
+      // Built locally from `character` (just fetched above) rather than
+      // read off playerCubit.state — that state may not have finished its
+      // own first async load yet, and this avoids the race entirely.
+      final playerCombatStats = PlayerCombatStats(
+        playerLevel: character.level,
+        characterClass: character.characterClass,
+        equipments: character.equippedEquipmentList,
+      );
       final reconciliation = await enemyAttackSchedulingService.reconcile(
         encounter: encounter,
         character: reconciledCharacter,
+        playerCombatStats: playerCombatStats,
         enemyDataFor: (enemy) => questZone?.enemies
             .firstWhereOrNull((data) => data.id == enemy.enemyDataId),
       );

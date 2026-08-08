@@ -119,10 +119,6 @@ class Character extends Equatable {
     this.combatStatusCardExpanded = true,
   });
 
-  int get maxHealth {
-    return (level * 10) + characterClass.baseMaxHealth;
-  }
-
   List<Equipment> get equippedEquipmentList => [
         if (equippedWeapon != null) equippedWeapon!,
         if (equippedHelmet != null) equippedHelmet!,

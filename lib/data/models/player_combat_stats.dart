@@ -8,6 +8,7 @@ import 'package:questvale/helpers/shared_enums.dart';
 class PlayerCombatStats {
   late PlayerStatModifierStats statModifierStats;
   final int playerLevel;
+  final CharacterClass characterClass;
   // The equipped weapon's own DamageType — resolves a skill's `weaponType`
   // damage type (e.g. Arcane Bolt) to whichever element the weapon actually
   // is. Physical if nothing's equipped in the weapon slot, matching a
@@ -17,6 +18,7 @@ class PlayerCombatStats {
 
   PlayerCombatStats({
     required this.playerLevel,
+    required this.characterClass,
     required List<Equipment> equipments,
   }) : weaponDamageType = equipments
                 .firstWhereOrNull((e) => e.type.slot == EquipmentSlot.weapon)
@@ -83,10 +85,26 @@ class PlayerCombatStats {
   get statusEffectDurationMultiplier =>
       1 + statModifierStats.additionalStatusEffectDurationMultiplier;
   get armor => statModifierStats.baseArmor;
-  get maxHealth =>
-      BASE_HEALTH +
-      (BASE_HEALTH_PER_LEVEL * playerLevel) +
-      statModifierStats.additionalHealth;
+  // The single source of truth for max HP (see the Skill System Foundations
+  // ticket — this replaced the old, separate Character.maxHealth formula,
+  // which was class-differentiated but completely gear-blind: gear's Health
+  // stat modifier fed additionalHealth here and nowhere else, so it never
+  // actually affected the displayed HP bar or how much damage a character
+  // could take before dying, both of which read Character.maxHealth
+  // instead). characterClass.baseMaxHealth preserves that per-class
+  // differentiation (Warrior tankier than Mage); additionalHealth is what
+  // makes it gear-aware.
+  //
+  // Explicitly typed/rounded to int (unlike every sibling getter above,
+  // left as implicit/double) — additionalHealth is a double, and maxHealth
+  // now feeds int-typed sinks directly (QvBar.maxValue, the
+  // applyEnemyAttackDamage clamp), which previously never happened when
+  // this getter was only ever multiplied into another double.
+  int get maxHealth =>
+      (characterClass.baseMaxHealth +
+              (BASE_HEALTH_PER_LEVEL * playerLevel) +
+              statModifierStats.additionalHealth)
+          .round();
   get cooldownMultiplier => 1 - statModifierStats.cooldownReductionPercentage;
   get resourceRegen =>
       BASE_RESOURCE_REGEN +

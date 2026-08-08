@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/world_tab/questing/combat/combat_state.dart';
 import 'package:questvale/data/models/enemy.dart';
+import 'package:questvale/data/models/player_combat_stats.dart';
 import 'package:questvale/data/providers/game_data_models/quest_zone.dart';
 import 'package:questvale/data/providers/game_data_models/skill_data.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
@@ -58,9 +59,19 @@ class CombatCubit extends Cubit<CombatState> {
   Future<void> reload() async {
     var encounter = await encounterRepository.getEncounterById(encounterId);
     final character = await characterRepository.getSingleCharacter();
+    // Built locally from `character` (just fetched above) rather than read
+    // off playerCubit.state — that state reflects the *previous* reload
+    // (playerCubit.loadCharacter() runs after this, further down), so
+    // building fresh here avoids reconciling against a stale maxHealth.
+    final playerCombatStats = PlayerCombatStats(
+      playerLevel: character.level,
+      characterClass: character.characterClass,
+      equipments: character.equippedEquipmentList,
+    );
     final reconciliation = await enemyAttackSchedulingService.reconcile(
       encounter: encounter,
       character: character,
+      playerCombatStats: playerCombatStats,
       enemyDataFor: (enemy) => questZone.enemies
           .firstWhereOrNull((data) => data.id == enemy.enemyDataId),
     );
