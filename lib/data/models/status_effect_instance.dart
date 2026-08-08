@@ -42,7 +42,10 @@ class StatusEffectInstance extends Equatable {
   // to the target's timer (0.5) — informational/for future display and
   // future multi-modifier strength comparisons; the rate change itself is
   // applied directly to the affected timer when Slow is (un)applied, not
-  // read back from here.
+  // read back from here. For Shield, the remaining absorb amount in flat
+  // HP — read back and decremented every time damage is absorbed (see
+  // StatusEffectService.absorbDamage), unlike Slow/Burn's magnitude which
+  // only ever changes on (re)application.
   final double magnitude;
 
   const StatusEffectInstance({

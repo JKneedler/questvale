@@ -21,10 +21,26 @@ class BurnMergeResult {
   const BurnMergeResult({required this.remainingMs, required this.stacks});
 }
 
-// Applies and reconciles status effects (Burn, Slow so far — see the
-// vault's Status Effects note and the Skill System Foundations ticket,
-// subtask 3). Same split as every other service in this codebase: pure
-// computation in static methods, unit testable without a database (see
+// Result of resolving incoming damage against a shield — see
+// resolveShieldAbsorption's doc comment.
+class ShieldAbsorptionResult {
+  final int absorbed;
+  final int remainingShield;
+  final int remainingDamage;
+
+  const ShieldAbsorptionResult({
+    required this.absorbed,
+    required this.remainingShield,
+    required this.remainingDamage,
+  });
+}
+
+// Applies and reconciles status effects (Burn, Slow, Shield so far — see
+// the vault's Status Effects note and the Skill System Foundations ticket,
+// subtasks 3–4; Shield isn't itself in the vault's Status Effects note,
+// which predates it — see applyShield's doc comment for that design call).
+// Same split as every other service in this codebase: pure computation in
+// static methods, unit testable without a database (see
 // status_effect_service_test.dart); DB-touching orchestration on the
 // instance.
 //
@@ -114,8 +130,22 @@ class StatusEffectService {
     );
   }
 
-  // One-shot expiry timer for a non-ticking effect (Slow so far). Pure —
-  // no DB.
+  // Consumes as much of `shieldMagnitude` as it takes to cover
+  // `incomingDamage`, down to 0, with any damage beyond that carrying
+  // through untouched — the ticket's exact spec for how a shield mitigates
+  // an attack. Pure — no DB.
+  static ShieldAbsorptionResult resolveShieldAbsorption(
+      int shieldMagnitude, int incomingDamage) {
+    final absorbed = min(shieldMagnitude, incomingDamage);
+    return ShieldAbsorptionResult(
+      absorbed: absorbed,
+      remainingShield: shieldMagnitude - absorbed,
+      remainingDamage: incomingDamage - absorbed,
+    );
+  }
+
+  // One-shot expiry timer for a non-ticking effect (Slow, Shield so far).
+  // Pure — no DB.
   static ScheduledTimer buildExpiryTimer({
     required String targetId,
     required StatusEffectType effectType,
@@ -237,6 +267,83 @@ class StatusEffectService {
     }
 
     await _setRate(targetId, affectedTimerKind, slowRateMultiplier, at);
+  }
+
+  // Frost Armor's (and Hoarfrost Burst's shield half's) reference case for
+  // the Skill System Foundations ticket's subtask 4 — grants `targetId`
+  // (always the caster; nothing shields an enemy) a shield absorbing up to
+  // `magnitude` flat HP for `duration`. Reapplying while a shield is still
+  // up ADDS to the remaining magnitude and refreshes the duration to a
+  // fresh full value, rather than replacing it or weighted-merging like
+  // Burn — this is a new design call (the vault's Status Effects note
+  // predates shields and doesn't cover them), chosen because Frost Armor's
+  // own cooldown (6h) is deliberately shorter than its shield's duration
+  // (12h), so recasting onto an already-shielded caster to stack more
+  // absorb before the old one runs out reads as the intended loop, not an
+  // edge case to guard against.
+  Future<void> applyShield({
+    required String targetId,
+    required String encounterId,
+    required int magnitude,
+    required Duration duration,
+    DateTime? now,
+  }) async {
+    if (magnitude <= 0) return;
+    final at = now ?? DateTime.now();
+    final existingInstance = await statusEffectRepository.getInstance(
+        targetId, StatusEffectType.shield);
+    final ownerId = timerOwnerId(targetId, StatusEffectType.shield);
+    final existingTimer = await scheduledTimerRepository.getTimerForOwner(
+        ownerId, ScheduledTimerKind.statusEffectExpiry);
+
+    final newMagnitude = (existingInstance?.magnitude ?? 0) + magnitude;
+    await statusEffectRepository.upsertInstance(StatusEffectInstance(
+      ownerId: targetId,
+      effectType: StatusEffectType.shield,
+      stacks: 1,
+      magnitude: newMagnitude,
+    ));
+
+    final timer = buildExpiryTimer(
+      targetId: targetId,
+      effectType: StatusEffectType.shield,
+      encounterId: encounterId,
+      durationMs: duration.inMilliseconds,
+      now: at,
+      id: existingTimer?.id ?? const Uuid().v4(),
+    );
+    if (existingTimer != null) {
+      await scheduledTimerRepository.updateTimer(timer);
+    } else {
+      await scheduledTimerRepository.insertTimer(timer);
+    }
+  }
+
+  // Resolves `incomingDamage` against `targetId`'s active shield (if any),
+  // returning however much gets through after absorption — CombatService.
+  // applyEnemyAttackDamage calls this before touching the character's HP
+  // at all. A depleted shield is cleared immediately here rather than
+  // waiting for its expiry timer to fire — it's gone the moment it's used
+  // up, not on a schedule.
+  Future<int> absorbDamage(String targetId, int incomingDamage) async {
+    if (incomingDamage <= 0) return incomingDamage;
+    final instance = await statusEffectRepository.getInstance(
+        targetId, StatusEffectType.shield);
+    if (instance == null || instance.magnitude <= 0) return incomingDamage;
+
+    final resolved = resolveShieldAbsorption(
+        instance.magnitude.round(), incomingDamage);
+    if (resolved.remainingShield <= 0) {
+      await statusEffectRepository.deleteInstance(
+          targetId, StatusEffectType.shield);
+      await scheduledTimerRepository.deleteTimersByOwnerId(
+          timerOwnerId(targetId, StatusEffectType.shield));
+    } else {
+      await statusEffectRepository.upsertInstance(instance.copyWith(
+        magnitude: resolved.remainingShield.toDouble(),
+      ));
+    }
+    return resolved.remainingDamage;
   }
 
   // Applies `newRate` to whatever timer of `kind` the target currently

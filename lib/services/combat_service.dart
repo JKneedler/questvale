@@ -282,10 +282,14 @@ class CombatService {
   // Enemy -> player direction, fired when a ScheduledTimer resolves (see
   // EnemyAttackSchedulingService). Flat damage straight off the static
   // attack data, matching applyDamage's existing lack of stat recalculation
-  // above rather than inventing a separate defense formula here.
+  // above rather than inventing a separate defense formula here — the one
+  // mitigation that IS applied is an active shield (Frost Armor,
+  // Hoarfrost Burst), consulted before anything touches HP.
   Future<EnemyAttackDamageResult> applyEnemyAttackDamage(
       EnemyAttackData attack, Character character) async {
-    final newHealth = (character.currentHealth - attack.damage)
+    final mitigatedDamage =
+        await statusEffectService.absorbDamage(character.id, attack.damage);
+    final newHealth = (character.currentHealth - mitigatedDamage)
         .clamp(0, character.maxHealth)
         .toInt();
     // The amount actually taken, not the raw attack stat — clamped at 0 HP

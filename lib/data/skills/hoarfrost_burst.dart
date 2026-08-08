@@ -1,6 +1,7 @@
 import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/models/player_combat_stats.dart';
 import 'package:questvale/data/skills/base_active_skill.dart';
+import 'package:questvale/data/skills/frost_armor.dart';
 import 'package:questvale/services/combat_service.dart';
 
 class HoarfrostBurst extends BaseActiveSkill {
@@ -16,22 +17,31 @@ class HoarfrostBurst extends BaseActiveSkill {
 
   // Ice's mote payoff, symmetric with Ember Burst — damage scales with
   // Ice motes consumed (see EmberBurst's doc comment for the 0-consumed
-  // case). The vault also specs a shield component
-  // (data.secondaryBaseValue, per mote consumed) that deliberately isn't
-  // applied here: there's no shield/buff mechanic on Character in this
-  // codebase yet (nothing tracks a temporary damage-absorbing pool), so
-  // only the damage half of this skill actually fires. Adding that
-  // mechanic is Skill System Foundations subtask 4 (Shields as a Status
-  // Effect), not something to bolt on inside a single skill's execute().
+  // case). The shield half (data.secondaryBaseValue, per mote consumed,
+  // same %-of-max-HP-per-mote shape as the damage half) is this skill's
+  // second consumer of StatusEffectService.applyShield alongside Frost
+  // Armor (Skill System Foundations, subtask 4) — reuses FrostArmor.
+  // shieldDuration rather than inventing its own number, since the vault
+  // doesn't specify one for this skill.
   @override
   Future<void> execute(
       CombatService combatService,
       PlayerCombatStats playerCombatStats,
       List<Enemy> targettedEnemies,
       SkillCastContext context) async {
-    final multiplier =
-        (data.primaryBaseValue ?? 0) * context.moteResult.motesConsumed;
+    final motesConsumed = context.moteResult.motesConsumed;
+    final multiplier = (data.primaryBaseValue ?? 0) * motesConsumed;
     await basicEnemyDamage(combatService, playerCombatStats, targettedEnemies,
         damageMultiplierOverride: multiplier);
+
+    final shieldMagnitude =
+        ((data.secondaryBaseValue ?? 0) * motesConsumed * playerCombatStats.maxHealth)
+            .round();
+    await combatService.statusEffectService.applyShield(
+      targetId: context.caster.id,
+      encounterId: context.encounterId,
+      magnitude: shieldMagnitude,
+      duration: FrostArmor.shieldDuration,
+    );
   }
 }

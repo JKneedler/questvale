@@ -126,5 +126,48 @@ void main() {
       expect(timer.recurring, isFalse);
       expect(timer.nextTriggerAt, now.add(const Duration(hours: 8)));
     });
+
+    test('also works for shield, keyed to its own owner id', () {
+      final now = DateTime(2026, 1, 1, 12);
+      final timer = StatusEffectService.buildExpiryTimer(
+        targetId: 'character-1',
+        effectType: StatusEffectType.shield,
+        encounterId: 'encounter-1',
+        durationMs: const Duration(hours: 12).inMilliseconds,
+        now: now,
+        id: 'timer-1',
+      );
+      expect(timer.ownerId, 'character-1:shield');
+      expect(timer.payload, 'shield');
+    });
+  });
+
+  group('resolveShieldAbsorption', () {
+    test('a hit smaller than the shield is fully absorbed, nothing carries through', () {
+      final result = StatusEffectService.resolveShieldAbsorption(20, 5);
+      expect(result.absorbed, 5);
+      expect(result.remainingShield, 15);
+      expect(result.remainingDamage, 0);
+    });
+
+    test('a hit larger than the shield depletes it and the remainder carries through', () {
+      final result = StatusEffectService.resolveShieldAbsorption(10, 15);
+      expect(result.absorbed, 10);
+      expect(result.remainingShield, 0);
+      expect(result.remainingDamage, 5);
+    });
+
+    test('a hit exactly equal to the shield depletes it with nothing carrying through', () {
+      final result = StatusEffectService.resolveShieldAbsorption(10, 10);
+      expect(result.absorbed, 10);
+      expect(result.remainingShield, 0);
+      expect(result.remainingDamage, 0);
+    });
+
+    test('a zero shield lets all damage through untouched', () {
+      final result = StatusEffectService.resolveShieldAbsorption(0, 8);
+      expect(result.absorbed, 0);
+      expect(result.remainingDamage, 8);
+    });
   });
 }
