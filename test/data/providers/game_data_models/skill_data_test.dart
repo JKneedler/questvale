@@ -112,7 +112,7 @@ void main() {
       expect(effect.damageType, isNull);
     });
 
-    test('parses a statModifier component with a null statModifierType (Ice Ward-shaped)', () {
+    test('parses a statModifier component with a null statModifierType (Mote Potency-shaped)', () {
       final effect = SkillEffectComponent.fromJson({
         'kind': 3,
         'baseValue': 0.05,
@@ -206,6 +206,33 @@ void main() {
       );
       expect(skill.statusEffectChances, hasLength(1));
       expect(skill.statusEffectChances.single.statusEffectType, StatusEffectType.burn);
+    });
+  });
+
+  group('SkillEffectComponent.valueAtLevel', () {
+    test('a component with no valueScaler is flat at every level', () {
+      const effect = SkillEffectComponent(kind: SkillEffectKind.damage, baseValue: 1.0);
+      expect(effect.valueAtLevel(1), 1.0);
+      expect(effect.valueAtLevel(5), 1.0);
+    });
+
+    test('level 1 is always exactly baseValue, regardless of valueScaler', () {
+      const effect = SkillEffectComponent(
+          kind: SkillEffectKind.damage, baseValue: 1.5, valueScaler: 0.375);
+      expect(effect.valueAtLevel(1), 1.5);
+    });
+
+    test('matches the vault-documented Lv1→Lv5 range (Firebolt: 150% → 300%)', () {
+      const effect = SkillEffectComponent(
+          kind: SkillEffectKind.damage, baseValue: 1.5, valueScaler: 0.375);
+      expect(effect.valueAtLevel(5), 3.0);
+    });
+
+    test('scales linearly between levels', () {
+      const effect = SkillEffectComponent(
+          kind: SkillEffectKind.shield, baseValue: 0.15, valueScaler: 0.0625);
+      expect(effect.valueAtLevel(2), closeTo(0.2125, 1e-9));
+      expect(effect.valueAtLevel(3), closeTo(0.275, 1e-9));
     });
   });
 }

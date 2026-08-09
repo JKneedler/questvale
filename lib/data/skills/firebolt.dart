@@ -27,7 +27,7 @@ class Firebolt extends BaseActiveSkill {
 
   @override
   String get description => data.description
-      .replaceAll('x%', percentText(data.damageEffect?.baseValue));
+      .replaceAll('x%', percentText(data.damageEffect?.valueAtLevel(level)));
 
   // Fire's mote generator (see SkillData.moteInteraction/moteElement on
   // this skill's data — CombatService.castSkill already resolved the
@@ -50,7 +50,7 @@ class Firebolt extends BaseActiveSkill {
 
     final procChance = data.statusEffectChances
             .firstWhereOrNull((e) => e.statusEffectType == StatusEffectType.burn)
-            ?.baseValue ??
+            ?.valueAtLevel(level) ??
         0;
     if (random.nextDouble() >= procChance) return;
 

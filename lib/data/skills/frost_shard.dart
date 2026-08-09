@@ -27,7 +27,7 @@ class FrostShard extends BaseActiveSkill {
 
   @override
   String get description => data.description
-      .replaceAll('x%', percentText(data.damageEffect?.baseValue));
+      .replaceAll('x%', percentText(data.damageEffect?.valueAtLevel(level)));
 
   // Ice's mote generator, symmetric with Firebolt. Slow's 20% proc chance
   // (the statusEffectChance component tagged slow) is the reference
@@ -48,7 +48,7 @@ class FrostShard extends BaseActiveSkill {
 
     final procChance = data.statusEffectChances
             .firstWhereOrNull((e) => e.statusEffectType == StatusEffectType.slow)
-            ?.baseValue ??
+            ?.valueAtLevel(level) ??
         0;
     if (random.nextDouble() >= procChance) return;
 

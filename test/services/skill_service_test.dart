@@ -128,7 +128,7 @@ void main() {
       expect(modifiers.every((m) => m.characterId == 'character-1'), isTrue);
     });
 
-    test('Mote Potency and Ice Ward are constructible but stay inert', () async {
+    test('Mote Potency is constructible but stays inert', () async {
       final gameData = await GameData.load();
       final skillService = SkillService(gameData: gameData);
       final character = _character(skills: [
@@ -136,11 +136,6 @@ void main() {
             id: 'cs-1',
             characterId: 'character-1',
             skillId: 'mage-1-mote_potency',
-            level: 1),
-        const CharacterSkill(
-            id: 'cs-2',
-            characterId: 'character-1',
-            skillId: 'mage-1-ice_ward',
             level: 1),
       ]);
       expect(skillService.passiveModifiersFor(character), isEmpty);
