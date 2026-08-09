@@ -18,6 +18,7 @@ import 'package:questvale/data/repositories/quest_repository.dart';
 import 'package:questvale/data/repositories/todo_repository.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/services/equipment_service.dart';
+import 'package:questvale/services/leveling_service.dart';
 import 'package:questvale/services/skill_progression_service.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
@@ -68,6 +69,30 @@ class SettingsCubit extends Cubit<SettingsState> {
   Future<void> resetAp() async {
     final updated = await characterRepository.updateCharacter(
       state.character.copyWith(actionPoints: 0, dailyApEarned: 0),
+    );
+    emit(state.copyWith(character: updated));
+    await playerCubit.loadCharacter();
+  }
+
+  // Grants exactly enough exp to cross the next level threshold — a
+  // minimal call site for LevelingService (see the Skills UI ticket's
+  // subtask 1) so a level-up (and its Skill Point) can be triggered on
+  // demand instead of needing a real encounter reward.
+  Future<void> levelUp() async {
+    final character = state.character;
+    final expNeeded =
+        LevelingService.expForLevel(character.level) - character.currentExp;
+    final levelUpResult = LevelingService.applyExp(
+      level: character.level,
+      currentExp: character.currentExp,
+      expGained: expNeeded,
+    );
+    final updated = await characterRepository.updateCharacter(
+      character.copyWith(
+        level: levelUpResult.level,
+        currentExp: levelUpResult.currentExp,
+        skillPoints: character.skillPoints + levelUpResult.skillPointsGained,
+      ),
     );
     emit(state.copyWith(character: updated));
     await playerCubit.loadCharacter();
