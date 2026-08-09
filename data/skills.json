@@ -1,7 +1,7 @@
 [
   {
     "id": "mage-1-arcane_bolt",
-    "class": 0,
+    "class": 2,
     "tier": 1,
     "name": "Arcane Bolt",
     "description": "Fires a bolt of raw arcane energy at a single enemy, dealing x% weapon-type damage. The class's always-ready basic attack — no cooldown, no mote interaction.",
@@ -15,7 +15,7 @@
   },
   {
     "id": "mage-1-firebolt",
-    "class": 0,
+    "class": 2,
     "tier": 1,
     "name": "Firebolt",
     "description": "Hurls a bolt of fire at a single enemy, dealing x% Fire Damage and generating 1 Fire mote. 20% chance to apply Burn.",
@@ -34,7 +34,7 @@
   },
   {
     "id": "mage-1-frost_shard",
-    "class": 0,
+    "class": 2,
     "tier": 1,
     "name": "Frost Shard",
     "description": "Launches a shard of ice at a single enemy, dealing x% Ice Damage and generating 1 Ice mote. 20% chance to Slow the target.",
@@ -53,7 +53,7 @@
   },
   {
     "id": "mage-1-ember_burst",
-    "class": 0,
+    "class": 2,
     "tier": 1,
     "name": "Ember Burst",
     "description": "Detonates every banked Fire mote on a single enemy, dealing x% Fire Damage per mote consumed.",
@@ -71,7 +71,7 @@
   },
   {
     "id": "mage-1-hoarfrost_burst",
-    "class": 0,
+    "class": 2,
     "tier": 1,
     "name": "Hoarfrost Burst",
     "description": "Detonates every banked Ice mote on a single enemy, dealing x% Ice Damage and granting a shield, both scaling with motes consumed.",
@@ -90,7 +90,7 @@
   },
   {
     "id": "mage-1-frost_armor",
-    "class": 0,
+    "class": 2,
     "tier": 1,
     "name": "Frost Armor",
     "description": "Encases the caster in protective ice, granting a shield equal to x% of Max HP.",
@@ -104,7 +104,7 @@
   },
   {
     "id": "mage-1-mote_potency",
-    "class": 0,
+    "class": 2,
     "tier": 1,
     "name": "Mote Potency",
     "description": "Increases the effect of consumed motes by x%.",
@@ -115,7 +115,7 @@
   },
   {
     "id": "mage-1-elemental_affinity",
-    "class": 0,
+    "class": 2,
     "tier": 1,
     "name": "Elemental Affinity",
     "description": "Increases Fire and Ice Damage by x%.",
