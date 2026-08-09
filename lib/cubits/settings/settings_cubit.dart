@@ -152,8 +152,11 @@ class SettingsCubit extends Cubit<SettingsState> {
 
     // Clear out any invested/leveled skills first, then recreate exactly
     // the loadout QuestvaleDB.initializeDB() seeds a brand-new character
-    // with, rather than leaving the character with no active skills at
-    // all.
+    // with — just Arcane Bolt, the class's free basic attack. Every other
+    // skill (Firebolt included) is unlocked with Skill Points via
+    // SkillProgressionService, not seeded for free, so a reset character
+    // ends up back at that same starting point rather than with a loadout
+    // it hasn't earned.
     await characterRepository.deleteAllSkillsForCharacter(c.id);
     final activeSkillSlot1 = CharacterSkill(
       id: const Uuid().v4(),
@@ -161,22 +164,17 @@ class SettingsCubit extends Cubit<SettingsState> {
       skillId: 'mage-1-arcane_bolt',
       level: 1,
     );
-    final activeSkillSlot2 = CharacterSkill(
-      id: const Uuid().v4(),
-      characterId: c.id,
-      skillId: 'mage-1-firebolt',
-      level: 1,
-    );
     await characterRepository.insertCharacterSkill(activeSkillSlot1);
-    await characterRepository.insertCharacterSkill(activeSkillSlot2);
 
     // No gear at this point (about to be wiped below anyway), so
     // PlayerCombatStats.maxHealth here is exactly
     // characterClass.baseMaxHealth + BASE_HEALTH_PER_LEVEL*level — routed
     // through the one canonical formula instead of hand-duplicating it, so
-    // this can't drift out of sync with it again.
+    // this can't drift out of sync with it again. Uses level 1 (not
+    // c.level) since a reset character's level resets too, same as
+    // QuestvaleDB.initializeDB()'s brand-new character.
     final resetMaxHealth = PlayerCombatStats(
-      playerLevel: c.level,
+      playerLevel: 1,
       characterClass: c.characterClass,
       equipments: const [],
     ).maxHealth;
@@ -184,14 +182,13 @@ class SettingsCubit extends Cubit<SettingsState> {
       id: c.id,
       name: c.name,
       characterClass: c.characterClass,
-      level: c.level,
+      level: 1,
       gold: 0,
       currentExp: 0,
       currentHealth: resetMaxHealth,
       actionPoints: 0,
       // equipped* omitted -> null (unequipped). skills defaults to const [].
       activeSkillSlot1: activeSkillSlot1,
-      activeSkillSlot2: activeSkillSlot2,
       dailyApEarned: 0,
       themeId: c.themeId,
       // Invested skills were just wiped above, so any unspent points reset

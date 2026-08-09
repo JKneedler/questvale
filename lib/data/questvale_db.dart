@@ -16,6 +16,7 @@ import 'package:questvale/data/models/todo_tag.dart';
 import 'package:questvale/data/models/todo_reminder.dart';
 import 'package:questvale/data/models/character_tag.dart';
 import 'package:questvale/data/models/mage_motes.dart';
+import 'package:questvale/data/models/player_combat_stats.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/shared_enums.dart';
@@ -35,31 +36,37 @@ class QuestvaleDB {
       await db.execute(MageMotes.createTableSQL);
       final CharacterRepository characterRepo = CharacterRepository(db: db);
       final characterId = Uuid().v4();
+      // Arcane Bolt is the class's free, always-available basic attack
+      // (see its own doc comment) — the only skill a fresh character
+      // starts with. Every other skill, including Firebolt, is unlocked
+      // with Skill Points via SkillProgressionService (see the Skills UI
+      // ticket) rather than seeded for free.
       final activeSkillSlot1 = CharacterSkill(
         id: Uuid().v4(),
         characterId: characterId,
         skillId: 'mage-1-arcane_bolt',
         level: 1,
       );
-      final activeSkillSlot2 = CharacterSkill(
-        id: Uuid().v4(),
-        characterId: characterId,
-        skillId: 'mage-1-firebolt',
-        level: 1,
-      );
+      // Starting maxHealth for a fresh Level 1 Mage with no gear yet —
+      // routed through PlayerCombatStats' canonical formula rather than
+      // hand-duplicating it (same reasoning as SettingsCubit.resetCharacter).
+      final starterMaxHealth = PlayerCombatStats(
+        playerLevel: 1,
+        characterClass: CharacterClass.mage,
+        equipments: const [],
+      ).maxHealth;
       characterRepo.insertCharacter(
         Character(
           id: characterId,
           name: 'Doug',
           characterClass: CharacterClass.mage,
-          level: 10,
+          level: 1,
           gold: 1997,
           currentExp: 0,
-          currentHealth: 20,
+          currentHealth: starterMaxHealth,
           actionPoints: 10,
           skills: [],
           activeSkillSlot1: activeSkillSlot1,
-          activeSkillSlot2: activeSkillSlot2,
         ),
       );
       await db.insert(CharacterStats.characterStatsTableName,
@@ -69,9 +76,6 @@ class QuestvaleDB {
       await db.execute(CharacterSkill.createTableSQL);
       characterRepo.insertCharacterSkill(
         activeSkillSlot1,
-      );
-      characterRepo.insertCharacterSkill(
-        activeSkillSlot2,
       );
       await db.execute(Quest.createTableSQL);
       await db.execute(Encounter.createTableSQL);
