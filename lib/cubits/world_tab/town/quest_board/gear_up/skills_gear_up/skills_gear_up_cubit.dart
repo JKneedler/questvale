@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/quest_board/gear_up/skills_gear_up/skills_gear_up_state.dart';
 import 'package:questvale/data/models/character.dart';
+import 'package:questvale/data/models/character_skill.dart';
 import 'package:questvale/data/providers/game_data.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
 import 'package:questvale/services/skill_progression_service.dart';
@@ -52,6 +53,49 @@ class SkillsGearUpCubit extends Cubit<SkillsGearUpState> {
     if (!result.wasUpgraded) return;
     final updated = await characterRepository.getCharacterById(state.character.id);
     if (!isClosed) emit(state.copyWith(character: updated));
+    await playerCubit.loadCharacter();
+  }
+
+  void selectLoadoutSlot(int slotNumber) {
+    emit(state.withSelectingLoadoutSlot(slotNumber));
+  }
+
+  void cancelLoadoutSelection() {
+    emit(state.withSelectingLoadoutSlot(null));
+  }
+
+  // Assigns `skill` (one of the character's owned actives) into
+  // activeSkillSlotN, replacing whatever was there — see the Skills UI
+  // ticket's subtask 4. Character.copyWithActiveSkillSlot enforces "a
+  // skill occupies at most one slot" by clearing any other slot it was
+  // already in, so assigning an already-equipped skill to a new slot
+  // reads as moving it rather than duplicating it.
+  Future<void> assignSkillToSlot(int slotNumber, CharacterSkill skill) async {
+    final updatedCharacter =
+        state.character.copyWithActiveSkillSlot(slotNumber, skill);
+    final persisted = await characterRepository.updateCharacter(updatedCharacter);
+    if (!isClosed) {
+      emit(SkillsGearUpState(
+        character: persisted,
+        expandedSkillId: state.expandedSkillId,
+        selectingLoadoutSlot: null,
+      ));
+    }
+    await playerCubit.loadCharacter();
+  }
+
+  // Unassigns slotNumber entirely, leaving it empty.
+  Future<void> clearLoadoutSlot(int slotNumber) async {
+    final updatedCharacter =
+        state.character.copyWithClearedActiveSkillSlot(slotNumber);
+    final persisted = await characterRepository.updateCharacter(updatedCharacter);
+    if (!isClosed) {
+      emit(SkillsGearUpState(
+        character: persisted,
+        expandedSkillId: state.expandedSkillId,
+        selectingLoadoutSlot: null,
+      ));
+    }
     await playerCubit.loadCharacter();
   }
 }

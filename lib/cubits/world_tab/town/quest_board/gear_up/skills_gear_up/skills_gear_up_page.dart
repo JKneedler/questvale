@@ -83,24 +83,240 @@ class SkillsGearUpView extends StatelessWidget {
                       color: SKILL_POINTS_COLOR),
                 ),
               ),
+              const _LoadoutSection(),
               Expanded(
-                child: QvFadingScrollable(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    itemCount: tiers.length,
-                    itemBuilder: (context, index) {
-                      final tier = tiers[index];
-                      final skillsInTier =
-                          classSkills.where((skill) => skill.tier == tier).toList();
-                      return _TierSection(tier: tier, skills: skillsInTier);
-                    },
-                  ),
-                ),
+                child: state.selectingLoadoutSlot != null
+                    ? _LoadoutSelectionView(slotNumber: state.selectingLoadoutSlot!)
+                    : QvFadingScrollable(
+                        child: ListView.builder(
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          itemCount: tiers.length,
+                          itemBuilder: (context, index) {
+                            final tier = tiers[index];
+                            final skillsInTier = classSkills
+                                .where((skill) => skill.tier == tier)
+                                .toList();
+                            return _TierSection(tier: tier, skills: skillsInTier);
+                          },
+                        ),
+                      ),
               ),
             ],
           ),
         );
       },
+    );
+  }
+}
+
+// Shows the character's 5 active-skill loadout slots at a glance — see
+// the Skills UI ticket's subtask 4. Passives need no equivalent (owning
+// one is being it "active", per Skill System Foundations subtask 5), so
+// this only ever shows/assigns actives.
+class _LoadoutSection extends StatelessWidget {
+  const _LoadoutSection();
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final character = context.watch<SkillsGearUpCubit>().state.character;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Column(
+        children: [
+          Text('Loadout',
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.primary)),
+          const SizedBox(height: 6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              for (var slotNumber = 1; slotNumber <= 5; slotNumber++)
+                _LoadoutSlotCard(
+                  slotNumber: slotNumber,
+                  characterSkill: character.activeSkillSlotAt(slotNumber),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LoadoutSlotCard extends StatelessWidget {
+  final int slotNumber;
+  final CharacterSkill? characterSkill;
+  const _LoadoutSlotCard({required this.slotNumber, required this.characterSkill});
+
+  @override
+  Widget build(BuildContext context) {
+    final gameData = context.read<GameData>();
+    final skillData = characterSkill != null
+        ? gameData.getSkillDataById(characterSkill!.skillId)
+        : null;
+    void onTap() => context.read<SkillsGearUpCubit>().selectLoadoutSlot(slotNumber);
+    // QvSkillButton already wraps its child in its own GestureDetector
+    // with onTap: onTap ?? () {} — passing its onTap param directly (not
+    // wrapping the whole widget in a second GestureDetector) avoids the
+    // same nested-gesture-detector footgun _SkillGridIcon hit: the inner
+    // detector's non-null onTap silently wins the gesture arena and the
+    // outer one never fires.
+    if (skillData != null) {
+      return QvSkillButton(
+        width: 56,
+        height: 56,
+        skillIconPath: skillData.iconPath,
+        skillButtonColor: skillData.buttonColor,
+        onTap: onTap,
+      );
+    }
+    return GestureDetector(
+      onTap: onTap,
+      child: QvCardBorder(
+        type: QvCardBorderType.surface,
+        width: 56,
+        height: 56,
+        padding: const EdgeInsets.all(4),
+        child: Center(
+          child: Text('Empty', style: TextStyle(fontSize: 10, height: 1)),
+        ),
+      ),
+    );
+  }
+}
+
+// The picker shown when a loadout slot is tapped — lists every active
+// skill the character owns, tapping one assigns it to that slot. Swaps
+// in place of the tier grid (same shape as EquipmentSelectionView
+// swapping in for EquipmentGearUpOverview).
+class _LoadoutSelectionView extends StatelessWidget {
+  final int slotNumber;
+  const _LoadoutSelectionView({required this.slotNumber});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final cubit = context.read<SkillsGearUpCubit>();
+    final gameData = context.read<GameData>();
+    final character = cubit.state.character;
+    final ownedActives = character.skills
+        .where((cs) => gameData.getSkillDataById(cs.skillId).type == SkillType.active)
+        .toList();
+    final currentlyAssigned = character.activeSkillSlotAt(slotNumber);
+
+    // Which slot (if any) each owned active is already sitting in — so a
+    // skill assigned elsewhere can be labeled "move" rather than silently
+    // relocated with no warning when tapped. A skill can only ever occupy
+    // one slot (Character.copyWithActiveSkillSlot enforces this), so this
+    // is at most a 1:1 map.
+    final assignedSlotBySkillId = <String, int>{
+      for (var slot = 1; slot <= 5; slot++)
+        if (character.activeSkillSlotAt(slot) != null)
+          character.activeSkillSlotAt(slot)!.skillId: slot,
+    };
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          child: Row(
+            children: [
+              GestureDetector(
+                onTap: () => cubit.cancelLoadoutSelection(),
+                child: SizedBox(
+                  width: 32,
+                  height: 28,
+                  child: Text('<',
+                      style: TextStyle(fontSize: 24, color: colorScheme.onSurface)),
+                ),
+              ),
+              Expanded(
+                child: Center(
+                  child: Text('Assign Slot $slotNumber',
+                      style: TextStyle(fontSize: 20, color: colorScheme.onSurface)),
+                ),
+              ),
+              const SizedBox(width: 32),
+            ],
+          ),
+        ),
+        Expanded(
+          child: QvFadingScrollable(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              children: [
+                if (currentlyAssigned != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: GestureDetector(
+                      onTap: () => cubit.clearLoadoutSlot(slotNumber),
+                      child: QvCardBorder(
+                        type: QvCardBorderType.surface,
+                        padding: const EdgeInsets.all(8),
+                        child: SizedBox(
+                          height: 48,
+                          child: Center(
+                            child: Text('Clear Slot',
+                                style: TextStyle(color: colorScheme.onSurface)),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                if (ownedActives.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    child: Center(
+                      child: Text('No active skills owned yet',
+                          style: TextStyle(color: colorScheme.onSurface)),
+                    ),
+                  ),
+                for (final characterSkill in ownedActives)
+                  Builder(builder: (context) {
+                    final skillData =
+                        gameData.getSkillDataById(characterSkill.skillId);
+                    final assignedElsewhere =
+                        assignedSlotBySkillId[characterSkill.skillId];
+                    final label = assignedElsewhere != null &&
+                            assignedElsewhere != slotNumber
+                        ? '${skillData.name} (Lv ${characterSkill.level}) — move from Slot $assignedElsewhere'
+                        : '${skillData.name} (Lv ${characterSkill.level})';
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: GestureDetector(
+                        onTap: () =>
+                            cubit.assignSkillToSlot(slotNumber, characterSkill),
+                        child: QvCardBorder(
+                          type: QvCardBorderType.surface,
+                          padding: const EdgeInsets.all(8),
+                          child: Row(
+                            children: [
+                              QvSkillButton(
+                                width: 48,
+                                height: 48,
+                                skillIconPath: skillData.iconPath,
+                                skillButtonColor: skillData.buttonColor,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(label,
+                                    style: TextStyle(color: colorScheme.onSurface)),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -112,7 +328,6 @@ class _TierSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final character = context.watch<SkillsGearUpCubit>().state.character;
     final requiredLevel = SkillProgressionService.requiredLevelForTier(tier);
     final tierLocked = character.level < requiredLevel;
@@ -127,17 +342,11 @@ class _TierSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            tierLocked
+          _TierHeader(
+            label: tierLocked
                 ? 'Tier $tier — Locked until Level $requiredLevel'
                 : 'Tier $tier',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: tierLocked
-                  ? colorScheme.onSurface.withValues(alpha: 0.5)
-                  : colorScheme.primary,
-            ),
+            dimmed: tierLocked,
           ),
           const SizedBox(height: 6),
           ..._skillRows(actives, tierLocked),
@@ -162,6 +371,42 @@ class _TierSection extends StatelessWidget {
   }
 }
 
+// Centered label with divider lines extending to either side — same
+// "---- Tier 1 ----" shape as combat_status_card.dart's _SectionHeader,
+// just a size up (this screen has one section per tier instead of two
+// fixed sections total, so a slightly bigger label reads better as the
+// primary heading on the page).
+class _TierHeader extends StatelessWidget {
+  final String label;
+  final bool dimmed;
+  const _TierHeader({required this.label, this.dimmed = false});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textColor = dimmed
+        ? colorScheme.onSurface.withValues(alpha: 0.5)
+        : colorScheme.primary;
+    final dividerColor = dimmed
+        ? colorScheme.onSurface.withValues(alpha: 0.15)
+        : colorScheme.primary.withValues(alpha: 0.4);
+    return Row(
+      children: [
+        Expanded(child: Container(height: 1, color: dividerColor)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Text(
+            label,
+            style: TextStyle(
+                color: textColor, fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+        ),
+        Expanded(child: Container(height: 1, color: dividerColor)),
+      ],
+    );
+  }
+}
+
 class _SkillRow extends StatelessWidget {
   final List<SkillData> rowSkills;
   final bool tierLocked;
@@ -178,15 +423,13 @@ class _SkillRow extends StatelessWidget {
           child: Column(
             children: [
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   for (final skill in rowSkills)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 10),
-                      child: _SkillGridIcon(
-                          skill: skill,
-                          tierLocked: tierLocked,
-                          character: state.character),
-                    ),
+                    _SkillGridIcon(
+                        skill: skill,
+                        tierLocked: tierLocked,
+                        character: state.character),
                 ],
               ),
               if (expandedSkill != null)
