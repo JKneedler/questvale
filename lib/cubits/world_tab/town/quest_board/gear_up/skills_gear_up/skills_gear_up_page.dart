@@ -22,6 +22,18 @@ String _percentText(double value) => '${(value * 100).round()}%';
 String _capitalize(String value) =>
     value.isEmpty ? value : '${value[0].toUpperCase()}${value.substring(1)}';
 
+// SkillData.cooldown is in fractional hours (e.g. 0.5 for Firebolt) — see
+// its own doc comment. 0/null both mean "no cooldown" (Arcane Bolt).
+String _cooldownText(double? cooldownHours) {
+  final hours = cooldownHours ?? 0;
+  if (hours <= 0) return 'None';
+  final wholeHours = hours.floor();
+  final minutes = ((hours % 1) * 60).round();
+  if (wholeHours == 0) return '${minutes}m';
+  if (minutes == 0) return '${wholeHours}h';
+  return '${wholeHours}h ${minutes}m';
+}
+
 // Dart 2.19 (this project's SDK floor) doesn't have switch expressions —
 // a plain if-chain over SkillUnlockBlockReason instead.
 String _unlockLabel(SkillUnlockBlockReason? blockReason, SkillData skill) {
@@ -523,6 +535,19 @@ class _SkillDetailPanel extends StatelessWidget {
             const SizedBox(height: 4),
             Text(description,
                 style: TextStyle(fontSize: 14, color: colorScheme.onSurface)),
+            // AP cost/cooldown are only ever set on actives — skill.apCost
+            // is null for every passive (see skills.json), so this line is
+            // naturally omitted for them rather than needing its own
+            // skill.type check.
+            if (skill.apCost != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                    'AP Cost: ${skill.apCost} • Cooldown: ${_cooldownText(skill.cooldown)}',
+                    style: TextStyle(
+                        fontSize: 13,
+                        color: colorScheme.onSurface.withValues(alpha: 0.75))),
+              ),
             const SizedBox(height: 8),
             ..._statLines(skill, previewLevel, owned != null)
                 .map((line) => Padding(

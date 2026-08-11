@@ -43,6 +43,18 @@ String _percentText(double value) => '${(value * 100).round()}%';
 String _capitalize(String value) =>
     value.isEmpty ? value : '${value[0].toUpperCase()}${value.substring(1)}';
 
+// SkillData.cooldown is in fractional hours (e.g. 0.5 for Firebolt) — see
+// its own doc comment. 0/null both mean "no cooldown" (Arcane Bolt).
+String _cooldownText(double? cooldownHours) {
+  final hours = cooldownHours ?? 0;
+  if (hours <= 0) return 'None';
+  final wholeHours = hours.floor();
+  final minutes = ((hours % 1) * 60).round();
+  if (wholeHours == 0) return '${minutes}m';
+  if (minutes == 0) return '${wholeHours}h';
+  return '${wholeHours}h ${minutes}m';
+}
+
 class CombatPage extends StatelessWidget {
   const CombatPage({super.key, required this.encounterId});
   final String encounterId;
@@ -934,6 +946,14 @@ class TargetEnemySkillBox extends StatelessWidget {
             Text('Lv ${skill.level}',
                 style: TextStyle(fontSize: 12, color: colorScheme.onSurface)),
             Text(skill.description),
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(
+                  'AP Cost: ${skill.data.apCost ?? 0} • Cooldown: ${_cooldownText(skill.data.cooldown)}',
+                  style: TextStyle(
+                      fontSize: 13,
+                      color: colorScheme.onSurface.withValues(alpha: 0.75))),
+            ),
             ..._effectLines(playerCombatStats).map((line) => Padding(
                   padding: const EdgeInsets.only(top: 2),
                   child: Text(line,
