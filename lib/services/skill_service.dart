@@ -11,7 +11,6 @@ import 'package:questvale/data/skills/firebolt.dart';
 import 'package:questvale/data/skills/frost_armor.dart';
 import 'package:questvale/data/skills/frost_shard.dart';
 import 'package:questvale/data/skills/hoarfrost_burst.dart';
-import 'package:questvale/data/skills/ice_ward.dart';
 import 'package:questvale/data/skills/mote_potency.dart';
 
 // Both directions of a registry check between skills.json and a
@@ -55,14 +54,14 @@ class SkillService {
   };
 
   // Same idea, for getPassiveSkillById — added alongside passives actually
-  // becoming constructible (subtask 5). Mote Potency and Ice Ward are
-  // registered here despite being inert (see their own doc comments) —
-  // "constructible but does nothing yet" is a different, later state than
-  // "not registered at all".
+  // becoming constructible (subtask 5). Mote Potency is registered here
+  // despite being inert (see its own doc comment) — "constructible but
+  // does nothing yet" is a different, later state than "not registered at
+  // all". Ice Ward (AP-cost reduction for Ice skills) was removed —
+  // individual skills modifying AP cost isn't a mechanic this game wants.
   static const registeredPassiveSkillIds = {
     'mage-1-mote_potency',
     'mage-1-elemental_affinity',
-    'mage-1-ice_ward',
   };
 
   SkillService({required this.gameData}) {
@@ -112,21 +111,25 @@ class SkillService {
     );
   }
 
-  BaseActiveSkill getSkillById(String id) {
+  // level defaults to 1 for callers that don't have a real CharacterSkill
+  // row to read from yet (e.g. previewing a not-yet-unlocked skill on the
+  // Skills Gear-Up screen) — an owned skill's actual level should always
+  // be passed explicitly, same as getPassiveSkillById.
+  BaseActiveSkill getSkillById(String id, {int level = 1}) {
     final skillData = gameData.getSkillDataById(id);
     switch (skillData.id) {
       case 'mage-1-arcane_bolt':
-        return ArcaneBolt(data: skillData, level: 1);
+        return ArcaneBolt(data: skillData, level: level);
       case 'mage-1-firebolt':
-        return Firebolt(data: skillData, level: 1);
+        return Firebolt(data: skillData, level: level);
       case 'mage-1-frost_shard':
-        return FrostShard(data: skillData, level: 1);
+        return FrostShard(data: skillData, level: level);
       case 'mage-1-ember_burst':
-        return EmberBurst(data: skillData, level: 1);
+        return EmberBurst(data: skillData, level: level);
       case 'mage-1-hoarfrost_burst':
-        return HoarfrostBurst(data: skillData, level: 1);
+        return HoarfrostBurst(data: skillData, level: level);
       case 'mage-1-frost_armor':
-        return FrostArmor(data: skillData, level: 1);
+        return FrostArmor(data: skillData, level: level);
       default:
         throw Exception('Skill not found: $id');
     }
@@ -144,8 +147,6 @@ class SkillService {
         return ElementalAffinity(data: skillData, level: level);
       case 'mage-1-mote_potency':
         return MotePotency(data: skillData, level: level);
-      case 'mage-1-ice_ward':
-        return IceWard(data: skillData, level: level);
       default:
         throw Exception('Passive skill not found: $id');
     }

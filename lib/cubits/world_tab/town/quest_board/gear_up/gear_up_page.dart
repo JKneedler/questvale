@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/world_tab/town/quest_board/gear_up/equipment_gear_up/equipment_gear_up_page.dart';
 import 'package:questvale/cubits/world_tab/town/quest_board/gear_up/gear_up_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/quest_board/gear_up/gear_up_state.dart';
+import 'package:questvale/cubits/world_tab/town/quest_board/gear_up/skills_gear_up/skills_gear_up_page.dart';
 import 'package:questvale/cubits/world_tab/town/quest_board/quest_board_cubit.dart';
 import 'package:questvale/widgets/qv_app_bar.dart';
 import 'package:questvale/widgets/qv_button.dart';
@@ -78,6 +79,8 @@ class GearUpView extends StatelessWidget {
                           children: [
                             if (gearUpState.gearTabIndex == 0)
                               EquipmentGearUpPage(),
+                            if (gearUpState.gearTabIndex == 1)
+                              SkillsGearUpPage(),
                           ],
                         ),
                       ),

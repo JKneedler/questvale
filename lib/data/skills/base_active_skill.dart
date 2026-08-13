@@ -52,7 +52,8 @@ abstract class BaseActiveSkill {
       if (data.targetingType == SkillTargetingType.singleEnemy && i != 0) break;
 
       final damageData = DamageData(
-          damageMultiplier: damageMultiplierOverride ?? damageEffect?.baseValue ?? 1,
+          damageMultiplier:
+              damageMultiplierOverride ?? damageEffect?.valueAtLevel(level) ?? 1,
           damageType: damageEffect?.damageType ?? SkillDamageType.physical);
       final damageResult = await combatService.applyDamage(
           damageData, playerCombatStats, enemies[i].id);

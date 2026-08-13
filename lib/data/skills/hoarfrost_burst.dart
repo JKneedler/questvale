@@ -13,7 +13,7 @@ class HoarfrostBurst extends BaseActiveSkill {
 
   @override
   String get description => data.description
-      .replaceAll('x%', percentText(data.damageEffect?.baseValue));
+      .replaceAll('x%', percentText(data.damageEffect?.valueAtLevel(level)));
 
   // Ice's mote payoff, symmetric with Ember Burst — damage scales with
   // Ice motes consumed (see EmberBurst's doc comment for the 0-consumed
@@ -30,11 +30,12 @@ class HoarfrostBurst extends BaseActiveSkill {
       List<Enemy> targettedEnemies,
       SkillCastContext context) async {
     final motesConsumed = context.moteResult.motesConsumed;
-    final multiplier = (data.damageEffect?.baseValue ?? 0) * motesConsumed;
+    final multiplier =
+        (data.damageEffect?.valueAtLevel(level) ?? 0) * motesConsumed;
     await basicEnemyDamage(combatService, playerCombatStats, targettedEnemies,
         damageMultiplierOverride: multiplier);
 
-    final shieldMagnitude = ((data.shieldEffect?.baseValue ?? 0) *
+    final shieldMagnitude = ((data.shieldEffect?.valueAtLevel(level) ?? 0) *
             motesConsumed *
             playerCombatStats.maxHealth)
         .round();

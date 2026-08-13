@@ -28,19 +28,24 @@ class PlayerCubit extends Cubit<PlayerState> {
     final playerSkills = PlayerSkills(
       investedActiveSkills: [],
       activeSkillSlot1: character.activeSkillSlot1 != null
-          ? skillService.getSkillById(character.activeSkillSlot1!.skillId)
+          ? skillService.getSkillById(character.activeSkillSlot1!.skillId,
+              level: character.activeSkillSlot1!.level)
           : null,
       activeSkillSlot2: character.activeSkillSlot2 != null
-          ? skillService.getSkillById(character.activeSkillSlot2!.skillId)
+          ? skillService.getSkillById(character.activeSkillSlot2!.skillId,
+              level: character.activeSkillSlot2!.level)
           : null,
       activeSkillSlot3: character.activeSkillSlot3 != null
-          ? skillService.getSkillById(character.activeSkillSlot3!.skillId)
+          ? skillService.getSkillById(character.activeSkillSlot3!.skillId,
+              level: character.activeSkillSlot3!.level)
           : null,
       activeSkillSlot4: character.activeSkillSlot4 != null
-          ? skillService.getSkillById(character.activeSkillSlot4!.skillId)
+          ? skillService.getSkillById(character.activeSkillSlot4!.skillId,
+              level: character.activeSkillSlot4!.level)
           : null,
       activeSkillSlot5: character.activeSkillSlot5 != null
-          ? skillService.getSkillById(character.activeSkillSlot5!.skillId)
+          ? skillService.getSkillById(character.activeSkillSlot5!.skillId,
+              level: character.activeSkillSlot5!.level)
           : null,
     );
     final equipments = character.equippedEquipmentList;

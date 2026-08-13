@@ -9,6 +9,7 @@ import 'package:questvale/data/repositories/encounter_repository.dart';
 import 'package:questvale/data/repositories/enemy_repository.dart';
 import 'package:questvale/data/repositories/quest_repository.dart';
 import 'package:questvale/services/enemy_attack_scheduling_service.dart';
+import 'package:questvale/services/leveling_service.dart';
 import 'package:questvale/services/notification_service.dart';
 import 'package:questvale/services/quest_service.dart';
 import 'package:sqflite/sqflite.dart';
@@ -110,23 +111,24 @@ class QuestEncounterCubit extends Cubit<QuestEncounterState> {
     final character =
         await characterRepository.getCharacterById(quest.characterId);
     if (state.encounter != null) {
-      if (state.encounter!.encounterType == EncounterType.chest) {
-        final encounterReward = await questService.generateEncounterReward(
-            character, state.encounter!, quest, questZone);
-        await encounterRepository.insertEncounterReward(encounterReward);
-        await characterRepository.updateCharacter(character.copyWith(
-          currentExp: character.currentExp + encounterReward.xp,
-          gold: character.gold + encounterReward.gold,
-        ));
-      } else {
-        final encounterReward = await questService.generateEncounterReward(
-            character, state.encounter!, quest, questZone);
-        await encounterRepository.insertEncounterReward(encounterReward);
-        await characterRepository.updateCharacter(character.copyWith(
-          currentExp: character.currentExp + encounterReward.xp,
-          gold: character.gold + encounterReward.gold,
-        ));
-      }
+      // encounterType (chest vs. combat) used to branch here, but both
+      // branches computed the exact same reward the exact same way —
+      // collapsed to one path rather than duplicating the new level-up
+      // logic below into two identical copies.
+      final encounterReward = await questService.generateEncounterReward(
+          character, state.encounter!, quest, questZone);
+      await encounterRepository.insertEncounterReward(encounterReward);
+      final levelUp = LevelingService.applyExp(
+        level: character.level,
+        currentExp: character.currentExp,
+        expGained: encounterReward.xp,
+      );
+      await characterRepository.updateCharacter(character.copyWith(
+        level: levelUp.level,
+        currentExp: levelUp.currentExp,
+        gold: character.gold + encounterReward.gold,
+        skillPoints: character.skillPoints + levelUp.skillPointsGained,
+      ));
       await encounterRepository.updateEncounter(
           state.encounter!.copyWith(completedAt: DateTime.now()));
       loadQuest();

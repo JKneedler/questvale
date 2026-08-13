@@ -211,6 +211,7 @@ class CharacterRepository {
       themeId: map[Character.themeIdColumnName] as String? ?? DEFAULT_THEME_ID,
       combatStatusCardExpanded:
           map[Character.combatStatusCardExpandedColumnName] != 0,
+      skillPoints: map[Character.skillPointsColumnName] as int? ?? 0,
     );
     return character;
   }
@@ -281,6 +282,15 @@ class CharacterRepository {
 
   Future<void> insertCharacterSkill(CharacterSkill skill) async {
     await db.insert(CharacterSkill.characterSkillTableName, skill.toMap());
+  }
+
+  Future<void> updateCharacterSkill(CharacterSkill skill) async {
+    await db.update(
+      CharacterSkill.characterSkillTableName,
+      skill.toMap(),
+      where: '${CharacterSkill.idColumnName} = ?',
+      whereArgs: [skill.id],
+    );
   }
 
   Future<List<CharacterSkill>> getSkillsByCharacterId(

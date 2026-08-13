@@ -95,6 +95,76 @@ class SettingsPage extends StatelessWidget {
                               Row(
                                 children: [
                                   Expanded(
+                                      child: Text(
+                                          'Level up (LVL ${characterDataState.character!.level})',
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              color: colorScheme.onSurface))),
+                                  QvButton(
+                                    width: 180,
+                                    height: 50,
+                                    buttonColor: ButtonColor.silver,
+                                    onTap: () =>
+                                        context.read<SettingsCubit>().levelUp(),
+                                    child: Center(
+                                      child: Text('Level Up',
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              color: colorScheme.onPrimary)),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Expanded(
+                                      child: Text(
+                                          'Unlock next skill (${characterDataState.character!.skillPoints} pts)',
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              color: colorScheme.onSurface))),
+                                  QvButton(
+                                    width: 180,
+                                    height: 50,
+                                    buttonColor: ButtonColor.silver,
+                                    onTap: () => context
+                                        .read<SettingsCubit>()
+                                        .unlockNextSkill(),
+                                    child: Center(
+                                      child: Text('Unlock',
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              color: colorScheme.onPrimary)),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Expanded(
+                                      child: Text('Upgrade first owned skill',
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              color: colorScheme.onSurface))),
+                                  QvButton(
+                                    width: 180,
+                                    height: 50,
+                                    buttonColor: ButtonColor.silver,
+                                    onTap: () => context
+                                        .read<SettingsCubit>()
+                                        .upgradeFirstSkill(),
+                                    child: Center(
+                                      child: Text('Upgrade',
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              color: colorScheme.onPrimary)),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Expanded(
                                       child: Text('Theme',
                                           style: TextStyle(
                                               fontSize: 20,

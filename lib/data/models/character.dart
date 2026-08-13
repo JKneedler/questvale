@@ -32,6 +32,7 @@ class Character extends Equatable {
   static const dailyApEarnedDateColumnName = 'dailyApEarnedDate';
   static const themeIdColumnName = 'themeId';
   static const combatStatusCardExpandedColumnName = 'combatStatusCardExpanded';
+  static const skillPointsColumnName = 'skillPoints';
 
   static const createTableSQL = '''
 		CREATE TABLE ${Character.characterTableName}(
@@ -59,7 +60,8 @@ class Character extends Equatable {
       ${Character.dailyApEarnedColumnName} INTEGER DEFAULT 0,
       ${Character.dailyApEarnedDateColumnName} INTEGER,
       ${Character.themeIdColumnName} TEXT NOT NULL DEFAULT '$DEFAULT_THEME_ID',
-      ${Character.combatStatusCardExpandedColumnName} BOOLEAN NOT NULL DEFAULT 1
+      ${Character.combatStatusCardExpandedColumnName} BOOLEAN NOT NULL DEFAULT 1,
+      ${Character.skillPointsColumnName} INTEGER NOT NULL DEFAULT 0
 		);
 	''';
 
@@ -89,6 +91,7 @@ class Character extends Equatable {
   final DateTime? dailyApEarnedDate;
   final String themeId;
   final bool combatStatusCardExpanded;
+  final int skillPoints;
 
   const Character({
     required this.id,
@@ -117,6 +120,7 @@ class Character extends Equatable {
     this.dailyApEarnedDate,
     this.themeId = DEFAULT_THEME_ID,
     this.combatStatusCardExpanded = true,
+    this.skillPoints = 0,
   });
 
   List<Equipment> get equippedEquipmentList => [
@@ -168,6 +172,91 @@ class Character extends Equatable {
     }
   }
 
+  // 1-indexed (matches the activeSkillSlotN field names/DB columns) —
+  // see the Skills UI ticket's subtask 4 (loadout assignment).
+  CharacterSkill? activeSkillSlotAt(int slotNumber) {
+    switch (slotNumber) {
+      case 1:
+        return activeSkillSlot1;
+      case 2:
+        return activeSkillSlot2;
+      case 3:
+        return activeSkillSlot3;
+      case 4:
+        return activeSkillSlot4;
+      case 5:
+        return activeSkillSlot5;
+      default:
+        throw ArgumentError('Invalid active skill slot: $slotNumber');
+    }
+  }
+
+  Map<int, CharacterSkill?> get _activeSkillSlotsByNumber => {
+        1: activeSkillSlot1,
+        2: activeSkillSlot2,
+        3: activeSkillSlot3,
+        4: activeSkillSlot4,
+        5: activeSkillSlot5,
+      };
+
+  // Character.copyWith's `?? this.field` pattern can't null a slot back
+  // out, so both loadout mutations below go through this — same
+  // direct-constructor workaround as SettingsCubit._unequipped, just
+  // shared in one place since there are two callers.
+  Character _copyWithActiveSkillSlots(Map<int, CharacterSkill?> slots) {
+    return Character(
+      id: id,
+      name: name,
+      characterClass: characterClass,
+      level: level,
+      gold: gold,
+      currentExp: currentExp,
+      currentHealth: currentHealth,
+      actionPoints: actionPoints,
+      equippedWeapon: equippedWeapon,
+      equippedHelmet: equippedHelmet,
+      equippedChestplate: equippedChestplate,
+      equippedGloves: equippedGloves,
+      equippedBoots: equippedBoots,
+      equippedAmulet: equippedAmulet,
+      equippedRing1: equippedRing1,
+      equippedRing2: equippedRing2,
+      skills: skills,
+      activeSkillSlot1: slots[1],
+      activeSkillSlot2: slots[2],
+      activeSkillSlot3: slots[3],
+      activeSkillSlot4: slots[4],
+      activeSkillSlot5: slots[5],
+      dailyApEarned: dailyApEarned,
+      dailyApEarnedDate: dailyApEarnedDate,
+      themeId: themeId,
+      combatStatusCardExpanded: combatStatusCardExpanded,
+      skillPoints: skillPoints,
+    );
+  }
+
+  // Assigns `skill` to slotNumber. A skill can only ever occupy one
+  // loadout slot at a time — see the Skills UI ticket's subtask 4 — so if
+  // `skill` was already sitting in a different slot, that slot is cleared
+  // as part of the same update (a "move", not a duplicate).
+  Character copyWithActiveSkillSlot(int slotNumber, CharacterSkill skill) {
+    final slots = _activeSkillSlotsByNumber;
+    for (final entry in slots.entries.toList()) {
+      if (entry.key != slotNumber && entry.value?.skillId == skill.skillId) {
+        slots[entry.key] = null;
+      }
+    }
+    slots[slotNumber] = skill;
+    return _copyWithActiveSkillSlots(slots);
+  }
+
+  // Unassigns slotNumber entirely — a no-op if it was already empty.
+  Character copyWithClearedActiveSkillSlot(int slotNumber) {
+    final slots = _activeSkillSlotsByNumber;
+    slots[slotNumber] = null;
+    return _copyWithActiveSkillSlots(slots);
+  }
+
   Map<String, Object?> toMap() {
     return {
       Character.idColumnName: id,
@@ -197,6 +286,7 @@ class Character extends Equatable {
       Character.themeIdColumnName: themeId,
       Character.combatStatusCardExpandedColumnName:
           combatStatusCardExpanded ? 1 : 0,
+      Character.skillPointsColumnName: skillPoints,
     };
   }
 
@@ -231,6 +321,7 @@ class Character extends Equatable {
     DateTime? dailyApEarnedDate,
     String? themeId,
     bool? combatStatusCardExpanded,
+    int? skillPoints,
   }) {
     return Character(
       id: id,
@@ -260,6 +351,7 @@ class Character extends Equatable {
       themeId: themeId ?? this.themeId,
       combatStatusCardExpanded:
           combatStatusCardExpanded ?? this.combatStatusCardExpanded,
+      skillPoints: skillPoints ?? this.skillPoints,
     );
   }
 
@@ -291,5 +383,6 @@ class Character extends Equatable {
         dailyApEarnedDate,
         themeId,
         combatStatusCardExpanded,
+        skillPoints,
       ];
 }

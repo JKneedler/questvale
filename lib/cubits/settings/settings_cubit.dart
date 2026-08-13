@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/settings/settings_state.dart';
@@ -17,6 +18,8 @@ import 'package:questvale/data/repositories/quest_repository.dart';
 import 'package:questvale/data/repositories/todo_repository.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/services/equipment_service.dart';
+import 'package:questvale/services/leveling_service.dart';
+import 'package:questvale/services/skill_progression_service.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 
@@ -71,6 +74,64 @@ class SettingsCubit extends Cubit<SettingsState> {
     await playerCubit.loadCharacter();
   }
 
+  // Grants exactly enough exp to cross the next level threshold — a
+  // minimal call site for LevelingService (see the Skills UI ticket's
+  // subtask 1) so a level-up (and its Skill Point) can be triggered on
+  // demand instead of needing a real encounter reward.
+  Future<void> levelUp() async {
+    final character = state.character;
+    final expNeeded =
+        LevelingService.expForLevel(character.level) - character.currentExp;
+    final levelUpResult = LevelingService.applyExp(
+      level: character.level,
+      currentExp: character.currentExp,
+      expGained: expNeeded,
+    );
+    final updated = await characterRepository.updateCharacter(
+      character.copyWith(
+        level: levelUpResult.level,
+        currentExp: levelUpResult.currentExp,
+        skillPoints: character.skillPoints + levelUpResult.skillPointsGained,
+      ),
+    );
+    emit(state.copyWith(character: updated));
+    await playerCubit.loadCharacter();
+  }
+
+  // Minimal call site for SkillProgressionService — see the Skills UI
+  // ticket's subtask 2, which is deliberately UI-less (the real Skills
+  // Gear-Up screen is subtask 3). Picks the first not-yet-owned skill in
+  // game-data declaration order, a no-op if every skill is already owned
+  // or the next one is tier-locked/unaffordable.
+  Future<void> unlockNextSkill() async {
+    final skillProgressionService =
+        SkillProgressionService(db: db, gameData: gameData);
+    final character = state.character;
+    final nextSkill = gameData.skills.firstWhereOrNull((skill) =>
+        !character.skills.any((owned) => owned.skillId == skill.id));
+    if (nextSkill == null) return;
+    await skillProgressionService.unlockSkill(
+        character: character, skillId: nextSkill.id);
+    final updated = await characterRepository.getCharacterById(character.id);
+    emit(state.copyWith(character: updated));
+    await playerCubit.loadCharacter();
+  }
+
+  // Same minimal-call-site reasoning as unlockNextSkill — upgrades
+  // whichever owned skill happens to be first, a no-op if the character
+  // owns nothing yet or has no Skill Points left.
+  Future<void> upgradeFirstSkill() async {
+    final skillProgressionService =
+        SkillProgressionService(db: db, gameData: gameData);
+    final character = state.character;
+    if (character.skills.isEmpty) return;
+    await skillProgressionService.upgradeSkill(
+        character: character, skillId: character.skills.first.skillId);
+    final updated = await characterRepository.getCharacterById(character.id);
+    emit(state.copyWith(character: updated));
+    await playerCubit.loadCharacter();
+  }
+
   Future<void> deleteAllTags() async {
     await characterRepository.deleteAllTags(state.character.id);
     await playerCubit.loadCharacter();
@@ -116,8 +177,11 @@ class SettingsCubit extends Cubit<SettingsState> {
 
     // Clear out any invested/leveled skills first, then recreate exactly
     // the loadout QuestvaleDB.initializeDB() seeds a brand-new character
-    // with, rather than leaving the character with no active skills at
-    // all.
+    // with — just Arcane Bolt, the class's free basic attack. Every other
+    // skill (Firebolt included) is unlocked with Skill Points via
+    // SkillProgressionService, not seeded for free, so a reset character
+    // ends up back at that same starting point rather than with a loadout
+    // it hasn't earned.
     await characterRepository.deleteAllSkillsForCharacter(c.id);
     final activeSkillSlot1 = CharacterSkill(
       id: const Uuid().v4(),
@@ -125,22 +189,17 @@ class SettingsCubit extends Cubit<SettingsState> {
       skillId: 'mage-1-arcane_bolt',
       level: 1,
     );
-    final activeSkillSlot2 = CharacterSkill(
-      id: const Uuid().v4(),
-      characterId: c.id,
-      skillId: 'mage-1-firebolt',
-      level: 1,
-    );
     await characterRepository.insertCharacterSkill(activeSkillSlot1);
-    await characterRepository.insertCharacterSkill(activeSkillSlot2);
 
     // No gear at this point (about to be wiped below anyway), so
     // PlayerCombatStats.maxHealth here is exactly
     // characterClass.baseMaxHealth + BASE_HEALTH_PER_LEVEL*level — routed
     // through the one canonical formula instead of hand-duplicating it, so
-    // this can't drift out of sync with it again.
+    // this can't drift out of sync with it again. Uses level 1 (not
+    // c.level) since a reset character's level resets too, same as
+    // QuestvaleDB.initializeDB()'s brand-new character.
     final resetMaxHealth = PlayerCombatStats(
-      playerLevel: c.level,
+      playerLevel: 1,
       characterClass: c.characterClass,
       equipments: const [],
     ).maxHealth;
@@ -148,16 +207,19 @@ class SettingsCubit extends Cubit<SettingsState> {
       id: c.id,
       name: c.name,
       characterClass: c.characterClass,
-      level: c.level,
+      level: 1,
       gold: 0,
       currentExp: 0,
       currentHealth: resetMaxHealth,
       actionPoints: 0,
       // equipped* omitted -> null (unequipped). skills defaults to const [].
       activeSkillSlot1: activeSkillSlot1,
-      activeSkillSlot2: activeSkillSlot2,
       dailyApEarned: 0,
       themeId: c.themeId,
+      // Invested skills were just wiped above, so any unspent points reset
+      // to 0 too rather than carrying over — consistent with the rest of
+      // this reset.
+      skillPoints: 0,
     );
     final updated = await characterRepository.updateCharacter(reset);
     await equipmentRepository.deleteAllEquipmentForCharacter(updated.id);
@@ -203,6 +265,7 @@ class SettingsCubit extends Cubit<SettingsState> {
       dailyApEarned: c.dailyApEarned,
       dailyApEarnedDate: c.dailyApEarnedDate,
       themeId: c.themeId,
+      skillPoints: c.skillPoints,
     );
   }
 }

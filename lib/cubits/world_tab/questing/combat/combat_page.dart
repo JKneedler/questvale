@@ -11,6 +11,7 @@ import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_encoun
 import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_flee_confirmation_modal.dart';
 import 'package:questvale/cubits/theme/theme_cubit.dart';
 import 'package:questvale/data/models/enemy.dart';
+import 'package:questvale/data/models/player_combat_stats.dart';
 import 'package:questvale/data/models/scheduled_timer.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_attack_data.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
@@ -32,6 +33,27 @@ import 'package:questvale/widgets/qv_mote_display.dart';
 import 'package:questvale/widgets/qv_resource_bar.dart';
 import 'package:questvale/widgets/qv_skill_button.dart';
 import 'package:sqflite/sqflite.dart';
+
+// Shared with TargetEnemySkillBox's effect-line list below — same
+// formatting convention as skills_gear_up_page.dart's identically-named
+// top-level helpers (SkillEffectComponent.baseValue is stored as a
+// fraction, e.g. 0.2 == 20%).
+String _percentText(double value) => '${(value * 100).round()}%';
+
+String _capitalize(String value) =>
+    value.isEmpty ? value : '${value[0].toUpperCase()}${value.substring(1)}';
+
+// SkillData.cooldown is in fractional hours (e.g. 0.5 for Firebolt) — see
+// its own doc comment. 0/null both mean "no cooldown" (Arcane Bolt).
+String _cooldownText(double? cooldownHours) {
+  final hours = cooldownHours ?? 0;
+  if (hours <= 0) return 'None';
+  final wholeHours = hours.floor();
+  final minutes = ((hours % 1) * 60).round();
+  if (wholeHours == 0) return '${minutes}m';
+  if (minutes == 0) return '${wholeHours}h';
+  return '${wholeHours}h ${minutes}m';
+}
 
 class CombatPage extends StatelessWidget {
   const CombatPage({super.key, required this.encounterId});
@@ -348,13 +370,42 @@ class CombatSkillButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return QvSkillButton(
-      skillIconPath: skill.data.iconPath,
-      onTap: onTap,
-      width: 65,
-      height: 65,
-      skillButtonColor: skill.data.buttonColor,
-      darkened: darkened,
+    // A small level badge sits over the button's bottom-right corner —
+    // QvSkillButton itself stays level-agnostic (it's also used by the
+    // Skills Gear-Up screen and loadout slot cards, neither of which wants
+    // this badge baked in), so it's layered on here instead. IgnorePointer
+    // keeps the badge from stealing the tap QvSkillButton's own internal
+    // GestureDetector would otherwise handle.
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        QvSkillButton(
+          skillIconPath: skill.data.iconPath,
+          onTap: onTap,
+          width: 65,
+          height: 65,
+          skillButtonColor: skill.data.buttonColor,
+          darkened: darkened,
+        ),
+        Positioned(
+          right: -2,
+          bottom: -2,
+          child: IgnorePointer(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.75),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                'Lv ${skill.level}',
+                style: const TextStyle(
+                    fontSize: 10, color: Colors.white, height: 1.2),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -892,9 +943,23 @@ class TargetEnemySkillBox extends StatelessWidget {
         child: Column(
           children: [
             Text(skill.data.name),
+            Text('Lv ${skill.level}',
+                style: TextStyle(fontSize: 12, color: colorScheme.onSurface)),
             Text(skill.description),
-            Text('Damage: ${((skill.data.damageEffect?.baseValue ?? 0) * playerCombatStats.attackPowerFor(skill.data.damageEffect?.damageType ?? SkillDamageType.physical)).toStringAsFixed(0)}'),
-            Text('Damage Type: ${skill.data.damageEffect?.damageType?.name}'),
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(
+                  'AP Cost: ${skill.data.apCost ?? 0} • Cooldown: ${_cooldownText(skill.data.cooldown)}',
+                  style: TextStyle(
+                      fontSize: 13,
+                      color: colorScheme.onSurface.withValues(alpha: 0.75))),
+            ),
+            ..._effectLines(playerCombatStats).map((line) => Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Text(line,
+                      style:
+                          TextStyle(fontSize: 13, color: colorScheme.onSurface)),
+                )),
             Expanded(child: Container()),
             QvButton(
               width: double.infinity,
@@ -912,5 +977,41 @@ class TargetEnemySkillBox extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  // One line per real effect component this skill actually declares —
+  // damage, shield, status-effect proc chance — rather than the old fixed
+  // Damage/Damage Type pair, which showed a misleading blank/zero damage
+  // line for a skill with no damage component at all (e.g. Frost Armor).
+  // Values are computed the same way each skill's own execute() computes
+  // them (attackPowerFor for damage, maxHealth-scaled for shield) so what
+  // this panel shows matches what actually lands when Attack is tapped.
+  List<String> _effectLines(PlayerCombatStats playerCombatStats) {
+    final lines = <String>[];
+
+    final damage = skill.data.damageEffect;
+    if (damage != null) {
+      final amount = (damage.valueAtLevel(skill.level) *
+              playerCombatStats
+                  .attackPowerFor(damage.damageType ?? SkillDamageType.physical))
+          .round();
+      lines.add('${damage.damageType?.name ?? 'Weapon Type'} Damage: $amount');
+    }
+
+    final shield = skill.data.shieldEffect;
+    if (shield != null) {
+      final amount =
+          (shield.valueAtLevel(skill.level) * playerCombatStats.maxHealth)
+              .round();
+      lines.add('Shield: $amount HP');
+    }
+
+    for (final chance in skill.data.statusEffectChances) {
+      final label = _capitalize(chance.statusEffectType?.name ?? 'Status');
+      lines.add(
+          '$label Chance: ${_percentText(chance.valueAtLevel(skill.level))}');
+    }
+
+    return lines;
   }
 }

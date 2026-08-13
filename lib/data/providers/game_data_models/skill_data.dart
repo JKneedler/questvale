@@ -102,10 +102,10 @@ enum SkillEffectKind {
 class SkillEffectComponent {
   final SkillEffectKind kind;
   final double baseValue;
-  // Reserved for future level-based scaling (Lv1→Lv5) — replaces the old
-  // primaryValueScaler/secondaryValueScaler fields, which were themselves
-  // never actually consumed anywhere (no skill-leveling system exists
-  // yet). Still just data until that system exists.
+  // Flat per-level increment on top of baseValue — replaces the old
+  // primaryValueScaler/secondaryValueScaler fields. Consumed by
+  // valueAtLevel below now that the Skills UI ticket's leveling/unlock
+  // system gives CharacterSkill.level somewhere real to come from.
   final double? valueScaler;
   // Only meaningful for kind == damage — which element this component's
   // damage is. Lives per-component (not per-skill, as the old top-level
@@ -117,10 +117,11 @@ class SkillEffectComponent {
   final StatusEffectType? statusEffectType;
   // Only meaningful for kind == statModifier — which stat this passive's
   // bonus affects. Null is valid even for a real statModifier component
-  // (Ice Ward's AP-cost reduction doesn't have a matching StatModifierType
-  // yet — see IceWard's own doc comment) — the component still carries a
-  // baseValue for its description text even though nothing consumes
-  // statModifierType for it.
+  // (Mote Potency's data deliberately leaves this null even though
+  // StatModifierType.motePotency exists — see MotePotency's own doc
+  // comment) — the component still carries a baseValue for its
+  // description text even though nothing consumes statModifierType for
+  // it.
   final StatModifierType? statModifierType;
 
   const SkillEffectComponent({
@@ -131,6 +132,17 @@ class SkillEffectComponent {
     this.statusEffectType,
     this.statModifierType,
   });
+
+  // Linear Lv1→Lv5 interpolation matching the vault's Mage skill tree
+  // table: baseValue is the level-1 value, valueScaler is the flat
+  // per-level increment, so level 5 lands on baseValue + valueScaler*4 —
+  // e.g. Firebolt's documented 150% → 300% is baseValue: 1.5, valueScaler:
+  // 0.375 (1.5 + 0.375*4 = 3.0). A component with no valueScaler (most
+  // statusEffectChance/statModifier components today) is flat regardless
+  // of level — level 1 is just as valid an input as any other since
+  // baseValue + 0*(level-1) is always baseValue.
+  double valueAtLevel(int level) =>
+      valueScaler == null ? baseValue : baseValue + valueScaler! * (level - 1);
 
   @override
   String toString() =>
