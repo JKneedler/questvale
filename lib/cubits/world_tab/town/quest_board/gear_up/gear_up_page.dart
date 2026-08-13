@@ -5,7 +5,6 @@ import 'package:questvale/cubits/world_tab/town/quest_board/gear_up/gear_up_cubi
 import 'package:questvale/cubits/world_tab/town/quest_board/gear_up/gear_up_state.dart';
 import 'package:questvale/cubits/world_tab/town/quest_board/gear_up/skills_gear_up/skills_gear_up_page.dart';
 import 'package:questvale/cubits/world_tab/town/quest_board/quest_board_cubit.dart';
-import 'package:questvale/widgets/qv_app_bar.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
 
@@ -29,82 +28,94 @@ class GearUpView extends StatelessWidget {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     return BlocBuilder<GearUpCubit, GearUpState>(
         builder: (context, gearUpState) {
-      return Scaffold(
-        body: Column(
-          children: [
-            QvAppBar(
-              title: 'Gear Up',
-              onBackButtonPressed: () =>
+      // Renders inside the Quest Board TownVisitSheet's non-scrollable body
+      // slot, alongside SelectQuestPage (see QuestBoardView) — the sheet's
+      // own arrival header already says "Quest Board", so this only needs
+      // a lightweight in-content link back to the zone list, not a full
+      // Scaffold/AppBar of its own.
+      return Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: GestureDetector(
+              onTap: () =>
                   context.read<QuestBoardCubit>().onGoBackWhileGearingUp(),
-              trailingButton: QvAppBarButton(
-                button: '[+]',
-                onTap: () => {},
+              behavior: HitTestBehavior.translucent,
+              child: Row(
+                children: [
+                  Text('<',
+                      style: TextStyle(
+                          fontSize: 20, color: colorScheme.onSurface)),
+                  const SizedBox(width: 6),
+                  Text('Back to Zones',
+                      style: TextStyle(
+                          fontSize: 16, color: colorScheme.onSurface)),
+                ],
               ),
             ),
-            Expanded(
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                child: Column(
-                  spacing: 6,
-                  children: [
-                    QvInsetBackground(
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Column(
+                spacing: 6,
+                children: [
+                  QvInsetBackground(
+                    width: double.infinity,
+                    height: 60,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        GearUpTab(
+                          title: 'Equipment',
+                          selected: gearUpState.gearTabIndex == 0,
+                          onTap: () => context
+                              .read<GearUpCubit>()
+                              .onGearTabIndexSelected(0),
+                        ),
+                        GearUpTab(
+                          title: 'Skills',
+                          selected: gearUpState.gearTabIndex == 1,
+                          onTap: () => context
+                              .read<GearUpCubit>()
+                              .onGearTabIndexSelected(1),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: QvInsetBackground(
                       width: double.infinity,
-                      height: 60,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                      child: Column(
                         children: [
-                          GearUpTab(
-                            title: 'Equipment',
-                            selected: gearUpState.gearTabIndex == 0,
-                            onTap: () => context
-                                .read<GearUpCubit>()
-                                .onGearTabIndexSelected(0),
-                          ),
-                          GearUpTab(
-                            title: 'Skills',
-                            selected: gearUpState.gearTabIndex == 1,
-                            onTap: () => context
-                                .read<GearUpCubit>()
-                                .onGearTabIndexSelected(1),
-                          ),
+                          if (gearUpState.gearTabIndex == 0)
+                            EquipmentGearUpPage(),
+                          if (gearUpState.gearTabIndex == 1)
+                            SkillsGearUpPage(),
                         ],
                       ),
                     ),
-                    Expanded(
-                      child: QvInsetBackground(
-                        width: double.infinity,
-                        child: Column(
-                          children: [
-                            if (gearUpState.gearTabIndex == 0)
-                              EquipmentGearUpPage(),
-                            if (gearUpState.gearTabIndex == 1)
-                              SkillsGearUpPage(),
-                          ],
-                        ),
+                  ),
+                  QvButton(
+                    width: double.infinity,
+                    height: 60,
+                    buttonColor: ButtonColor.primary,
+                    onTap: () =>
+                        context.read<QuestBoardCubit>().onBeginQuest(context),
+                    child: Center(
+                      child: Text(
+                        'Begin Quest',
+                        style: TextStyle(
+                            fontSize: 30, color: colorScheme.onPrimary),
                       ),
                     ),
-                    QvButton(
-                      width: double.infinity,
-                      height: 60,
-                      buttonColor: ButtonColor.primary,
-                      onTap: () =>
-                          context.read<QuestBoardCubit>().onBeginQuest(context),
-                      child: Center(
-                        child: Text(
-                          'Begin Quest',
-                          style: TextStyle(
-                              fontSize: 30, color: colorScheme.onPrimary),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            )
-          ],
-        ),
+            ),
+          )
+        ],
       );
     });
   }

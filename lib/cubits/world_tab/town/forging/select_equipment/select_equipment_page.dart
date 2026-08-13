@@ -4,7 +4,6 @@ import 'package:questvale/cubits/world_tab/town/forging/forge/forge_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/forging/forge/forge_state.dart';
 import 'package:questvale/cubits/world_tab/town/forging/select_equipment/select_equipment_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/forging/select_equipment/select_equipment_state.dart';
-import 'package:questvale/cubits/world_tab/town/town_cubit.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/widgets/qv_animated_transition.dart';

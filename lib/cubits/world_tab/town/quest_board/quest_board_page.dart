@@ -52,6 +52,11 @@ class QuestBoardView extends StatelessWidget {
           next.questBoardState == QuestBoardStates.questCreated,
       listener: (context, questBoardState) {
         context.read<WorldCubit>().onQuestCreated();
+        // The Quest Board is now a TownVisitSheet, not a full page — once
+        // WorldCubit has swapped WorldView's underlying display over to
+        // QuestEncounterPage, close the sheet so that page is actually
+        // visible instead of sitting hidden underneath it.
+        Navigator.of(context).pop();
       },
       builder: (context, questBoardState) {
         return QvAnimatedTransition(

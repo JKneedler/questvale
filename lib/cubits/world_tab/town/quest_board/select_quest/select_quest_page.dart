@@ -5,18 +5,19 @@ import 'package:questvale/cubits/world_tab/town/quest_board/quest_board_cubit.da
 import 'package:questvale/cubits/world_tab/town/quest_board/select_quest/select_quest_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/quest_board/select_quest/select_quest_state.dart';
 import 'package:questvale/cubits/theme/theme_cubit.dart';
-import 'package:questvale/cubits/world_tab/town/town_cubit.dart';
-import 'package:questvale/cubits/world_tab/town/town_state.dart';
 import 'package:questvale/data/providers/game_data.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
 import 'package:questvale/data/providers/game_data_models/quest_zone.dart';
 import 'package:questvale/helpers/constants.dart';
-import 'package:questvale/widgets/qv_app_bar.dart';
 import 'package:questvale/widgets/qv_enemy_info_modal.dart';
 import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:questvale/widgets/qv_gray_filter.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
 
+// Renders inside TownVisitSheet's non-scrollable body slot (see
+// QuestBoardPage/TownVisitSheet) — TownVisitSheet's own arrival header
+// already shows "Quest Board", so this page contributes only its zone list,
+// no Scaffold/AppBar of its own.
 class SelectQuestPage extends StatelessWidget {
   const SelectQuestPage({
     super.key,
@@ -33,52 +34,38 @@ class SelectQuestPage extends StatelessWidget {
       return const Center(child: CircularProgressIndicator());
     }
 
-    return Scaffold(
-      body: Column(
-        children: [
-          QvAppBar(
-            title: 'Quest Board',
-            onBackButtonPressed: () => context
-                .read<TownCubit>()
-                .setCurrentLocation(TownLocation.townSquare),
-          ),
-          Expanded(
-            child: Container(
-              color: colorScheme.surface,
-              child: BlocProvider(
-                create: (context) => SelectQuestCubit(questZones: questZones),
-                child: BlocBuilder<SelectQuestCubit, SelectQuestState>(
-                    builder: (context, selectQuestState) {
-                  return QvFadingScrollable(
-                    child: ListView.builder(
-                      padding: const EdgeInsets.only(
-                        left: 20,
-                        right: 20,
-                        top: 10,
-                        bottom: 10,
-                      ),
-                      itemCount: questZones.length,
-                      itemBuilder: (context, index) {
-                        final isOpen =
-                            selectQuestState.selectedQuestZoneIndex == index;
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 8.0),
-                          child: SelectQuestZoneCard(
-                            questZone: questZones[index],
-                            isOpen: isOpen,
-                            onTap: () => context
-                                .read<SelectQuestCubit>()
-                                .toggleQuestZone(index),
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                }),
+    return Container(
+      color: colorScheme.surface,
+      child: BlocProvider(
+        create: (context) => SelectQuestCubit(questZones: questZones),
+        child: BlocBuilder<SelectQuestCubit, SelectQuestState>(
+            builder: (context, selectQuestState) {
+          return QvFadingScrollable(
+            child: ListView.builder(
+              padding: const EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 10,
+                bottom: 10,
               ),
+              itemCount: questZones.length,
+              itemBuilder: (context, index) {
+                final isOpen =
+                    selectQuestState.selectedQuestZoneIndex == index;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: SelectQuestZoneCard(
+                    questZone: questZones[index],
+                    isOpen: isOpen,
+                    onTap: () => context
+                        .read<SelectQuestCubit>()
+                        .toggleQuestZone(index),
+                  ),
+                );
+              },
             ),
-          )
-        ],
+          );
+        }),
       ),
     );
   }

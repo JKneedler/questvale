@@ -4,13 +4,10 @@ import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/forging/forge/forge_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/forging/forge/forge_state.dart';
 import 'package:questvale/cubits/world_tab/town/forging/select_equipment/select_equipment_page.dart';
-import 'package:questvale/cubits/world_tab/town/town_cubit.dart';
-import 'package:questvale/cubits/world_tab/town/town_state.dart';
 import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_animated_transition.dart';
-import 'package:questvale/widgets/qv_app_bar.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
@@ -59,13 +56,14 @@ class ForgeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Renders inside the Forge TownVisitSheet's non-scrollable body slot —
+    // the sheet's own arrival header already says "Forge", so no Scaffold
+    // of its own is needed here.
     return BlocBuilder<ForgeCubit, ForgeState>(builder: (context, forgeState) {
-      return Scaffold(
-        body: QvAnimatedTransition(
-          duration: const Duration(milliseconds: 200),
-          type: _getTransitionType(forgeState.currentLocation),
-          child: _getForgePage(context, forgeState),
-        ),
+      return QvAnimatedTransition(
+        duration: const Duration(milliseconds: 200),
+        type: _getTransitionType(forgeState.currentLocation),
+        child: _getForgePage(context, forgeState),
       );
     });
   }
@@ -88,14 +86,6 @@ class UpgradeView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          QvAppBar(
-            title: 'Forge',
-            color: colorScheme.secondary,
-            insetColor: QvInsetBackgroundType.surface,
-            onBackButtonPressed: () => context
-                .read<TownCubit>()
-                .setCurrentLocation(TownLocation.townSquare),
-          ),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
