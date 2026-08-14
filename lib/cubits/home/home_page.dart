@@ -106,6 +106,7 @@ class HomeView extends StatelessWidget {
             ],
             currentIndex: navState.tab,
             onTap: (index) => context.read<NavCubit>().changeTab(index),
+            modalSheetOpen: navState.modalSheetOpen,
           ),
         );
       });

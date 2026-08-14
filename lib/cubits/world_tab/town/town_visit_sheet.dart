@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:questvale/cubits/home/nav_cubit.dart';
 import 'package:questvale/cubits/world_tab/world_cubit.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_draggable_sheet.dart';
@@ -44,7 +45,7 @@ class TownVisitSheet extends StatelessWidget {
     required String iconPath,
     required Widget body,
     bool scrollableBody = false,
-  }) {
+  }) async {
     // Deliberately *not* useRootNavigator (unlike AddTodoPage.showModal):
     // the bottom nav bar should stay visible/usable while a town location's
     // sheet is open, and pushing onto the World tab's own nested Navigator
@@ -67,21 +68,36 @@ class TownVisitSheet extends StatelessWidget {
     // page once a quest is created.
     final worldCubit = context.read<WorldCubit>();
 
-    return showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      isDismissible: true,
-      builder: (context) => BlocProvider<WorldCubit>.value(
-        value: worldCubit,
-        child: TownVisitSheet(
-          title: title,
-          iconPath: iconPath,
-          scrollableBody: scrollableBody,
-          body: body,
+    // NavCubit is provided in HomePage too (same reasoning as GameData/
+    // PlayerCubit above), so this is read directly rather than hoisted —
+    // it's only ever touched here, around the modal call, never from
+    // inside the sheet's own subtree the way WorldCubit is.
+    final navCubit = context.read<NavCubit>();
+    navCubit.setModalSheetOpen(true);
+    try {
+      await showModalBottomSheet<void>(
+        context: context,
+        backgroundColor: Colors.transparent,
+        isScrollControlled: true,
+        isDismissible: true,
+        builder: (context) => BlocProvider<WorldCubit>.value(
+          value: worldCubit,
+          child: TownVisitSheet(
+            title: title,
+            iconPath: iconPath,
+            scrollableBody: scrollableBody,
+            body: body,
+          ),
         ),
-      ),
-    );
+      );
+    } finally {
+      // Covers every dismissal path (close button, tap-outside, swipe-down,
+      // Begin Quest's own Navigator.pop) since they all resolve the same
+      // Future — and the `finally` also catches a sheet dismissed by some
+      // future caller throwing before ever showing, rather than leaving the
+      // nav bar stuck on the sheet's color.
+      navCubit.setModalSheetOpen(false);
+    }
   }
 
   @override

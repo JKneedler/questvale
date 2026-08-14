@@ -8,12 +8,21 @@ class NavBar extends StatelessWidget {
     required this.currentIndex,
     required this.onTap,
     this.showSeparator = false,
+    this.modalSheetOpen = false,
   });
 
   final List<NavBarItem> items;
   final int currentIndex;
   final ValueChanged<int> onTap;
   final bool showSeparator;
+
+  // True while a TownVisitSheet (or any future bottom sheet that leaves the
+  // nav bar visible beneath it) is open — see NavState.modalSheetOpen's own
+  // doc comment. Swaps the nav bar's background to colorScheme.surfaceContainer
+  // to match QvBackground's own fill (see qv_background.dart's
+  // surfaceContainerNoBottom asset), so the sheet and the bar beneath it read
+  // as one continuous surface instead of a visible color seam.
+  final bool modalSheetOpen;
 
   // Width of the sliding QvInsetBackground highlight and the height of the
   // band it (and the icons) sit in — matches the old per-item
@@ -24,6 +33,8 @@ class NavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final bandColor =
+        modalSheetOpen ? colorScheme.surfaceContainer : colorScheme.surface;
 
     return Material(
       child: SafeArea(
@@ -57,7 +68,7 @@ class NavBar extends StatelessWidget {
                         right: 0,
                         bottom: 0,
                         height: _bandHeight,
-                        child: Container(color: colorScheme.surface),
+                        child: Container(color: bandColor),
                       ),
                       // The highlight is now a single shared widget that
                       // slides between slots (via AnimatedPositioned)
