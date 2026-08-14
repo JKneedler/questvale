@@ -18,10 +18,12 @@ class NavBar extends StatelessWidget {
 
   // True while a TownVisitSheet (or any future bottom sheet that leaves the
   // nav bar visible beneath it) is open — see NavState.modalSheetOpen's own
-  // doc comment. Swaps the nav bar's background to colorScheme.surfaceContainer
-  // to match QvBackground's own fill (see qv_background.dart's
-  // surfaceContainerNoBottom asset), so the sheet and the bar beneath it read
-  // as one continuous surface instead of a visible color seam.
+  // doc comment. Swaps the *entire* nav bar surface's background (the
+  // Material below, not just the icon band — see build()) to
+  // colorScheme.surfaceContainer to match QvBackground's own fill (see
+  // qv_background.dart's surfaceContainerNoBottom asset), so the sheet and
+  // the bar beneath it read as one continuous surface instead of a visible
+  // color seam.
   final bool modalSheetOpen;
 
   // Width of the sliding QvInsetBackground highlight and the height of the
@@ -36,7 +38,14 @@ class NavBar extends StatelessWidget {
     final bandColor =
         modalSheetOpen ? colorScheme.surfaceContainer : colorScheme.surface;
 
+    // color here (not just the inner band Container below) is what was
+    // missing before: Material has no color of its own by default, so the
+    // 8px gap above the icon band and the SafeArea's bottom home-indicator
+    // padding were both falling through to Scaffold's own background
+    // (colorScheme.surface) regardless of modalSheetOpen — a visible seam
+    // around the one region that *did* update.
     return Material(
+      color: bandColor,
       child: SafeArea(
         top: false,
         child: Column(
@@ -60,16 +69,6 @@ class NavBar extends StatelessWidget {
                   final itemWidth = constraints.maxWidth / items.length;
                   return Stack(
                     children: [
-                      // Matches the original per-item background bounds
-                      // (each item's Container was only as tall as its
-                      // content, ~44px, bottom-aligned) as one shared band.
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        height: _bandHeight,
-                        child: Container(color: bandColor),
-                      ),
                       // The highlight is now a single shared widget that
                       // slides between slots (via AnimatedPositioned)
                       // instead of each item toggling its own copy on/off.
