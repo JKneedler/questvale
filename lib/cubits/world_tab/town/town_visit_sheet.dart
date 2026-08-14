@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:provider/provider.dart';
-import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/world_tab/world_cubit.dart';
-import 'package:questvale/data/providers/game_data.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_draggable_sheet.dart';
 import 'package:questvale/widgets/qv_metal_corner_border.dart';
@@ -14,11 +11,14 @@ import 'package:questvale/widgets/qv_metal_corner_border.dart';
 /// the Combat & Questing Redesign ticket. Replaces the old
 /// TownCubit/TownLocation full-page slide-swap: Town Square is now the
 /// permanent root and every destination opens as a tall modal sheet on top
-/// of it, mirroring how AddTodo/EditTodo sit on top of the Todo Overview
-/// page. [iconPath] and [title] reuse the same art/label already shown on
-/// the destination's TownLocationCard, so the banner reads as a
-/// continuation of what was just tapped rather than a new, disconnected
-/// screen.
+/// of it, similar in spirit to how AddTodo/EditTodo sit on top of the Todo
+/// Overview page — but unlike those, the bottom nav bar stays visible below
+/// a town sheet rather than being covered (see showModal's own doc comment
+/// on why that's a real, deliberate difference from AddTodoPage.showModal,
+/// not an oversight). [iconPath] and [title] reuse the same art/label
+/// already shown on the destination's TownLocationCard, so the banner reads
+/// as a continuation of what was just tapped rather than a new,
+/// disconnected screen.
 class TownVisitSheet extends StatelessWidget {
   const TownVisitSheet({
     super.key,
@@ -45,19 +45,26 @@ class TownVisitSheet extends StatelessWidget {
     required Widget body,
     bool scrollableBody = false,
   }) {
-    // GameData/PlayerCubit/WorldCubit are all provided somewhere inside
-    // HomePage's own subtree (see home_page.dart/world_page.dart) — not
-    // above MaterialApp the way Database/ThemeCubit are (main.dart). The
-    // useRootNavigator below pushes this sheet onto the app's *root*
-    // Navigator so its overlay actually covers the bottom nav bar (see
-    // AddTodoPage.showModal's own doc comment for why), but that Navigator
-    // sits above HomePage's provider scope — so every destination's own
-    // content (which already assumes ambient access to these, unchanged
-    // from when it only ever lived inside that scope) needs them
-    // re-provided by value around the sheet, captured here from the real
-    // caller's context before the modal route is pushed.
-    final gameData = context.read<GameData>();
-    final playerCubit = context.read<PlayerCubit>();
+    // Deliberately *not* useRootNavigator (unlike AddTodoPage.showModal):
+    // the bottom nav bar should stay visible/usable while a town location's
+    // sheet is open, and pushing onto the World tab's own nested Navigator
+    // (found by the default, nearest-ancestor lookup below) is what leaves
+    // it that way — its overlay stops above HomeView's bottomNavigationBar
+    // rather than covering it. That nested Navigator also sits below
+    // HomePage's own GameData/PlayerCubit providers, so every destination's
+    // content sees those two ambiently, same as before this ticket's
+    // redesign.
+    //
+    // WorldCubit is a different story: it's provided *inside* WorldPage,
+    // which is itself the route content this same Navigator is already
+    // displaying — sibling routes on one Navigator don't share each other's
+    // local providers, only ancestors *above* the Navigator do (that's why
+    // GameData/PlayerCubit, provided in HomePage, are fine). So WorldCubit
+    // needs the same by-value re-provide AddTodoPage.showModal would need
+    // if it ever read something tab-route-local, captured here from the
+    // real caller's context before the modal route is pushed — Quest
+    // Board's "Begin Quest" reads it to flip WorldView over to the combat
+    // page once a quest is created.
     final worldCubit = context.read<WorldCubit>();
 
     return showModalBottomSheet<void>(
@@ -65,22 +72,13 @@ class TownVisitSheet extends StatelessWidget {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       isDismissible: true,
-      useRootNavigator: true,
-      builder: (context) => MultiProvider(
-        providers: [
-          Provider<GameData>.value(value: gameData),
-        ],
-        child: MultiBlocProvider(
-          providers: [
-            BlocProvider<PlayerCubit>.value(value: playerCubit),
-            BlocProvider<WorldCubit>.value(value: worldCubit),
-          ],
-          child: TownVisitSheet(
-            title: title,
-            iconPath: iconPath,
-            scrollableBody: scrollableBody,
-            body: body,
-          ),
+      builder: (context) => BlocProvider<WorldCubit>.value(
+        value: worldCubit,
+        child: TownVisitSheet(
+          title: title,
+          iconPath: iconPath,
+          scrollableBody: scrollableBody,
+          body: body,
         ),
       ),
     );
