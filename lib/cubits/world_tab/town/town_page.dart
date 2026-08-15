@@ -12,6 +12,7 @@ import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_app_bar.dart';
+import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
 import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:questvale/widgets/qv_picker_sheet.dart';
@@ -78,22 +79,7 @@ class TownSquare extends StatelessWidget {
                       title: 'Artifact',
                       iconPath: 'images/pixel-icons/artifact.png',
                     ),
-                    _ComingSoonRow(
-                      title: 'Potion 1',
-                      iconPath: 'images/pixel-icons/potion-star.png',
-                    ),
-                    _ComingSoonRow(
-                      title: 'Potion 2',
-                      iconPath: 'images/pixel-icons/potion-star.png',
-                    ),
-                    _ComingSoonRow(
-                      title: 'Potion 3',
-                      iconPath: 'images/pixel-icons/potion-star.png',
-                    ),
-                    _ComingSoonRow(
-                      title: 'Potion 4',
-                      iconPath: 'images/pixel-icons/potion-star.png',
-                    ),
+                    const _PotionsRow(),
                     _TownLocationRow(
                       title: 'Quest Board',
                       iconPath: 'images/pixel-icons/portal.png',
@@ -280,6 +266,74 @@ class _ComingSoonRow extends StatelessWidget {
         context,
         title: title,
         body: const _ComingSoonBody(),
+      ),
+    );
+  }
+}
+
+/// Same "no real backend yet" situation as _ComingSoonRow, but the 4 potion
+/// slots collapse into one row — a compact icon strip, same treatment as
+/// SkillsRow — rather than 4 separate rows, per feedback.
+class _PotionsRow extends StatelessWidget {
+  const _PotionsRow();
+
+  @override
+  Widget build(BuildContext context) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: QvButton(
+        buttonColor: ButtonColor.surfaceContainer,
+        padding: const EdgeInsets.all(12),
+        onTap: () => QvPickerSheet.showModal(
+          context,
+          title: 'Potions',
+          body: const _ComingSoonBody(),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Text(
+                  'Potions',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                const Spacer(),
+                Text('>',
+                    style:
+                        TextStyle(fontSize: 20, color: colorScheme.onSurface)),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: List.generate(
+                4,
+                (_) => QvCardBorder(
+                  width: 36,
+                  height: 36,
+                  type: QvCardBorderType.surface,
+                  bgColor: colorScheme.surface,
+                  padding: const EdgeInsets.all(6),
+                  child: Image.asset(
+                    'images/pixel-icons/potion-star.png',
+                    width: 22,
+                    height: 22,
+                    filterQuality: FilterQuality.none,
+                    fit: BoxFit.contain,
+                    scale: .1,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
