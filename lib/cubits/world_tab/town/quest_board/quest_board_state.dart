@@ -3,7 +3,6 @@ import 'package:questvale/data/providers/game_data_models/quest_zone.dart';
 
 enum QuestBoardStates {
   selectingQuestZone,
-  gearingUp,
   creatingQuest,
   questCreated,
   questCreationFailed;

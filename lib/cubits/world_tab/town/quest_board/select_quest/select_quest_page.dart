@@ -217,12 +217,14 @@ class SelectQuestZoneCard extends StatelessWidget {
                           SizedBox(height: 16),
                           Container(
                             padding: const EdgeInsets.only(left: 20, right: 20),
+                            // Gear/skills are always current now (managed
+                            // directly on Town Square), so this goes
+                            // straight to starting the quest instead of
+                            // routing through a Gear Up step first.
                             child: GestureDetector(
-                              onTap: () => {
-                                context
-                                    .read<QuestBoardCubit>()
-                                    .onQuestZoneSelected(questZone),
-                              },
+                              onTap: () => context
+                                  .read<QuestBoardCubit>()
+                                  .onBeginQuest(context, questZone),
                               child: Container(
                                 width: double.infinity,
                                 height: 40,
@@ -236,7 +238,7 @@ class SelectQuestZoneCard extends StatelessWidget {
                                 ),
                                 child: Center(
                                   child: Text(
-                                    'Gear Up',
+                                    'Begin Quest',
                                     style: TextStyle(
                                       fontSize: 24,
                                       color: colorScheme.secondary,

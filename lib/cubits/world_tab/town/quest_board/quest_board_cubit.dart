@@ -13,25 +13,23 @@ class QuestBoardCubit extends Cubit<QuestBoardState> {
     questService = QuestService(db: db);
   }
 
-  void onQuestZoneSelected(QuestZone questZone) {
-    emit(state.copyWith(
-        questBoardState: QuestBoardStates.gearingUp,
-        selectedQuestZone: questZone));
-  }
+  // Gear is always current now (see the Combat & Questing Redesign ticket —
+  // equipment/skills management moved onto Town Square's own scrollable
+  // list), so Quest Board's only job left is picking a zone and starting
+  // the quest — no more separate Gear Up step in between.
+  Future<void> onBeginQuest(BuildContext context, QuestZone questZone) async {
+    // Guards against a double-tap firing this twice before the first
+    // insert lands — QuestRepository.getQuest throws if a character ends
+    // up with more than one quest row (see the nav-bar-visible follow-up
+    // entry in the vault ticket), so this isn't just a cosmetic guard.
+    if (state.questBoardState == QuestBoardStates.creatingQuest) return;
 
-  void onGoBackWhileGearingUp() {
-    emit(state.copyWith(
-        questBoardState: QuestBoardStates.selectingQuestZone,
-        selectedQuestZone: null));
-  }
-
-  Future<void> onBeginQuest(BuildContext context) async {
     final character = context.read<PlayerCubit>().state.character;
     if (character == null) return;
 
-    emit(state.copyWith(questBoardState: QuestBoardStates.creatingQuest));
-    final questZone = state.selectedQuestZone;
-    if (questZone == null) return;
+    emit(state.copyWith(
+        questBoardState: QuestBoardStates.creatingQuest,
+        selectedQuestZone: questZone));
 
     final success =
         await questService.beginQuestGeneration(character, questZone);
