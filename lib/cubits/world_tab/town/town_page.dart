@@ -8,7 +8,6 @@ import 'package:questvale/cubits/world_tab/town/quest_board/quest_board_page.dar
 import 'package:questvale/cubits/world_tab/town/skills_row.dart';
 import 'package:questvale/cubits/world_tab/town/town_list_row.dart';
 import 'package:questvale/cubits/world_tab/town/town_visit_sheet.dart';
-import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_app_bar.dart';
@@ -61,24 +60,7 @@ class TownSquare extends StatelessWidget {
                     const SkillsRow(),
                     const _EquipmentRow(
                         slot: EquipmentSlot.weapon, label: 'Weapon'),
-                    const _EquipmentRow(
-                        slot: EquipmentSlot.head, label: 'Helmet'),
-                    const _EquipmentRow(
-                        slot: EquipmentSlot.body, label: 'Chestplate'),
-                    const _EquipmentRow(
-                        slot: EquipmentSlot.hands, label: 'Gloves'),
-                    const _EquipmentRow(
-                        slot: EquipmentSlot.feet, label: 'Boots'),
-                    const _EquipmentRow(
-                        slot: EquipmentSlot.neck, label: 'Amulet'),
-                    const _EquipmentRow(
-                        slot: EquipmentSlot.ring, label: 'Ring 1', ringSlot: 1),
-                    const _EquipmentRow(
-                        slot: EquipmentSlot.ring, label: 'Ring 2', ringSlot: 2),
-                    _ComingSoonRow(
-                      title: 'Artifact',
-                      iconPath: 'images/pixel-icons/artifact.png',
-                    ),
+                    const _EquipmentGridCard(),
                     const _PotionsRow(),
                     const _TownLocationsCard(),
                   ],
@@ -92,25 +74,21 @@ class TownSquare extends StatelessWidget {
   }
 }
 
+// Only ever used for Weapon now — the other 7 equipment slots moved into
+// _EquipmentGridCard's icon grid below, per feedback. Kept as its own
+// TownListRow since Weapon stays the one prominent, most-frequently-changed
+// piece of gear.
 class _EquipmentRow extends StatelessWidget {
-  const _EquipmentRow({required this.slot, required this.label, this.ringSlot});
+  const _EquipmentRow({required this.slot, required this.label});
 
   final EquipmentSlot slot;
   final String label;
-  final int? ringSlot;
-
-  Equipment? _equippedItem(Character character) {
-    if (slot == EquipmentSlot.ring) {
-      return ringSlot == 2 ? character.equippedRing2 : character.equippedRing1;
-    }
-    return character.equippedForSlot(slot);
-  }
 
   @override
   Widget build(BuildContext context) {
     final character = context.watch<PlayerCubit>().state.character;
     if (character == null) return const SizedBox.shrink();
-    final equipment = _equippedItem(character);
+    final equipment = character.equippedForSlot(slot);
     final subtitle = equipment == null
         ? 'Empty'
         : '${_capitalize(equipment.rarity.name)} '
@@ -125,35 +103,39 @@ class _EquipmentRow extends StatelessWidget {
         context,
         slot: slot,
         label: label,
-        ringSlot: ringSlot,
       ),
     );
   }
 }
 
 class _EquipmentIcon extends StatelessWidget {
-  const _EquipmentIcon({required this.equipment, required this.characterClass});
+  const _EquipmentIcon({
+    required this.equipment,
+    required this.characterClass,
+    this.size = 44,
+  });
 
   final Equipment? equipment;
   final CharacterClass characterClass;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     return QvCardBorder(
-      width: 44,
-      height: 44,
+      width: size,
+      height: size,
       type:
           equipment == null ? QvCardBorderType.surface : QvCardBorderType.rarity,
       rarity: equipment?.rarity ?? Rarity.common,
       bgColor: colorScheme.surface,
-      padding: const EdgeInsets.all(6),
+      padding: EdgeInsets.all(size * 0.14),
       child: equipment == null
           ? const SizedBox.shrink()
           : Image.asset(
               equipment!.iconPath(characterClass),
-              width: 32,
-              height: 32,
+              width: size * 0.7,
+              height: size * 0.7,
               filterQuality: FilterQuality.none,
               fit: BoxFit.contain,
               scale: .1,
@@ -162,48 +144,188 @@ class _EquipmentIcon extends StatelessWidget {
   }
 }
 
-/// Artifact/Potions have no real backend yet (no artifact or potion system
-/// implemented anywhere) — building one is new mechanics, out of scope for
-/// this redesign ticket. Same "Coming Soon" placeholder treatment as the
-/// still-unbuilt town destinations, just reached via the lighter picker
-/// sheet since these aren't "a place" either.
-class _ComingSoonRow extends StatelessWidget {
-  const _ComingSoonRow({required this.title, required this.iconPath});
-
-  final String title;
-  final String iconPath;
+/// Every equipment slot except Weapon (kept as its own prominent row above)
+/// plus Artifact (no real backend yet — see the doc comment further down)
+/// — one shared card, icon-only grid, tap opens the same per-slot sheet as
+/// before. Per feedback: Helmet/Chestplate/Gloves/Boots on the first row,
+/// Amulet/Ring 1/Ring 2/Artifact on the second.
+class _EquipmentGridCard extends StatelessWidget {
+  const _EquipmentGridCard();
 
   @override
   Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-    return TownListRow(
-      leading: QvCardBorder(
-        width: 44,
-        height: 44,
-        type: QvCardBorderType.surface,
-        bgColor: colorScheme.surface,
-        padding: const EdgeInsets.all(8),
-        child: Image.asset(
-          iconPath,
-          width: 28,
-          height: 28,
-          filterQuality: FilterQuality.none,
-          fit: BoxFit.contain,
-          scale: .1,
+    final character = context.watch<PlayerCubit>().state.character;
+    if (character == null) return const SizedBox.shrink();
+    final characterClass = character.characterClass;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: QvButton(
+        buttonColor: ButtonColor.surfaceContainer,
+        padding: const EdgeInsets.all(12),
+        // Explicit per-item size via LayoutBuilder rather than
+        // Row+Expanded — same reasoning as _TownLocationsCard's own doc
+        // comment: this sidesteps a live centerSlice/BoxFit rendering
+        // fragility that combination hit, regardless of whether that
+        // fragility was actually caused by Expanded itself.
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            const spacing = 8.0;
+            final itemSize = (constraints.maxWidth - spacing * 3) / 4;
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              spacing: spacing,
+              children: [
+                Wrap(
+                  spacing: spacing,
+                  runSpacing: spacing,
+                  children: [
+                    _EquipmentGridItem(
+                      size: itemSize,
+                      slot: EquipmentSlot.head,
+                      label: 'Helmet',
+                      equipment: character.equippedHelmet,
+                      characterClass: characterClass,
+                    ),
+                    _EquipmentGridItem(
+                      size: itemSize,
+                      slot: EquipmentSlot.body,
+                      label: 'Chestplate',
+                      equipment: character.equippedChestplate,
+                      characterClass: characterClass,
+                    ),
+                    _EquipmentGridItem(
+                      size: itemSize,
+                      slot: EquipmentSlot.hands,
+                      label: 'Gloves',
+                      equipment: character.equippedGloves,
+                      characterClass: characterClass,
+                    ),
+                    _EquipmentGridItem(
+                      size: itemSize,
+                      slot: EquipmentSlot.feet,
+                      label: 'Boots',
+                      equipment: character.equippedBoots,
+                      characterClass: characterClass,
+                    ),
+                  ],
+                ),
+                Wrap(
+                  spacing: spacing,
+                  runSpacing: spacing,
+                  children: [
+                    _EquipmentGridItem(
+                      size: itemSize,
+                      slot: EquipmentSlot.neck,
+                      label: 'Amulet',
+                      equipment: character.equippedAmulet,
+                      characterClass: characterClass,
+                    ),
+                    _EquipmentGridItem(
+                      size: itemSize,
+                      slot: EquipmentSlot.ring,
+                      ringSlot: 1,
+                      label: 'Ring 1',
+                      equipment: character.equippedRing1,
+                      characterClass: characterClass,
+                    ),
+                    _EquipmentGridItem(
+                      size: itemSize,
+                      slot: EquipmentSlot.ring,
+                      ringSlot: 2,
+                      label: 'Ring 2',
+                      equipment: character.equippedRing2,
+                      characterClass: characterClass,
+                    ),
+                    _ArtifactGridItem(size: itemSize),
+                  ],
+                ),
+              ],
+            );
+          },
         ),
-      ),
-      title: title,
-      subtitle: 'Coming Soon',
-      onTap: () => QvPickerSheet.showModal(
-        context,
-        title: title,
-        body: const _ComingSoonBody(),
       ),
     );
   }
 }
 
-/// Same "no real backend yet" situation as _ComingSoonRow, but the 4 potion
+class _EquipmentGridItem extends StatelessWidget {
+  const _EquipmentGridItem({
+    required this.size,
+    required this.slot,
+    required this.label,
+    required this.equipment,
+    required this.characterClass,
+    this.ringSlot,
+  });
+
+  final double size;
+  final EquipmentSlot slot;
+  final String label;
+  final Equipment? equipment;
+  final CharacterClass characterClass;
+  final int? ringSlot;
+
+  @override
+  Widget build(BuildContext context) {
+    // QvCardBorder has no GestureDetector of its own (unlike QvButton/
+    // QvSkillButton), so wrapping it directly in one here is safe — no
+    // nested-GestureDetector footgun risk.
+    return GestureDetector(
+      onTap: () => showEquipmentSlotSheet(
+        context,
+        slot: slot,
+        label: label,
+        ringSlot: ringSlot,
+      ),
+      child: _EquipmentIcon(
+        equipment: equipment,
+        characterClass: characterClass,
+        size: size,
+      ),
+    );
+  }
+}
+
+/// Artifact has no real backend yet (no artifact system implemented
+/// anywhere) — building one is new mechanics, out of scope for this
+/// redesign ticket. Same "Coming Soon" placeholder treatment as the
+/// still-unbuilt town destinations and Potions, just as a grid item here
+/// instead of its own row.
+class _ArtifactGridItem extends StatelessWidget {
+  const _ArtifactGridItem({required this.size});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+    return GestureDetector(
+      onTap: () => QvPickerSheet.showModal(
+        context,
+        title: 'Artifact',
+        body: const _ComingSoonBody(),
+      ),
+      child: QvCardBorder(
+        width: size,
+        height: size,
+        type: QvCardBorderType.surface,
+        bgColor: colorScheme.surface,
+        padding: EdgeInsets.all(size * 0.18),
+        child: Image.asset(
+          'images/pixel-icons/artifact.png',
+          width: size * 0.64,
+          height: size * 0.64,
+          filterQuality: FilterQuality.none,
+          fit: BoxFit.contain,
+          scale: .1,
+        ),
+      ),
+    );
+  }
+}
+
+/// Same "no real backend yet" situation as _ArtifactGridItem, but the 4 potion
 /// slots collapse into one row — a compact icon strip, same treatment as
 /// SkillsRow — rather than 4 separate rows, per feedback.
 class _PotionsRow extends StatelessWidget {
