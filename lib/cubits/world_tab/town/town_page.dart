@@ -74,33 +74,60 @@ class _EquipmentIcon extends StatelessWidget {
     required this.equipment,
     required this.characterClass,
     this.size = 44,
+    this.width,
+    this.height,
   });
 
   final Equipment? equipment;
   final CharacterClass characterClass;
+
+  // Square box (width == height == size) unless width/height are given
+  // explicitly — used to widen an item to a rectangular shape (see
+  // _WeaponArtifactCard) without changing the icon's own on-screen size.
   final double size;
+  final double? width;
+  final double? height;
 
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final boxWidth = width ?? size;
+    final boxHeight = height ?? size;
+    // QvCardBorder's border+child Container shrink-wraps to padding+child
+    // rather than filling the box it's given (see its own doc comment on
+    // why — it's built to size itself off content, not stretch) — for a
+    // square icon that's invisible, since padding+iconSize is tuned to add
+    // up to `size` already. For a rectangular box (width != height) it
+    // isn't: the child needs to actually BE boxWidth/boxHeight (minus
+    // padding) for the border to visibly reach the box's real edges,
+    // hence wrapping the icon in a SizedBox sized to fill the padded area
+    // and centering the actual image within that instead of inside it.
+    const padding = 8.0;
+    final iconSize = (boxHeight - padding * 2).clamp(0.0, double.infinity);
     return QvCardBorder(
-      width: size,
-      height: size,
+      width: boxWidth,
+      height: boxHeight,
       type:
           equipment == null ? QvCardBorderType.surface : QvCardBorderType.rarity,
       rarity: equipment?.rarity ?? Rarity.common,
       bgColor: colorScheme.surface,
-      padding: EdgeInsets.all(size * 0.14),
-      child: equipment == null
-          ? const SizedBox.shrink()
-          : Image.asset(
-              equipment!.iconPath(characterClass),
-              width: size * 0.7,
-              height: size * 0.7,
-              filterQuality: FilterQuality.none,
-              fit: BoxFit.contain,
-              scale: .1,
-            ),
+      padding: const EdgeInsets.all(padding),
+      child: SizedBox(
+        width: boxWidth - padding * 2,
+        height: boxHeight - padding * 2,
+        child: equipment == null
+            ? null
+            : Center(
+                child: Image.asset(
+                  equipment!.iconPath(characterClass),
+                  width: iconSize,
+                  height: iconSize,
+                  filterQuality: FilterQuality.none,
+                  fit: BoxFit.contain,
+                  scale: .1,
+                ),
+              ),
+      ),
     );
   }
 }
@@ -210,12 +237,13 @@ class _EquipmentGridCard extends StatelessWidget {
 }
 
 /// Weapon and Artifact pair up in their own small card — same icon-only
-/// grid treatment as _EquipmentGridCard, just the two of them, kept
-/// separate since they're each a single stand-alone slot (not part of a
-/// "helmet/chest/gloves/boots"-style set) and read as a bit more prominent
-/// this way. Icon size matches _EquipmentGridCard's own 4-column
-/// computation exactly (rather than stretching to fill this card's width)
-/// so the two cards' icons look consistent size next to each other.
+/// treatment as _EquipmentGridCard, just the two of them, kept separate
+/// since they're each a single stand-alone slot (not part of a
+/// "helmet/chest/gloves/boots"-style set). Widened to fill the card
+/// (roughly half its width each) rather than sized to match the 4-column
+/// grid's smaller icons, per feedback — the icon itself stays a fixed,
+/// reasonable size (see _EquipmentIcon/_ArtifactGridItem's width/height
+/// params), just centered in a wider rarity-bordered box.
 class _WeaponArtifactCard extends StatelessWidget {
   const _WeaponArtifactCard();
 
@@ -232,19 +260,25 @@ class _WeaponArtifactCard extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             const spacing = 8.0;
-            final itemSize = (constraints.maxWidth - spacing * 3) / 4;
+            const itemHeight = 76.0;
+            final itemWidth = (constraints.maxWidth - spacing) / 2;
             return Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              spacing: spacing * 2,
+              spacing: spacing,
               children: [
                 _EquipmentGridItem(
-                  size: itemSize,
+                  size: itemHeight,
+                  width: itemWidth,
+                  height: itemHeight,
                   slot: EquipmentSlot.weapon,
                   label: 'Weapon',
                   equipment: character.equippedWeapon,
                   characterClass: character.characterClass,
                 ),
-                _ArtifactGridItem(size: itemSize),
+                _ArtifactGridItem(
+                  size: itemHeight,
+                  width: itemWidth,
+                  height: itemHeight,
+                ),
               ],
             );
           },
@@ -262,6 +296,8 @@ class _EquipmentGridItem extends StatelessWidget {
     required this.equipment,
     required this.characterClass,
     this.ringSlot,
+    this.width,
+    this.height,
   });
 
   final double size;
@@ -270,6 +306,8 @@ class _EquipmentGridItem extends StatelessWidget {
   final Equipment? equipment;
   final CharacterClass characterClass;
   final int? ringSlot;
+  final double? width;
+  final double? height;
 
   @override
   Widget build(BuildContext context) {
@@ -287,6 +325,8 @@ class _EquipmentGridItem extends StatelessWidget {
         equipment: equipment,
         characterClass: characterClass,
         size: size,
+        width: width,
+        height: height,
       ),
     );
   }
@@ -298,13 +338,22 @@ class _EquipmentGridItem extends StatelessWidget {
 /// still-unbuilt town destinations and Potions, just as a grid item here
 /// instead of its own row.
 class _ArtifactGridItem extends StatelessWidget {
-  const _ArtifactGridItem({required this.size});
+  const _ArtifactGridItem({required this.size, this.width, this.height});
 
   final double size;
+
+  // See _EquipmentIcon's doc comment on the same pair of params — same
+  // "fill a rectangular box, not just a square" need, same fix.
+  final double? width;
+  final double? height;
 
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final boxWidth = width ?? size;
+    final boxHeight = height ?? size;
+    const padding = 8.0;
+    final iconSize = (boxHeight - padding * 2).clamp(0.0, double.infinity);
     return GestureDetector(
       onTap: () => QvPickerSheet.showModal(
         context,
@@ -312,18 +361,24 @@ class _ArtifactGridItem extends StatelessWidget {
         body: const _ComingSoonBody(),
       ),
       child: QvCardBorder(
-        width: size,
-        height: size,
+        width: boxWidth,
+        height: boxHeight,
         type: QvCardBorderType.surface,
         bgColor: colorScheme.surface,
-        padding: EdgeInsets.all(size * 0.18),
-        child: Image.asset(
-          'images/pixel-icons/artifact.png',
-          width: size * 0.64,
-          height: size * 0.64,
-          filterQuality: FilterQuality.none,
-          fit: BoxFit.contain,
-          scale: .1,
+        padding: const EdgeInsets.all(padding),
+        child: SizedBox(
+          width: boxWidth - padding * 2,
+          height: boxHeight - padding * 2,
+          child: Center(
+            child: Image.asset(
+              'images/pixel-icons/artifact.png',
+              width: iconSize,
+              height: iconSize,
+              filterQuality: FilterQuality.none,
+              fit: BoxFit.contain,
+              scale: .1,
+            ),
+          ),
         ),
       ),
     );
