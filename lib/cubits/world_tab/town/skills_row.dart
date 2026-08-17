@@ -52,27 +52,34 @@ class SkillsRow extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              children: [
-                Text(
-                  'Skills',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-                const Spacer(),
-                Text('>',
-                    style: TextStyle(fontSize: 20, color: colorScheme.onSurface)),
-              ],
+            // Plain label, no trailing '>' — matches the Equipment/Weapon &
+            // Artifact cards' header treatment even though this row (unlike
+            // those two) does have one card-wide onTap; kept for visual
+            // consistency across all four grid-style cards per feedback.
+            Text(
+              'Skills',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
+              ),
             ),
             const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                for (final skill in slots) _SkillSlotIcon(skill: skill),
-              ],
+            // Explicit per-item size via LayoutBuilder, filling the row
+            // edge-to-edge — same treatment as the Equipment and Weapon &
+            // Artifact grids, replacing the old fixed-36px/spaceEvenly icons.
+            LayoutBuilder(
+              builder: (context, constraints) {
+                const spacing = 8.0;
+                final itemSize = (constraints.maxWidth - spacing * 4) / 5;
+                return Row(
+                  spacing: spacing,
+                  children: [
+                    for (final skill in slots)
+                      _SkillSlotIcon(skill: skill, size: itemSize),
+                  ],
+                );
+              },
             ),
           ],
         ),
@@ -82,16 +89,17 @@ class SkillsRow extends StatelessWidget {
 }
 
 class _SkillSlotIcon extends StatelessWidget {
-  const _SkillSlotIcon({required this.skill});
+  const _SkillSlotIcon({required this.skill, required this.size});
 
   final BaseActiveSkill? skill;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
     if (skill == null) {
       return Container(
-        width: 36,
-        height: 36,
+        width: size,
+        height: size,
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(4),
@@ -108,8 +116,8 @@ class _SkillSlotIcon extends StatelessWidget {
     // passes through to the row.
     return IgnorePointer(
       child: QvSkillButton(
-        width: 36,
-        height: 36,
+        width: size,
+        height: size,
         skillIconPath: skill!.data.iconPath,
         skillButtonColor: skill!.data.buttonColor,
       ),

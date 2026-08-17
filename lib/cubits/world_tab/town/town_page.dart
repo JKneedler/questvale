@@ -445,43 +445,51 @@ class _PotionsRow extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              children: [
-                Text(
-                  'Potions',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-                const Spacer(),
-                Text('>',
-                    style:
-                        TextStyle(fontSize: 20, color: colorScheme.onSurface)),
-              ],
+            // Plain label, no trailing '>' — matches the Equipment/Weapon &
+            // Artifact cards' header treatment even though this row (unlike
+            // those two) does have one card-wide onTap; kept for visual
+            // consistency across all four grid-style cards per feedback.
+            Text(
+              'Potions',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
+              ),
             ),
             const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(
-                4,
-                (_) => QvCardBorder(
-                  width: 36,
-                  height: 36,
-                  type: QvCardBorderType.surface,
-                  bgColor: colorScheme.surface,
-                  padding: const EdgeInsets.all(6),
-                  child: Image.asset(
-                    'images/pixel-icons/potion-star.png',
-                    width: 22,
-                    height: 22,
-                    filterQuality: FilterQuality.none,
-                    fit: BoxFit.contain,
-                    scale: .1,
+            // Explicit per-item size via LayoutBuilder, filling the row
+            // edge-to-edge — same treatment as the Equipment and Weapon &
+            // Artifact grids, replacing the old fixed-36px/spaceEvenly icons.
+            LayoutBuilder(
+              builder: (context, constraints) {
+                const spacing = 8.0;
+                const padding = 6.0;
+                final itemSize = (constraints.maxWidth - spacing * 3) / 4;
+                final iconSize =
+                    (itemSize - padding * 2).clamp(0.0, double.infinity);
+                return Row(
+                  spacing: spacing,
+                  children: List.generate(
+                    4,
+                    (_) => QvCardBorder(
+                      width: itemSize,
+                      height: itemSize,
+                      type: QvCardBorderType.surface,
+                      bgColor: colorScheme.surface,
+                      padding: const EdgeInsets.all(padding),
+                      child: Image.asset(
+                        'images/pixel-icons/potion-star.png',
+                        width: iconSize,
+                        height: iconSize,
+                        filterQuality: FilterQuality.none,
+                        fit: BoxFit.contain,
+                        scale: .1,
+                      ),
+                    ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
           ],
         ),
