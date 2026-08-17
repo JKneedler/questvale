@@ -142,6 +142,7 @@ class _EquipmentGridCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
     final character = context.watch<PlayerCubit>().state.character;
     if (character == null) return const SizedBox.shrink();
     final characterClass = character.characterClass;
@@ -151,85 +152,103 @@ class _EquipmentGridCard extends StatelessWidget {
       child: QvButton(
         buttonColor: ButtonColor.surfaceContainer,
         padding: const EdgeInsets.all(12),
-        // Explicit per-item size via LayoutBuilder rather than
-        // Row+Expanded — same reasoning as _TownLocationsCard's own doc
-        // comment: this sidesteps a live centerSlice/BoxFit rendering
-        // fragility that combination hit, regardless of whether that
-        // fragility was actually caused by Expanded itself.
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            const spacing = 8.0;
-            final itemSize = (constraints.maxWidth - spacing * 3) / 4;
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              spacing: spacing,
-              children: [
-                Wrap(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // No card-wide onTap here (each icon has its own), so this
+            // header is a plain label — no trailing '>' chevron like
+            // SkillsRow/_PotionsRow use for their single-destination rows.
+            Text(
+              'Equipment',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: 10),
+            // Explicit per-item size via LayoutBuilder rather than
+            // Row+Expanded — same reasoning as _TownLocationsCard's own doc
+            // comment: this sidesteps a live centerSlice/BoxFit rendering
+            // fragility that combination hit, regardless of whether that
+            // fragility was actually caused by Expanded itself.
+            LayoutBuilder(
+              builder: (context, constraints) {
+                const spacing = 8.0;
+                final itemSize = (constraints.maxWidth - spacing * 3) / 4;
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
                   spacing: spacing,
-                  runSpacing: spacing,
                   children: [
-                    _EquipmentGridItem(
-                      size: itemSize,
-                      slot: EquipmentSlot.head,
-                      label: 'Helmet',
-                      equipment: character.equippedHelmet,
-                      characterClass: characterClass,
+                    Wrap(
+                      spacing: spacing,
+                      runSpacing: spacing,
+                      children: [
+                        _EquipmentGridItem(
+                          size: itemSize,
+                          slot: EquipmentSlot.head,
+                          label: 'Helmet',
+                          equipment: character.equippedHelmet,
+                          characterClass: characterClass,
+                        ),
+                        _EquipmentGridItem(
+                          size: itemSize,
+                          slot: EquipmentSlot.body,
+                          label: 'Chestplate',
+                          equipment: character.equippedChestplate,
+                          characterClass: characterClass,
+                        ),
+                        _EquipmentGridItem(
+                          size: itemSize,
+                          slot: EquipmentSlot.hands,
+                          label: 'Gloves',
+                          equipment: character.equippedGloves,
+                          characterClass: characterClass,
+                        ),
+                        _EquipmentGridItem(
+                          size: itemSize,
+                          slot: EquipmentSlot.feet,
+                          label: 'Boots',
+                          equipment: character.equippedBoots,
+                          characterClass: characterClass,
+                        ),
+                      ],
                     ),
-                    _EquipmentGridItem(
-                      size: itemSize,
-                      slot: EquipmentSlot.body,
-                      label: 'Chestplate',
-                      equipment: character.equippedChestplate,
-                      characterClass: characterClass,
-                    ),
-                    _EquipmentGridItem(
-                      size: itemSize,
-                      slot: EquipmentSlot.hands,
-                      label: 'Gloves',
-                      equipment: character.equippedGloves,
-                      characterClass: characterClass,
-                    ),
-                    _EquipmentGridItem(
-                      size: itemSize,
-                      slot: EquipmentSlot.feet,
-                      label: 'Boots',
-                      equipment: character.equippedBoots,
-                      characterClass: characterClass,
+                    Wrap(
+                      spacing: spacing,
+                      runSpacing: spacing,
+                      children: [
+                        _EquipmentGridItem(
+                          size: itemSize,
+                          slot: EquipmentSlot.neck,
+                          label: 'Amulet',
+                          equipment: character.equippedAmulet,
+                          characterClass: characterClass,
+                        ),
+                        _EquipmentGridItem(
+                          size: itemSize,
+                          slot: EquipmentSlot.ring,
+                          ringSlot: 1,
+                          label: 'Ring 1',
+                          equipment: character.equippedRing1,
+                          characterClass: characterClass,
+                        ),
+                        _EquipmentGridItem(
+                          size: itemSize,
+                          slot: EquipmentSlot.ring,
+                          ringSlot: 2,
+                          label: 'Ring 2',
+                          equipment: character.equippedRing2,
+                          characterClass: characterClass,
+                        ),
+                      ],
                     ),
                   ],
-                ),
-                Wrap(
-                  spacing: spacing,
-                  runSpacing: spacing,
-                  children: [
-                    _EquipmentGridItem(
-                      size: itemSize,
-                      slot: EquipmentSlot.neck,
-                      label: 'Amulet',
-                      equipment: character.equippedAmulet,
-                      characterClass: characterClass,
-                    ),
-                    _EquipmentGridItem(
-                      size: itemSize,
-                      slot: EquipmentSlot.ring,
-                      ringSlot: 1,
-                      label: 'Ring 1',
-                      equipment: character.equippedRing1,
-                      characterClass: characterClass,
-                    ),
-                    _EquipmentGridItem(
-                      size: itemSize,
-                      slot: EquipmentSlot.ring,
-                      ringSlot: 2,
-                      label: 'Ring 2',
-                      equipment: character.equippedRing2,
-                      characterClass: characterClass,
-                    ),
-                  ],
-                ),
-              ],
-            );
-          },
+                );
+              },
+            ),
+          ],
         ),
       ),
     );
@@ -249,6 +268,7 @@ class _WeaponArtifactCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
     final character = context.watch<PlayerCubit>().state.character;
     if (character == null) return const SizedBox.shrink();
 
@@ -257,31 +277,48 @@ class _WeaponArtifactCard extends StatelessWidget {
       child: QvButton(
         buttonColor: ButtonColor.surfaceContainer,
         padding: const EdgeInsets.all(12),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            const spacing = 8.0;
-            const itemHeight = 76.0;
-            final itemWidth = (constraints.maxWidth - spacing) / 2;
-            return Row(
-              spacing: spacing,
-              children: [
-                _EquipmentGridItem(
-                  size: itemHeight,
-                  width: itemWidth,
-                  height: itemHeight,
-                  slot: EquipmentSlot.weapon,
-                  label: 'Weapon',
-                  equipment: character.equippedWeapon,
-                  characterClass: character.characterClass,
-                ),
-                _ArtifactGridItem(
-                  size: itemHeight,
-                  width: itemWidth,
-                  height: itemHeight,
-                ),
-              ],
-            );
-          },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Same plain-label treatment as _EquipmentGridCard's header —
+            // no card-wide onTap to chevron toward, each icon has its own.
+            Text(
+              'Weapon & Artifact',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: 10),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                const spacing = 8.0;
+                const itemHeight = 76.0;
+                final itemWidth = (constraints.maxWidth - spacing) / 2;
+                return Row(
+                  spacing: spacing,
+                  children: [
+                    _EquipmentGridItem(
+                      size: itemHeight,
+                      width: itemWidth,
+                      height: itemHeight,
+                      slot: EquipmentSlot.weapon,
+                      label: 'Weapon',
+                      equipment: character.equippedWeapon,
+                      characterClass: character.characterClass,
+                    ),
+                    _ArtifactGridItem(
+                      size: itemHeight,
+                      width: itemWidth,
+                      height: itemHeight,
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
         ),
       ),
     );
