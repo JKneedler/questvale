@@ -6,7 +6,6 @@ import 'package:questvale/cubits/world_tab/town/equipment_slot_sheet.dart';
 import 'package:questvale/cubits/world_tab/town/forging/forge/forge_page.dart';
 import 'package:questvale/cubits/world_tab/town/quest_board/quest_board_page.dart';
 import 'package:questvale/cubits/world_tab/town/skills_row.dart';
-import 'package:questvale/cubits/world_tab/town/town_list_row.dart';
 import 'package:questvale/cubits/world_tab/town/town_visit_sheet.dart';
 import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/helpers/shared_enums.dart';
@@ -15,9 +14,6 @@ import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
 import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:questvale/widgets/qv_picker_sheet.dart';
-
-String _capitalize(String value) =>
-    value.isEmpty ? value : '${value[0].toUpperCase()}${value.substring(1)}';
 
 /// Town Square: the permanent root of the World tab's town flow, and — per
 /// the Combat & Questing Redesign ticket's second pass — now also where
@@ -58,8 +54,7 @@ class TownSquare extends StatelessWidget {
                   children: [
                     const CharacterStatsCard(),
                     const SkillsRow(),
-                    const _EquipmentRow(
-                        slot: EquipmentSlot.weapon, label: 'Weapon'),
+                    const _WeaponArtifactCard(),
                     const _EquipmentGridCard(),
                     const _PotionsRow(),
                     const _TownLocationsCard(),
@@ -69,40 +64,6 @@ class TownSquare extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-// Only ever used for Weapon now — the other 7 equipment slots moved into
-// _EquipmentGridCard's icon grid below, per feedback. Kept as its own
-// TownListRow since Weapon stays the one prominent, most-frequently-changed
-// piece of gear.
-class _EquipmentRow extends StatelessWidget {
-  const _EquipmentRow({required this.slot, required this.label});
-
-  final EquipmentSlot slot;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final character = context.watch<PlayerCubit>().state.character;
-    if (character == null) return const SizedBox.shrink();
-    final equipment = character.equippedForSlot(slot);
-    final subtitle = equipment == null
-        ? 'Empty'
-        : '${_capitalize(equipment.rarity.name)} '
-            '${equipment.type.className(character.characterClass)}';
-
-    return TownListRow(
-      leading: _EquipmentIcon(
-          equipment: equipment, characterClass: character.characterClass),
-      title: label,
-      subtitle: subtitle,
-      onTap: () => showEquipmentSlotSheet(
-        context,
-        slot: slot,
-        label: label,
       ),
     );
   }
@@ -144,11 +105,11 @@ class _EquipmentIcon extends StatelessWidget {
   }
 }
 
-/// Every equipment slot except Weapon (kept as its own prominent row above)
-/// plus Artifact (no real backend yet — see the doc comment further down)
-/// — one shared card, icon-only grid, tap opens the same per-slot sheet as
-/// before. Per feedback: Helmet/Chestplate/Gloves/Boots on the first row,
-/// Amulet/Ring 1/Ring 2/Artifact on the second.
+/// Every equipment slot except Weapon and Artifact — those two pair up in
+/// their own card instead, see _WeaponArtifactCard below — one shared card,
+/// icon-only grid, tap opens the same per-slot sheet as before. Per
+/// feedback: Helmet/Chestplate/Gloves/Boots on the first row, Amulet/Ring
+/// 1/Ring 2 on the second.
 class _EquipmentGridCard extends StatelessWidget {
   const _EquipmentGridCard();
 
@@ -237,9 +198,53 @@ class _EquipmentGridCard extends StatelessWidget {
                       equipment: character.equippedRing2,
                       characterClass: characterClass,
                     ),
-                    _ArtifactGridItem(size: itemSize),
                   ],
                 ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+/// Weapon and Artifact pair up in their own small card — same icon-only
+/// grid treatment as _EquipmentGridCard, just the two of them, kept
+/// separate since they're each a single stand-alone slot (not part of a
+/// "helmet/chest/gloves/boots"-style set) and read as a bit more prominent
+/// this way. Icon size matches _EquipmentGridCard's own 4-column
+/// computation exactly (rather than stretching to fill this card's width)
+/// so the two cards' icons look consistent size next to each other.
+class _WeaponArtifactCard extends StatelessWidget {
+  const _WeaponArtifactCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final character = context.watch<PlayerCubit>().state.character;
+    if (character == null) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: QvButton(
+        buttonColor: ButtonColor.surfaceContainer,
+        padding: const EdgeInsets.all(12),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            const spacing = 8.0;
+            final itemSize = (constraints.maxWidth - spacing * 3) / 4;
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              spacing: spacing * 2,
+              children: [
+                _EquipmentGridItem(
+                  size: itemSize,
+                  slot: EquipmentSlot.weapon,
+                  label: 'Weapon',
+                  equipment: character.equippedWeapon,
+                  characterClass: character.characterClass,
+                ),
+                _ArtifactGridItem(size: itemSize),
               ],
             );
           },
@@ -394,8 +399,8 @@ class _PotionsRow extends StatelessWidget {
 }
 
 /// All 7 town destinations live in one shared card now (per feedback) —
-/// individual buttons inside a single list item, rather than one
-/// TownListRow each. Quest Board sits full-width up top as the primary
+/// individual buttons inside a single list item, rather than one row each.
+/// Quest Board sits full-width up top as the primary
 /// action; the rest pair up 2-per-row in a Wrap, same grouping the
 /// original button-grid Town Square used. Deliberately explicit
 /// per-button width (via LayoutBuilder) rather than Row+Expanded+stretch —

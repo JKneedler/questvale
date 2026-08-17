@@ -23,10 +23,10 @@ void showSkillsSheet(BuildContext context) {
 
 // One row, directly below the character stats card — a compact preview of
 // the current 5-slot active loadout. Deliberately more prominent than a
-// standard TownListRow (its own full-width icon strip rather than a small
-// leading thumbnail) since this is the single entry point for both
-// reassigning the loadout and browsing/unlocking the skill tree. See the
-// Combat & Questing Redesign ticket.
+// small leading-icon row (its own full-width icon strip instead) since
+// this is the single entry point for both reassigning the loadout and
+// browsing/unlocking the skill tree. See the Combat & Questing Redesign
+// ticket.
 class SkillsRow extends StatelessWidget {
   const SkillsRow({super.key});
 
