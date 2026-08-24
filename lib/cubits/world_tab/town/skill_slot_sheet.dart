@@ -16,10 +16,11 @@ import 'package:sqflite/sqflite.dart';
 // skills: reuses SkillsGearUpCubit's data layer (assignSkillToSlot/
 // clearLoadoutSlot) and SkillSlotAssignmentList's owned-actives picker
 // rather than duplicating either. Scoped to a single slot from the moment
-// it opens, same as the equipment sheet. This is now the one modal used
-// for tapping a skill slot everywhere it appears — Town Square's SkillsRow
-// and the full Skill Tree page's own Loadout section both open it, instead
-// of the Skill Tree page swapping its own body in place.
+// it opens, same as the equipment sheet. This is Town Square's SkillsRow's
+// only entry point for reassigning a slot now — the full Skill Tree page
+// dropped its own redundant Loadout section/slot cards (per feedback,
+// SkillsRow already covers the same job) rather than opening this sheet
+// from two places.
 Future<void> showSkillSlotSheet(BuildContext context, {required int slotNumber}) {
   final character = context.read<PlayerCubit>().state.character!;
   final db = context.read<Database>();

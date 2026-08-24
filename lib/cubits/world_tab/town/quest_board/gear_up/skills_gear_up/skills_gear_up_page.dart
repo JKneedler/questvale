@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/quest_board/gear_up/skills_gear_up/skills_gear_up_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/quest_board/gear_up/skills_gear_up/skills_gear_up_state.dart';
-import 'package:questvale/cubits/world_tab/town/skill_slot_sheet.dart';
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/character_skill.dart';
 import 'package:questvale/data/providers/game_data.dart';
@@ -96,7 +95,6 @@ class SkillsGearUpView extends StatelessWidget {
                       color: SKILL_POINTS_COLOR),
                 ),
               ),
-              const _LoadoutSection(),
               Expanded(
                 child: QvFadingScrollable(
                   child: ListView.builder(
@@ -115,90 +113,6 @@ class SkillsGearUpView extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-// Shows the character's 5 active-skill loadout slots at a glance — see
-// the Skills UI ticket's subtask 4. Passives need no equivalent (owning
-// one is being it "active", per Skill System Foundations subtask 5), so
-// this only ever shows/assigns actives.
-class _LoadoutSection extends StatelessWidget {
-  const _LoadoutSection();
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final character = context.watch<SkillsGearUpCubit>().state.character;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Column(
-        children: [
-          Text('Loadout',
-              style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.primary)),
-          const SizedBox(height: 6),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              for (var slotNumber = 1; slotNumber <= 5; slotNumber++)
-                _LoadoutSlotCard(
-                  slotNumber: slotNumber,
-                  characterSkill: character.activeSkillSlotAt(slotNumber),
-                ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LoadoutSlotCard extends StatelessWidget {
-  final int slotNumber;
-  final CharacterSkill? characterSkill;
-  const _LoadoutSlotCard({required this.slotNumber, required this.characterSkill});
-
-  @override
-  Widget build(BuildContext context) {
-    final gameData = context.read<GameData>();
-    final skillData = characterSkill != null
-        ? gameData.getSkillDataById(characterSkill!.skillId)
-        : null;
-    // Opens the same standalone per-slot picker sheet Town Square's
-    // SkillsRow uses (showSkillSlotSheet) — a loadout slot reads the same
-    // whether you're tapping it here or from the main page, so it opens
-    // the same modal rather than swapping this page's own body in place
-    // (the old _LoadoutSelectionView behavior, removed).
-    void onTap() => showSkillSlotSheet(context, slotNumber: slotNumber);
-    // QvSkillButton already wraps its child in its own GestureDetector
-    // with onTap: onTap ?? () {} — passing its onTap param directly (not
-    // wrapping the whole widget in a second GestureDetector) avoids the
-    // same nested-gesture-detector footgun _SkillGridIcon hit: the inner
-    // detector's non-null onTap silently wins the gesture arena and the
-    // outer one never fires.
-    if (skillData != null) {
-      return QvSkillButton(
-        width: 56,
-        height: 56,
-        skillIconPath: skillData.iconPath,
-        skillButtonColor: skillData.buttonColor,
-        onTap: onTap,
-      );
-    }
-    return GestureDetector(
-      onTap: onTap,
-      child: QvCardBorder(
-        type: QvCardBorderType.surface,
-        width: 56,
-        height: 56,
-        padding: const EdgeInsets.all(4),
-        child: Center(
-          child: Text('Empty', style: TextStyle(fontSize: 10, height: 1)),
-        ),
-      ),
     );
   }
 }

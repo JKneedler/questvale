@@ -8,10 +8,11 @@ import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_picker_sheet.dart';
 import 'package:questvale/widgets/qv_skill_button.dart';
 
-// Opens the exact same SkillsGearUpPage content (loadout section + tier
-// grid, unchanged since the Skills UI ticket) in a picker sheet — wrapped
-// in a Column since SkillsGearUpPage's own root is `Expanded(child: ...)`,
-// which needs a Flex ancestor to size against (QvPickerSheet's
+// Opens SkillsGearUpPage's tier grid (browsing/unlocking/upgrading skills;
+// its own Loadout section was dropped as redundant with this row, see the
+// Combat & Questing Redesign ticket) in a picker sheet — wrapped in a
+// Column since SkillsGearUpPage's own root is `Expanded(child: ...)`, which
+// needs a Flex ancestor to size against (QvPickerSheet's
 // scrollableBody: false gives it a bounded Positioned.fill, not a Flex, on
 // its own). This is now SkillsRow's "Skill Tree" button's destination —
 // browsing/unlocking skills moved off the row itself, see the row's own
