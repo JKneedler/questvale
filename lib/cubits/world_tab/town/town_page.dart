@@ -21,10 +21,10 @@ import 'package:questvale/widgets/qv_picker_sheet.dart';
 /// visited briefly and with intent, right after a quest: the player has new
 /// gear/materials/levels to deal with and wants to fix their loadout and go
 /// again, not browse a town menu. So the page leads with the character
-/// (stats card, skills), then gear, then the town destinations (Quest
-/// Board, Shop, etc.) at the bottom — one scrollable list, styled like the
-/// Todo tab's own item rows, replacing both the old button-grid Town Square
-/// and the old two-tab Gear Up page.
+/// (stats card), then the town destinations (Quest Board, Shop, etc.) right
+/// below it, then gear (skills, equipment) — one scrollable list, styled
+/// like the Todo tab's own item rows, replacing both the old button-grid
+/// Town Square and the old two-tab Gear Up page.
 class TownPage extends StatelessWidget {
   const TownPage({super.key});
 
@@ -53,11 +53,11 @@ class TownSquare extends StatelessWidget {
                   padding: const EdgeInsets.all(10),
                   children: [
                     const CharacterStatsCard(),
+                    const _TownLocationsCard(),
                     const SkillsRow(),
                     const _WeaponArtifactCard(),
                     const _EquipmentGridCard(),
                     const _PotionsRow(),
-                    const _TownLocationsCard(),
                   ],
                 ),
               ),
