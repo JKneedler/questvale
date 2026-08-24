@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/quest_board/gear_up/skills_gear_up/skills_gear_up_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/quest_board/gear_up/skills_gear_up/skills_gear_up_state.dart';
+import 'package:questvale/cubits/world_tab/town/skill_slot_sheet.dart';
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/character_skill.dart';
 import 'package:questvale/data/providers/game_data.dart';
@@ -97,22 +98,18 @@ class SkillsGearUpView extends StatelessWidget {
               ),
               const _LoadoutSection(),
               Expanded(
-                child: state.selectingLoadoutSlot != null
-                    ? _LoadoutSelectionView(slotNumber: state.selectingLoadoutSlot!)
-                    : QvFadingScrollable(
-                        child: ListView.builder(
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          itemCount: tiers.length,
-                          itemBuilder: (context, index) {
-                            final tier = tiers[index];
-                            final skillsInTier = classSkills
-                                .where((skill) => skill.tier == tier)
-                                .toList();
-                            return _TierSection(tier: tier, skills: skillsInTier);
-                          },
-                        ),
-                      ),
+                child: QvFadingScrollable(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    itemCount: tiers.length,
+                    itemBuilder: (context, index) {
+                      final tier = tiers[index];
+                      final skillsInTier =
+                          classSkills.where((skill) => skill.tier == tier).toList();
+                      return _TierSection(tier: tier, skills: skillsInTier);
+                    },
+                  ),
+                ),
               ),
             ],
           ),
@@ -170,7 +167,12 @@ class _LoadoutSlotCard extends StatelessWidget {
     final skillData = characterSkill != null
         ? gameData.getSkillDataById(characterSkill!.skillId)
         : null;
-    void onTap() => context.read<SkillsGearUpCubit>().selectLoadoutSlot(slotNumber);
+    // Opens the same standalone per-slot picker sheet Town Square's
+    // SkillsRow uses (showSkillSlotSheet) — a loadout slot reads the same
+    // whether you're tapping it here or from the main page, so it opens
+    // the same modal rather than swapping this page's own body in place
+    // (the old _LoadoutSelectionView behavior, removed).
+    void onTap() => showSkillSlotSheet(context, slotNumber: slotNumber);
     // QvSkillButton already wraps its child in its own GestureDetector
     // with onTap: onTap ?? () {} — passing its onTap param directly (not
     // wrapping the whole widget in a second GestureDetector) avoids the
@@ -197,169 +199,6 @@ class _LoadoutSlotCard extends StatelessWidget {
           child: Text('Empty', style: TextStyle(fontSize: 10, height: 1)),
         ),
       ),
-    );
-  }
-}
-
-// The picker shown when a loadout slot is tapped — lists every active
-// skill the character owns, tapping one assigns it to that slot. Swaps
-// in place of the tier grid (same shape as EquipmentSelectionView
-// swapping in for EquipmentGearUpOverview). The list itself is
-// SkillSlotAssignmentList (shared with Town Square's standalone per-slot
-// sheet, see skill_slot_sheet.dart) — this just adds the "< Assign Slot N"
-// header appropriate to being swapped in-place on a full page.
-class _LoadoutSelectionView extends StatelessWidget {
-  final int slotNumber;
-  const _LoadoutSelectionView({required this.slotNumber});
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final cubit = context.read<SkillsGearUpCubit>();
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-          child: Row(
-            children: [
-              GestureDetector(
-                onTap: () => cubit.cancelLoadoutSelection(),
-                child: SizedBox(
-                  width: 32,
-                  height: 28,
-                  child: Text('<',
-                      style: TextStyle(fontSize: 24, color: colorScheme.onSurface)),
-                ),
-              ),
-              Expanded(
-                child: Center(
-                  child: Text('Assign Slot $slotNumber',
-                      style: TextStyle(fontSize: 20, color: colorScheme.onSurface)),
-                ),
-              ),
-              const SizedBox(width: 32),
-            ],
-          ),
-        ),
-        Expanded(child: SkillSlotAssignmentList(slotNumber: slotNumber)),
-      ],
-    );
-  }
-}
-
-// The actual owned-actives picker for one loadout slot — a "Clear Slot"
-// entry (if it's currently occupied) followed by every active skill the
-// character owns, tapping one assigns it via SkillsGearUpCubit. Shared by
-// _LoadoutSelectionView above (full Skill Tree page, in-place swap — no
-// onAssigned needed, the cubit's own state change already swaps back to
-// the tier grid) and Town Square's standalone per-slot picker sheet
-// (skill_slot_sheet.dart, which needs onAssigned to close itself).
-class SkillSlotAssignmentList extends StatelessWidget {
-  final int slotNumber;
-  final VoidCallback? onAssigned;
-  const SkillSlotAssignmentList({super.key, required this.slotNumber, this.onAssigned});
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final gameData = context.read<GameData>();
-    return BlocBuilder<SkillsGearUpCubit, SkillsGearUpState>(
-      builder: (context, state) {
-        final cubit = context.read<SkillsGearUpCubit>();
-        final character = state.character;
-        final ownedActives = character.skills
-            .where(
-                (cs) => gameData.getSkillDataById(cs.skillId).type == SkillType.active)
-            .toList();
-        final currentlyAssigned = character.activeSkillSlotAt(slotNumber);
-
-        // Which slot (if any) each owned active is already sitting in — so
-        // a skill assigned elsewhere can be labeled "move" rather than
-        // silently relocated with no warning when tapped. A skill can only
-        // ever occupy one slot (Character.copyWithActiveSkillSlot enforces
-        // this), so this is at most a 1:1 map.
-        final assignedSlotBySkillId = <String, int>{
-          for (var slot = 1; slot <= 5; slot++)
-            if (character.activeSkillSlotAt(slot) != null)
-              character.activeSkillSlotAt(slot)!.skillId: slot,
-        };
-
-        return QvFadingScrollable(
-          child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            children: [
-              if (currentlyAssigned != null)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: GestureDetector(
-                    onTap: () async {
-                      await cubit.clearLoadoutSlot(slotNumber);
-                      onAssigned?.call();
-                    },
-                    child: QvCardBorder(
-                      type: QvCardBorderType.surface,
-                      padding: const EdgeInsets.all(8),
-                      child: SizedBox(
-                        height: 48,
-                        child: Center(
-                          child: Text('Clear Slot',
-                              style: TextStyle(color: colorScheme.onSurface)),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              if (ownedActives.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Center(
-                    child: Text('No active skills owned yet',
-                        style: TextStyle(color: colorScheme.onSurface)),
-                  ),
-                ),
-              for (final characterSkill in ownedActives)
-                Builder(builder: (context) {
-                  final skillData =
-                      gameData.getSkillDataById(characterSkill.skillId);
-                  final assignedElsewhere =
-                      assignedSlotBySkillId[characterSkill.skillId];
-                  final label = assignedElsewhere != null &&
-                          assignedElsewhere != slotNumber
-                      ? '${skillData.name} (Lv ${characterSkill.level}) — move from Slot $assignedElsewhere'
-                      : '${skillData.name} (Lv ${characterSkill.level})';
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: GestureDetector(
-                      onTap: () async {
-                        await cubit.assignSkillToSlot(slotNumber, characterSkill);
-                        onAssigned?.call();
-                      },
-                      child: QvCardBorder(
-                        type: QvCardBorderType.surface,
-                        padding: const EdgeInsets.all(8),
-                        child: Row(
-                          children: [
-                            QvSkillButton(
-                              width: 48,
-                              height: 48,
-                              skillIconPath: skillData.iconPath,
-                              skillButtonColor: skillData.buttonColor,
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(label,
-                                  style: TextStyle(color: colorScheme.onSurface)),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-            ],
-          ),
-        );
-      },
     );
   }
 }
