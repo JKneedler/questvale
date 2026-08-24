@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/quest_board/gear_up/skills_gear_up/skills_gear_up_page.dart';
+import 'package:questvale/cubits/world_tab/town/skill_slot_sheet.dart';
 import 'package:questvale/data/skills/base_active_skill.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_picker_sheet.dart';
@@ -12,7 +13,9 @@ import 'package:questvale/widgets/qv_skill_button.dart';
 // in a Column since SkillsGearUpPage's own root is `Expanded(child: ...)`,
 // which needs a Flex ancestor to size against (QvPickerSheet's
 // scrollableBody: false gives it a bounded Positioned.fill, not a Flex, on
-// its own).
+// its own). This is now SkillsRow's "Skill Tree" button's destination —
+// browsing/unlocking skills moved off the row itself, see the row's own
+// doc comment.
 void showSkillsSheet(BuildContext context) {
   QvPickerSheet.showModal(
     context,
@@ -22,11 +25,12 @@ void showSkillsSheet(BuildContext context) {
 }
 
 // One row, directly below the character stats card — a compact preview of
-// the current 5-slot active loadout. Deliberately more prominent than a
-// small leading-icon row (its own full-width icon strip instead) since
-// this is the single entry point for both reassigning the loadout and
-// browsing/unlocking the skill tree. See the Combat & Questing Redesign
-// ticket.
+// the current 5-slot active loadout. No card-wide onTap (matches the
+// Equipment/Weapon & Artifact cards' plain-label header) — per feedback,
+// each slot icon is its own tap target that opens a picker scoped to just
+// that slot (showSkillSlotSheet — owned actives only, not the full tree),
+// and browsing/unlocking the tree moved to its own "Skill Tree" button
+// below the icons. See the Combat & Questing Redesign ticket.
 class SkillsRow extends StatelessWidget {
   const SkillsRow({super.key});
 
@@ -47,15 +51,10 @@ class SkillsRow extends StatelessWidget {
       child: QvButton(
         buttonColor: ButtonColor.surfaceContainer,
         padding: const EdgeInsets.all(12),
-        onTap: () => showSkillsSheet(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Plain label, no trailing '>' — matches the Equipment/Weapon &
-            // Artifact cards' header treatment even though this row (unlike
-            // those two) does have one card-wide onTap; kept for visual
-            // consistency across all four grid-style cards per feedback.
             Text(
               'Skills',
               style: TextStyle(
@@ -67,7 +66,7 @@ class SkillsRow extends StatelessWidget {
             const SizedBox(height: 10),
             // Explicit per-item size via LayoutBuilder, filling the row
             // edge-to-edge — same treatment as the Equipment and Weapon &
-            // Artifact grids, replacing the old fixed-36px/spaceEvenly icons.
+            // Artifact grids.
             LayoutBuilder(
               builder: (context, constraints) {
                 const spacing = 8.0;
@@ -75,11 +74,32 @@ class SkillsRow extends StatelessWidget {
                 return Row(
                   spacing: spacing,
                   children: [
-                    for (final skill in slots)
-                      _SkillSlotIcon(skill: skill, size: itemSize),
+                    for (var i = 0; i < slots.length; i++)
+                      _SkillSlotIcon(
+                        skill: slots[i],
+                        size: itemSize,
+                        slotNumber: i + 1,
+                      ),
                   ],
                 );
               },
+            ),
+            const SizedBox(height: 10),
+            QvButton(
+              width: double.infinity,
+              height: 36,
+              buttonColor: ButtonColor.surface,
+              onTap: () => showSkillsSheet(context),
+              child: Center(
+                child: Text(
+                  'Skill Tree',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -89,38 +109,42 @@ class SkillsRow extends StatelessWidget {
 }
 
 class _SkillSlotIcon extends StatelessWidget {
-  const _SkillSlotIcon({required this.skill, required this.size});
+  const _SkillSlotIcon({
+    required this.skill,
+    required this.size,
+    required this.slotNumber,
+  });
 
   final BaseActiveSkill? skill;
   final double size;
+  final int slotNumber;
 
   @override
   Widget build(BuildContext context) {
+    // Tapping any slot — filled or empty — opens a picker scoped to just
+    // this slot (see skill_slot_sheet.dart), not the whole skill tree.
+    // QvSkillButton/plain Container+GestureDetector each own their tap
+    // directly here; no outer row-level GestureDetector exists anymore to
+    // fight over the gesture arena.
     if (skill == null) {
-      return Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(4),
+      return GestureDetector(
+        onTap: () => showSkillSlotSheet(context, slotNumber: slotNumber),
+        child: Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(4),
+          ),
         ),
       );
     }
-    // Decorative only — the whole row is what opens the sheet (see
-    // SkillsRow's outer QvButton). QvSkillButton wraps its own child in a
-    // GestureDetector regardless of whether onTap is passed (defaults to a
-    // no-op), which would otherwise win the gesture arena over the outer
-    // QvButton's own detector and silently eat the tap (the same nested-
-    // GestureDetector footgun this codebase has hit — and fixed — before).
-    // IgnorePointer keeps this icon out of hit-testing entirely so the tap
-    // passes through to the row.
-    return IgnorePointer(
-      child: QvSkillButton(
-        width: size,
-        height: size,
-        skillIconPath: skill!.data.iconPath,
-        skillButtonColor: skill!.data.buttonColor,
-      ),
+    return QvSkillButton(
+      width: size,
+      height: size,
+      skillIconPath: skill!.data.iconPath,
+      skillButtonColor: skill!.data.buttonColor,
+      onTap: () => showSkillSlotSheet(context, slotNumber: slotNumber),
     );
   }
 }
