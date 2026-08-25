@@ -32,6 +32,7 @@ import 'package:questvale/widgets/qv_bar.dart';
 import 'package:questvale/widgets/qv_mote_display.dart';
 import 'package:questvale/widgets/qv_resource_bar.dart';
 import 'package:questvale/widgets/qv_skill_button.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 import 'package:sqflite/sqflite.dart';
 
 // Shared with TargetEnemySkillBox's effect-line list below — same
@@ -301,23 +302,16 @@ class CombatView extends StatelessWidget {
                               height: 12,
                               child: Text(
                                 'AP',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: colorScheme.secondary,
-                                  height: 1,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                style: QvTextStyles.itemTitle
+                                    .copyWith(color: colorScheme.secondary, height: 1),
                               ),
                             ),
                             SizedBox(
                               height: 30,
                               child: Text(
                                 character.actionPoints.toString(),
-                                style: TextStyle(
-                                  fontSize: 36,
-                                  color: colorScheme.secondary,
-                                  height: 1,
-                                ),
+                                style: QvTextStyles.display
+                                    .copyWith(color: colorScheme.secondary, height: 1),
                                 textAlign: TextAlign.center,
                               ),
                             ),
@@ -327,11 +321,8 @@ class CombatView extends StatelessWidget {
                                 height: 30,
                                 child: Text(
                                   '(-${combatState.targetingSkill?.data.apCost ?? 0})',
-                                  style: TextStyle(
-                                    fontSize: 30,
-                                    color: Colors.red,
-                                    height: 1,
-                                  ),
+                                  style: QvTextStyles.impact
+                                      .copyWith(color: Colors.red, height: 1),
                                   textAlign: TextAlign.center,
                                 ),
                               ),
@@ -660,10 +651,7 @@ class EnemyInfoBox extends StatelessWidget {
                           child: Center(
                               child: Text(
                             enemyData.name,
-                            style: TextStyle(
-                              fontSize: 24,
-                              color: colorScheme.secondary,
-                            ),
+                            style: QvTextStyles.title.copyWith(color: colorScheme.secondary),
                           )),
                         ),
                         Padding(
@@ -675,11 +663,8 @@ class EnemyInfoBox extends StatelessWidget {
                                 QvInsetBackgroundType.secondary,
                             child: Text(
                               '${enemy.currentHealth} / ${enemyData.health}',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.grey[100],
-                                height: 1,
-                              ),
+                              style: QvTextStyles.detail
+                                  .copyWith(color: Colors.grey[100], height: 1),
                             ),
                           ),
                         ),
@@ -732,10 +717,7 @@ class EnemyInfoBox extends StatelessWidget {
               child: Center(
                   child: Text(
                 'Close',
-                style: TextStyle(
-                  fontSize: 24,
-                  color: colorScheme.secondary,
-                ),
+                style: QvTextStyles.title.copyWith(color: colorScheme.secondary),
               )),
             ),
           ],
@@ -815,8 +797,7 @@ class _EnemyNextAttackSliceState extends State<EnemyNextAttackSlice> {
             padding: EdgeInsets.only(left: 20),
             child: Text(
               'Next Attack',
-              style: TextStyle(
-                  fontSize: 16, color: colorScheme.primary, height: 1),
+              style: QvTextStyles.note.copyWith(color: colorScheme.primary, height: 1),
               textAlign: TextAlign.left,
             ),
           ),
@@ -838,8 +819,7 @@ class _EnemyNextAttackSliceState extends State<EnemyNextAttackSlice> {
             children: [
               Expanded(
                   child: Text(countdownLabel,
-                      style: TextStyle(
-                          fontSize: 20, color: Colors.grey[100], height: 1),
+                      style: QvTextStyles.label.copyWith(color: Colors.grey[100], height: 1),
                       textAlign: TextAlign.center)),
               Container(width: 2, height: 20, color: colorScheme.primary),
               SizedBox(width: 20),
@@ -847,13 +827,11 @@ class _EnemyNextAttackSliceState extends State<EnemyNextAttackSlice> {
                   flex: 3,
                   child: Text(
                     attack?.name ?? '—',
-                    style: TextStyle(
-                        fontSize: 20, color: colorScheme.primary, height: 1),
+                    style: QvTextStyles.label.copyWith(color: colorScheme.primary, height: 1),
                   )),
               Expanded(
                   child: Text(attack == null ? '—' : '${attack.damage}',
-                      style: TextStyle(
-                          fontSize: 20, color: colorScheme.primary, height: 1),
+                      style: QvTextStyles.label.copyWith(color: colorScheme.primary, height: 1),
                       textAlign: TextAlign.center)),
             ],
           ),
@@ -911,10 +889,7 @@ class PlayerInfoBox extends StatelessWidget {
               child: Center(
                   child: Text(
                 'Close',
-                style: TextStyle(
-                  fontSize: 24,
-                  color: colorScheme.secondary,
-                ),
+                style: QvTextStyles.title.copyWith(color: colorScheme.secondary),
               )),
             ),
           ],
@@ -944,21 +919,19 @@ class TargetEnemySkillBox extends StatelessWidget {
           children: [
             Text(skill.data.name),
             Text('Lv ${skill.level}',
-                style: TextStyle(fontSize: 12, color: colorScheme.onSurface)),
+                style: QvTextStyles.micro.copyWith(color: colorScheme.onSurface)),
             Text(skill.description),
             Padding(
               padding: const EdgeInsets.only(top: 2),
               child: Text(
                   'AP Cost: ${skill.data.apCost ?? 0} • Cooldown: ${_cooldownText(skill.data.cooldown)}',
-                  style: TextStyle(
-                      fontSize: 13,
-                      color: colorScheme.onSurface.withValues(alpha: 0.75))),
+                  style: QvTextStyles.caption
+                      .copyWith(color: colorScheme.onSurface.withValues(alpha: 0.75))),
             ),
             ..._effectLines(playerCombatStats).map((line) => Padding(
                   padding: const EdgeInsets.only(top: 2),
                   child: Text(line,
-                      style:
-                          TextStyle(fontSize: 13, color: colorScheme.onSurface)),
+                      style: QvTextStyles.caption.copyWith(color: colorScheme.onSurface)),
                 )),
             Expanded(child: Container()),
             QvButton(
@@ -970,7 +943,7 @@ class TargetEnemySkillBox extends StatelessWidget {
               child: Center(
                   child: Text(
                 'Attack',
-                style: TextStyle(fontSize: 24, color: colorScheme.secondary),
+                style: QvTextStyles.title.copyWith(color: colorScheme.secondary),
               )),
             ),
           ],

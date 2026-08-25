@@ -9,6 +9,7 @@ import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:questvale/widgets/qv_metal_corner_border.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_encounter_cubit.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -65,11 +66,7 @@ class QuestLootView extends StatelessWidget {
                   children: [
                     Text(
                       'Quest Summary',
-                      style: TextStyle(
-                        fontSize: 24,
-                        color: colorScheme.primary,
-                        height: 1,
-                      ),
+                      style: QvTextStyles.title.copyWith(color: colorScheme.primary, height: 1),
                     ),
                     Container(
                       height: 1,
@@ -105,11 +102,7 @@ class QuestLootView extends StatelessWidget {
                         )),
                     Text(
                       'Drops',
-                      style: TextStyle(
-                        fontSize: 22,
-                        color: colorScheme.primary,
-                        height: 1,
-                      ),
+                      style: QvTextStyles.subtitle.copyWith(color: colorScheme.primary, height: 1),
                     ),
                     Expanded(
                       child: Container(
@@ -151,11 +144,8 @@ class QuestLootView extends StatelessWidget {
                       child: Center(
                         child: Text(
                           'Return to Town',
-                          style: TextStyle(
-                            fontSize: 22,
-                            color: colorScheme.secondary,
-                            height: 1,
-                          ),
+                          style: QvTextStyles.subtitle
+                              .copyWith(color: colorScheme.secondary, height: 1),
                         ),
                       ),
                     ),

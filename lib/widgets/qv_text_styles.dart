@@ -41,12 +41,45 @@ import 'package:flutter/material.dart';
 // parallel ladder: 28/24/22/20/18 in both weights, matching how the app
 // already mixes bold headers with regular numeric/detail readouts at the
 // same visual size.
+//
+// Extended again (same pass) with sizes that turned out to be common
+// app-wide but hadn't shown up in the areas migrated so far: `heading`
+// (26, modal/dialog titles — qv_confirmation_modal, quest bag/flee
+// modals, the encounter header, QvAppBar), `display` (36, a big number
+// or "x" multiplier readout — combat's AP count, the "6x" in a loot
+// modal), `itemTitle`/`note` (16 bold/regular — a list item's own bold
+// title text vs. a modal's regular-weight description paragraph), and
+// `micro` (12, tiny inline tags like a skill's "Lv N"). Minor distinct
+// font weights that only differ from bold by a notch (w500/w600 vs. w700)
+// were folded into the bold tiers rather than kept as separate — visually
+// indistinguishable at these sizes, and multiplying tiers per weight
+// nuance defeats the point of having a shared scale.
 class QvTextStyles {
   QvTextStyles._();
+
+  // 36px, regular — a big standalone number or "x" multiplier readout:
+  // combat's AP count, the "6x" between an icon and its count in a loot
+  // modal.
+  static const TextStyle display = TextStyle(fontSize: 36);
+
+  // 30px, regular — a large, transient emphasis callout: "Found a
+  // chest!", an in-combat AP-cost overlay, a chest's own "Open" button.
+  static const TextStyle impact = TextStyle(fontSize: 30);
 
   // 28px, regular — the largest headline: a destination's arrival-banner
   // name (TownVisitSheet), a zone's name on the Quest Board.
   static const TextStyle banner = TextStyle(fontSize: 28);
+
+  // 26px, bold — a modal/dialog's own title (QvConfirmationModal, the
+  // quest bag/flee-confirmation modals) — distinct from `banner`/`title`,
+  // which read as in-page content rather than a dialog's chrome.
+  static const TextStyle heading = TextStyle(fontSize: 26, fontWeight: FontWeight.bold);
+
+  // 26px, regular — the regular-weight sibling of `heading`: a dialog's
+  // own action button label ("Yes, Flee", a confirm button), a page-level
+  // control (the encounter counter, QvAppBar's back chevron/trailing
+  // button), or a bare stat-number readout at this size.
+  static const TextStyle overlay = TextStyle(fontSize: 26);
 
   // 24px, regular — a prominent standalone title one step down from
   // banner: empty-state copy ("Coming Soon"), a primary action button's
@@ -88,9 +121,25 @@ class QvTextStyles {
   // needs to be a size up from `body` without reading as a heading.
   static const TextStyle detail = TextStyle(fontSize: 18);
 
+  // 16px, bold — a list item's own bold title text (a todo's name, a
+  // combat-status label) — smaller and more numerous-per-screen than
+  // `sectionHeader`, which introduces a whole block of content rather
+  // than labeling one item in a list.
+  static const TextStyle itemTitle =
+      TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
+
+  // 16px, regular — the regular-weight sibling of `itemTitle`: a modal's
+  // description paragraph (QvConfirmationModal, the flee-confirmation
+  // modal), a secondary line one step up from `body`.
+  static const TextStyle note = TextStyle(fontSize: 16);
+
   // 14px, regular — descriptive/paragraph text and secondary subtitles.
   static const TextStyle body = TextStyle(fontSize: 14);
 
   // 13px, regular — small print: stat values, secondary detail lines.
   static const TextStyle caption = TextStyle(fontSize: 13);
+
+  // 12px, regular — tiny inline tags: a skill's "Lv N" under its icon, a
+  // calendar day number.
+  static const TextStyle micro = TextStyle(fontSize: 12);
 }

@@ -6,6 +6,7 @@ import 'package:questvale/data/providers/game_data.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
 import 'package:questvale/data/repositories/quest_repository.dart';
 import 'package:questvale/widgets/qv_blinking.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 import 'package:sqflite/sqflite.dart';
 
 class QuestFloorBeginPage extends StatelessWidget {
@@ -58,10 +59,7 @@ class QuestFloorBeginPage extends StatelessWidget {
                   SizedBox(height: 50),
                   Text(
                     state.quest != null ? 'Number of Encounters' : '',
-                    style: TextStyle(
-                      color: colorScheme.secondary,
-                      fontSize: 28,
-                    ),
+                    style: QvTextStyles.banner.copyWith(color: colorScheme.secondary),
                   ),
                   Container(
                       height: 2, width: 180, color: colorScheme.secondary),
@@ -69,10 +67,7 @@ class QuestFloorBeginPage extends StatelessWidget {
                     state.quest != null
                         ? '${state.quest!.numEncountersCurFloor}'
                         : '',
-                    style: TextStyle(
-                      color: colorScheme.secondary,
-                      fontSize: 36,
-                    ),
+                    style: QvTextStyles.display.copyWith(color: colorScheme.secondary),
                   ),
                   SizedBox(height: 200),
                   QvBlinking(
@@ -80,9 +75,8 @@ class QuestFloorBeginPage extends StatelessWidget {
                     minOpacity: 0.5,
                     child: Text(
                       state.quest != null ? 'Tap anywhere to begin' : '',
-                      style: TextStyle(
-                          color: colorScheme.secondary.withValues(alpha: 0.5),
-                          fontSize: 28),
+                      style: QvTextStyles.banner
+                          .copyWith(color: colorScheme.secondary.withValues(alpha: 0.5)),
                     ),
                   ),
                 ],
