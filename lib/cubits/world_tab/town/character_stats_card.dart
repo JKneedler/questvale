@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_button.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 // Only Mage has a character portrait today (images/characters/mage.png) —
 // same "nothing else exists yet" reality combat_page.dart's own hardcoded
@@ -60,18 +61,12 @@ class CharacterStatsCard extends StatelessWidget {
                 children: [
                   Text(
                     character.name,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.onSurface,
-                    ),
+                    style: QvTextStyles.subheading.copyWith(color: colorScheme.onSurface),
                   ),
                   Text(
                     'Lv ${character.level} ${_capitalize(character.characterClass.name)}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: colorScheme.onSurface.withValues(alpha: 0.7),
-                    ),
+                    style: QvTextStyles.body
+                        .copyWith(color: colorScheme.onSurface.withValues(alpha: 0.7)),
                   ),
                   const SizedBox(height: 8),
                   Wrap(
@@ -126,7 +121,7 @@ class _StatChip extends StatelessWidget {
         ),
         Text(
           value,
-          style: TextStyle(fontSize: 13, color: colorScheme.onSurface),
+          style: QvTextStyles.caption.copyWith(color: colorScheme.onSurface),
         ),
       ],
     );

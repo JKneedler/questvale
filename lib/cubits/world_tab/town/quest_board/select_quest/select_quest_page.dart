@@ -13,6 +13,7 @@ import 'package:questvale/widgets/qv_enemy_info_modal.dart';
 import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:questvale/widgets/qv_gray_filter.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 // Renders inside TownVisitSheet's non-scrollable body slot (see
 // QuestBoardPage/TownVisitSheet) — TownVisitSheet's own arrival header
@@ -130,10 +131,8 @@ class SelectQuestZoneCard extends StatelessWidget {
                                   SizedBox(
                                     height: 30,
                                     child: Text(questZone.name,
-                                        style: TextStyle(
-                                          fontSize: 28,
-                                          color: colorScheme.secondary,
-                                        )),
+                                        style: QvTextStyles.banner
+                                            .copyWith(color: colorScheme.secondary)),
                                   ),
                                   Text('Level ${questZone.requiredLevel}',
                                       style: TextStyle(
@@ -146,10 +145,7 @@ class SelectQuestZoneCard extends StatelessWidget {
                             Center(
                               child: Text(
                                 '>',
-                                style: TextStyle(
-                                  fontSize: 28,
-                                  color: colorScheme.secondary,
-                                ),
+                                style: QvTextStyles.banner.copyWith(color: colorScheme.secondary),
                               ),
                             ),
                           ],
@@ -181,9 +177,8 @@ class SelectQuestZoneCard extends StatelessWidget {
                                         child: Center(
                                             child: Text(
                                           '<',
-                                          style: TextStyle(
-                                              fontSize: 24,
-                                              color: colorScheme.onSecondary),
+                                          style: QvTextStyles.title
+                                              .copyWith(color: colorScheme.onSecondary),
                                         )),
                                       ),
                                       Expanded(
@@ -205,9 +200,8 @@ class SelectQuestZoneCard extends StatelessWidget {
                                         child: Center(
                                             child: Text(
                                           '>',
-                                          style: TextStyle(
-                                              fontSize: 24,
-                                              color: colorScheme.onSecondary),
+                                          style: QvTextStyles.title
+                                              .copyWith(color: colorScheme.onSecondary),
                                         )),
                                       ),
                                     ],
@@ -239,10 +233,7 @@ class SelectQuestZoneCard extends StatelessWidget {
                                 child: Center(
                                   child: Text(
                                     'Begin Quest',
-                                    style: TextStyle(
-                                      fontSize: 24,
-                                      color: colorScheme.secondary,
-                                    ),
+                                    style: QvTextStyles.title.copyWith(color: colorScheme.secondary),
                                     textAlign: TextAlign.center,
                                   ),
                                 ),

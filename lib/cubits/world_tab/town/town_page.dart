@@ -14,6 +14,7 @@ import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
 import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:questvale/widgets/qv_picker_sheet.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 /// Town Square: the permanent root of the World tab's town flow, and — per
 /// the Combat & Questing Redesign ticket's second pass — now also where
@@ -161,11 +162,7 @@ class _EquipmentGridCard extends StatelessWidget {
             // SkillsRow/_PotionsRow use for their single-destination rows.
             Text(
               'Equipment',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: colorScheme.onSurface,
-              ),
+              style: QvTextStyles.cardHeader.copyWith(color: colorScheme.onSurface),
             ),
             const SizedBox(height: 10),
             // Explicit per-item size via LayoutBuilder rather than
@@ -285,11 +282,7 @@ class _WeaponArtifactCard extends StatelessWidget {
             // no card-wide onTap to chevron toward, each icon has its own.
             Text(
               'Weapon & Artifact',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: colorScheme.onSurface,
-              ),
+              style: QvTextStyles.cardHeader.copyWith(color: colorScheme.onSurface),
             ),
             const SizedBox(height: 10),
             LayoutBuilder(
@@ -451,11 +444,7 @@ class _PotionsRow extends StatelessWidget {
             // consistency across all four grid-style cards per feedback.
             Text(
               'Potions',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: colorScheme.onSurface,
-              ),
+              style: QvTextStyles.cardHeader.copyWith(color: colorScheme.onSurface),
             ),
             const SizedBox(height: 10),
             // Explicit per-item size via LayoutBuilder, filling the row
@@ -690,11 +679,7 @@ class _TownLocationButton extends StatelessWidget {
                 textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.onSurface,
-                ),
+                style: QvTextStyles.emphasis.copyWith(color: colorScheme.onSurface),
               ),
             ),
           ],
@@ -728,10 +713,8 @@ class _ComingSoonBody extends StatelessWidget {
       child: Center(
         child: Text(
           'Coming Soon',
-          style: TextStyle(
-            fontSize: 24,
-            color: colorScheme.onSurface.withValues(alpha: 0.6),
-          ),
+          style: QvTextStyles.title
+              .copyWith(color: colorScheme.onSurface.withValues(alpha: 0.6)),
         ),
       ),
     );

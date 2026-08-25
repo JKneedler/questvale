@@ -7,6 +7,7 @@ import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/widgets/qv_equipment_item.dart';
 import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:questvale/widgets/qv_picker_sheet.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 import 'package:sqflite/sqflite.dart';
 
 // Opens a lightweight picker sheet for one equipment slot. Reuses
@@ -64,10 +65,8 @@ class _EquipmentSlotSheetBody extends StatelessWidget {
                   ? Center(
                       child: Text(
                         'No other gear for this slot',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: colorScheme.onSurface.withValues(alpha: 0.6),
-                        ),
+                        style: QvTextStyles.body
+                            .copyWith(color: colorScheme.onSurface.withValues(alpha: 0.6)),
                       ),
                     )
                   : QvFadingScrollable(

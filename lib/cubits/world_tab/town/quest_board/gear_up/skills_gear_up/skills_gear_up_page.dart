@@ -15,6 +15,7 @@ import 'package:questvale/widgets/qv_confirmation_modal.dart';
 import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
 import 'package:questvale/widgets/qv_skill_button.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 import 'package:sqflite/sqflite.dart';
 
 String _percentText(double value) => '${(value * 100).round()}%';
@@ -89,10 +90,7 @@ class SkillsGearUpView extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 6),
                 child: Text(
                   'Skill Points: ${state.character.skillPoints}',
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: SKILL_POINTS_COLOR),
+                  style: QvTextStyles.sectionTitle.copyWith(color: SKILL_POINTS_COLOR),
                 ),
               ),
               Expanded(
@@ -193,8 +191,7 @@ class _TierHeader extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Text(
             label,
-            style: TextStyle(
-                color: textColor, fontSize: 22, fontWeight: FontWeight.bold),
+            style: QvTextStyles.emphasis.copyWith(color: textColor),
           ),
         ),
         Expanded(child: Container(height: 1, color: dividerColor)),
@@ -312,13 +309,10 @@ class _SkillDetailPanel extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(skill.name,
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurface)),
+                style: QvTextStyles.sectionTitle.copyWith(color: colorScheme.onSurface)),
             const SizedBox(height: 4),
             Text(description,
-                style: TextStyle(fontSize: 14, color: colorScheme.onSurface)),
+                style: QvTextStyles.body.copyWith(color: colorScheme.onSurface)),
             // AP cost/cooldown are only ever set on actives — skill.apCost
             // is null for every passive (see skills.json), so this line is
             // naturally omitted for them rather than needing its own
@@ -328,17 +322,15 @@ class _SkillDetailPanel extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
                     'AP Cost: ${skill.apCost} • Cooldown: ${_cooldownText(skill.cooldown)}',
-                    style: TextStyle(
-                        fontSize: 13,
-                        color: colorScheme.onSurface.withValues(alpha: 0.75))),
+                    style: QvTextStyles.caption
+                        .copyWith(color: colorScheme.onSurface.withValues(alpha: 0.75))),
               ),
             const SizedBox(height: 8),
             ..._statLines(skill, previewLevel, owned != null)
                 .map((line) => Padding(
                       padding: const EdgeInsets.only(bottom: 2),
                       child: Text(line,
-                          style:
-                              TextStyle(fontSize: 13, color: colorScheme.onSurface)),
+                          style: QvTextStyles.caption.copyWith(color: colorScheme.onSurface)),
                     )),
             const SizedBox(height: 8),
             _ActionButton(

@@ -6,6 +6,7 @@ import 'package:questvale/cubits/world_tab/world_cubit.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_draggable_sheet.dart';
 import 'package:questvale/widgets/qv_metal_corner_border.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 /// The shared "you have arrived" shell for every Town Square destination
 /// (Quest Board, Shop, Guild Hall, Forge, Lab, Gemforge, Reliquary) — see
@@ -123,10 +124,7 @@ class _TownVisitHeader extends StatelessWidget {
                   ),
                   Text(
                     title,
-                    style: TextStyle(
-                      color: colorScheme.onSecondary,
-                      fontSize: 28,
-                    ),
+                    style: QvTextStyles.banner.copyWith(color: colorScheme.onSecondary),
                   ),
                 ],
               ),

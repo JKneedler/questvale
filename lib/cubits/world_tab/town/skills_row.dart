@@ -7,6 +7,7 @@ import 'package:questvale/data/skills/base_active_skill.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_picker_sheet.dart';
 import 'package:questvale/widgets/qv_skill_button.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 // Opens SkillsGearUpPage's tier grid (browsing/unlocking/upgrading skills;
 // its own Loadout section was dropped as redundant with this row, see the
@@ -58,11 +59,7 @@ class SkillsRow extends StatelessWidget {
           children: [
             Text(
               'Skills',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: colorScheme.onSurface,
-              ),
+              style: QvTextStyles.cardHeader.copyWith(color: colorScheme.onSurface),
             ),
             const SizedBox(height: 10),
             // Explicit per-item size via LayoutBuilder, filling the row
