@@ -671,7 +671,8 @@ class _TownLocationButton extends StatelessWidget {
         onTap: onTap,
         height: 76,
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-        child: Column(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
             Image.asset(
@@ -682,16 +683,18 @@ class _TownLocationButton extends StatelessWidget {
               fit: BoxFit.contain,
               scale: .1,
             ),
-            const SizedBox(height: 4),
-            Text(
-              isUnlocked ? title : 'Lv $requiredLevel',
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: colorScheme.onSurface,
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                isUnlocked ? title : 'Lv $requiredLevel',
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
+                ),
               ),
             ),
           ],
