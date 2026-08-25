@@ -104,17 +104,19 @@ class _EquipmentIcon extends StatelessWidget {
     // padding) for the border to visibly reach the box's real edges,
     // hence wrapping the icon in a SizedBox sized to fill the padded area
     // and centering the actual image within that instead of inside it.
-    // 12 (not QvCardBorder's own default, but matching it) — an earlier,
-    // tighter 8 let the icon's own opaque pixels visually crowd/overlap the
-    // rarity border's inner edge, since the border frame's decoration paints
-    // across the full box while only `padding` insets the child from it.
-    const padding = 12.0;
+    // 16 (wider than QvCardBorder's own 12px default, per feedback) — an
+    // earlier, tighter 8 let the icon's own opaque pixels visually crowd/
+    // overlap the rarity border's inner edge, since the border frame's
+    // decoration paints across the full box while only `padding` insets the
+    // child from it.
+    const padding = 16.0;
     final iconSize = (boxHeight - padding * 2).clamp(0.0, double.infinity);
     return QvCardBorder(
       width: boxWidth,
       height: boxHeight,
-      type:
-          equipment == null ? QvCardBorderType.surface : QvCardBorderType.rarity,
+      type: equipment == null
+          ? QvCardBorderType.surface
+          : QvCardBorderType.rarity,
       rarity: equipment?.rarity ?? Rarity.common,
       bgColor: colorScheme.surface,
       padding: const EdgeInsets.all(padding),
@@ -167,7 +169,8 @@ class _EquipmentGridCard extends StatelessWidget {
             // SkillsRow/_PotionsRow use for their single-destination rows.
             Text(
               'Equipment',
-              style: QvTextStyles.sectionHeader.copyWith(color: colorScheme.onSurface),
+              style: QvTextStyles.sectionHeader
+                  .copyWith(color: colorScheme.onSurface),
             ),
             const SizedBox(height: 10),
             // Explicit per-item size via LayoutBuilder rather than
@@ -287,7 +290,8 @@ class _WeaponArtifactCard extends StatelessWidget {
             // no card-wide onTap to chevron toward, each icon has its own.
             Text(
               'Weapon & Artifact',
-              style: QvTextStyles.sectionHeader.copyWith(color: colorScheme.onSurface),
+              style: QvTextStyles.sectionHeader
+                  .copyWith(color: colorScheme.onSurface),
             ),
             const SizedBox(height: 10),
             LayoutBuilder(
@@ -450,7 +454,8 @@ class _PotionsRow extends StatelessWidget {
             // consistency across all four grid-style cards per feedback.
             Text(
               'Potions',
-              style: QvTextStyles.sectionHeader.copyWith(color: colorScheme.onSurface),
+              style: QvTextStyles.sectionHeader
+                  .copyWith(color: colorScheme.onSurface),
             ),
             const SizedBox(height: 10),
             // Explicit per-item size via LayoutBuilder, filling the row
@@ -535,7 +540,8 @@ class _QuestBoardCard extends StatelessWidget {
             const SizedBox(width: 8),
             Text(
               'Quest Board',
-              style: QvTextStyles.sectionTitle.copyWith(color: colorScheme.onPrimary),
+              style: QvTextStyles.sectionTitle
+                  .copyWith(color: colorScheme.onPrimary),
             ),
           ],
         ),
@@ -689,10 +695,26 @@ class _TownLocationButton extends StatelessWidget {
       colorFilter: isUnlocked
           ? const ColorFilter.mode(Colors.transparent, BlendMode.color)
           : const ColorFilter.matrix(<double>[
-              0.2126, 0.7152, 0.0722, 0, 0,
-              0.2126, 0.7152, 0.0722, 0, 0,
-              0.2126, 0.7152, 0.0722, 0, 0,
-              0, 0, 0, 1, 0,
+              0.2126,
+              0.7152,
+              0.0722,
+              0,
+              0,
+              0.2126,
+              0.7152,
+              0.0722,
+              0,
+              0,
+              0.2126,
+              0.7152,
+              0.0722,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
             ]),
       child: QvButton(
         buttonColor: ButtonColor.surface,
@@ -718,7 +740,8 @@ class _TownLocationButton extends StatelessWidget {
                 textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: QvTextStyles.sectionTitle.copyWith(color: colorScheme.onSurface),
+                style: QvTextStyles.sectionTitle
+                    .copyWith(color: colorScheme.onSurface),
               ),
             ),
           ],
