@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_draggable_sheet.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 /// Shared modal-sheet chrome for the add-todo and edit-todo screens.
 /// Callers supply their own header (cancel/save actions differ between add
@@ -122,11 +123,8 @@ class TodoFormDeleteButton extends StatelessWidget {
           const SizedBox(width: 8),
           Text(
             'Delete Todo',
-            style: TextStyle(
-              color: colorScheme.error,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
+            style: QvTextStyles.itemTitle
+                .copyWith(color: colorScheme.error, fontWeight: FontWeight.w600),
           ),
         ],
       ),

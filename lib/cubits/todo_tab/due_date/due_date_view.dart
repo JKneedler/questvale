@@ -5,6 +5,7 @@ import 'package:questvale/cubits/todo_tab/due_date/due_date_cubit.dart';
 import 'package:questvale/cubits/todo_tab/due_date/due_date_editor.dart';
 import 'package:questvale/cubits/todo_tab/due_date/due_date_state.dart';
 import 'package:questvale/helpers/data_formatters.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 class DueDateView extends StatelessWidget {
   const DueDateView({super.key});
@@ -46,11 +47,8 @@ class DueDateView extends StatelessWidget {
                               Text(
                                 DataFormatters.formatDateTime(
                                     state.selectedDate!, state.hasTime),
-                                style: TextStyle(
-                                  color: colorScheme.primary,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: QvTextStyles.itemTitle
+                                    .copyWith(color: colorScheme.primary, fontWeight: FontWeight.w600),
                               ),
                               const SizedBox(width: 4),
                               Icon(

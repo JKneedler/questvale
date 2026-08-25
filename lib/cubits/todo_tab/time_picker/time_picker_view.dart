@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/todo_tab/time_picker/time_picker_cubit.dart';
 import 'package:questvale/cubits/todo_tab/time_picker/time_picker_state.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 /// Hour/minute/AM-PM wheel scroller for picking a time, styled to match the
 /// rest of the app's pixel-bordered look instead of a plain Material sheet —
@@ -125,12 +126,10 @@ class _WheelColumn extends StatelessWidget {
             return Center(
               child: Text(
                 labelBuilder(index),
-                style: TextStyle(
-                  fontSize: 22,
+                style: (isSelected ? QvTextStyles.emphasis : QvTextStyles.subtitle).copyWith(
                   color: isSelected
                       ? colorScheme.primary
                       : colorScheme.onSurface.withValues(alpha: 0.35),
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 ),
               ),
             );

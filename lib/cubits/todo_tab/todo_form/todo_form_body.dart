@@ -15,6 +15,7 @@ import 'package:questvale/widgets/qv_inset_background.dart';
 import 'package:questvale/widgets/qv_month_calendar.dart';
 import 'package:questvale/widgets/qv_number_wheel_picker.dart';
 import 'package:questvale/widgets/qv_segmented_control.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 import 'package:questvale/widgets/qv_textfield.dart';
 import 'package:questvale/widgets/qv_weekday_selector.dart';
 
@@ -516,8 +517,7 @@ class _TodoFormBodyState extends State<TodoFormBody>
             Expanded(
               child: Text(
                 reminderType.name,
-                style: TextStyle(
-                  fontSize: 15,
+                style: QvTextStyles.body.copyWith(
                   fontWeight: isChecked ? FontWeight.bold : FontWeight.w500,
                   color: isChecked
                       ? colorScheme.primary
@@ -554,11 +554,10 @@ class _TodoFormBodyState extends State<TodoFormBody>
               Expanded(
                 child: Text(
                   value,
-                  style: TextStyle(
+                  style: QvTextStyles.itemTitle.copyWith(
                     color: isSet
                         ? colorScheme.primary
                         : colorScheme.onSurface.withValues(alpha: 0.5),
-                    fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -572,11 +571,8 @@ class _TodoFormBodyState extends State<TodoFormBody>
                   child: Center(
                     child: Text(
                       'Clear',
-                      style: TextStyle(
-                        color: colorScheme.error,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: QvTextStyles.caption
+                          .copyWith(color: colorScheme.error, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
@@ -655,11 +651,8 @@ class _TodoFormBodyState extends State<TodoFormBody>
                 const SizedBox(width: 3),
                 Text(
                   '${fields.currentStreak}',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.primary,
-                  ),
+                  style: QvTextStyles.caption
+                      .copyWith(fontWeight: FontWeight.bold, color: colorScheme.primary),
                 ),
               ],
             )
@@ -797,8 +790,7 @@ class _TodoFormBodyState extends State<TodoFormBody>
         const SizedBox(height: 6),
         Text(
           description,
-          style: TextStyle(
-            fontSize: 13,
+          style: QvTextStyles.caption.copyWith(
             fontWeight: FontWeight.w500,
             color: colorScheme.onSurface.withValues(alpha: 0.6),
           ),
@@ -824,11 +816,7 @@ class _TodoFormBodyState extends State<TodoFormBody>
             children: [
               Text(
                 label,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.onSurface,
-                ),
+                style: QvTextStyles.sectionHeader.copyWith(color: colorScheme.onSurface),
               ),
               if (trailing != null) ...[
                 const Spacer(),
@@ -861,11 +849,8 @@ class _TodoFormBodyState extends State<TodoFormBody>
           const SizedBox(width: 12),
           Text(
             'Allow multiple completions',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: colorScheme.onSurface,
-            ),
+            style: QvTextStyles.itemTitle
+                .copyWith(fontWeight: FontWeight.w500, color: colorScheme.onSurface),
           ),
         ],
       ),
@@ -918,8 +903,7 @@ class _TodoFormBodyState extends State<TodoFormBody>
             Expanded(
               child: Text(
                 tag.name,
-                style: TextStyle(
-                  fontSize: 15,
+                style: QvTextStyles.body.copyWith(
                   fontWeight: isChecked ? FontWeight.bold : FontWeight.w500,
                   color: isChecked
                       ? colorScheme.primary
@@ -953,8 +937,7 @@ class _TodoFormBodyState extends State<TodoFormBody>
               textInputAction: TextInputAction.done,
               decoration: InputDecoration(
                 hintText: 'New Tag',
-                hintStyle: TextStyle(
-                  fontSize: 15,
+                hintStyle: QvTextStyles.body.copyWith(
                   fontWeight: FontWeight.w500,
                   color: colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
@@ -962,11 +945,8 @@ class _TodoFormBodyState extends State<TodoFormBody>
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
               ),
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                color: colorScheme.onSurface,
-              ),
+              style: QvTextStyles.body
+                  .copyWith(fontWeight: FontWeight.w500, color: colorScheme.onSurface),
             ),
           ),
           if (hasText) ...[

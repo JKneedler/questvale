@@ -8,6 +8,7 @@ import 'package:questvale/widgets/qv_ap_toast.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_confirmation_modal.dart';
 import 'package:questvale/widgets/qv_check_box.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 import '../../../data/models/todo.dart';
 
 class TodosOverviewItem extends StatefulWidget {
@@ -124,9 +125,7 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
                         Text(
                           widget.todo.name,
                           softWrap: true,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                          style: QvTextStyles.itemTitle.copyWith(
                             color: widget.todo.isCompleted
                                 ? colorScheme.onSurface.withValues(alpha: 0.5)
                                 : colorScheme.onSurface,
@@ -138,11 +137,8 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
                             softWrap: true,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color:
-                                  colorScheme.onSurface.withValues(alpha: 0.5),
-                            ),
+                            style: QvTextStyles.body
+                                .copyWith(color: colorScheme.onSurface.withValues(alpha: 0.5)),
                           ),
                         Row(
                           children: [
@@ -158,8 +154,7 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
                                   const SizedBox(width: 3),
                                   Text(
                                     '${widget.todo.currentStreak}',
-                                    style: TextStyle(
-                                      fontSize: 13,
+                                    style: QvTextStyles.caption.copyWith(
                                       fontWeight: FontWeight.bold,
                                       color: colorScheme.primary,
                                     ),
@@ -179,12 +174,10 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
                               Text(
                                 DataFormatters.formatDateTime(
                                     widget.todo.dueDate!, widget.todo.hasTime),
-                                style: TextStyle(
-                                  fontSize: 14,
+                                style: QvTextStyles.body.copyWith(
                                   color: isPastDue
                                       ? colorScheme.error
-                                      : colorScheme.onSurface
-                                          .withValues(alpha: 0.5),
+                                      : colorScheme.onSurface.withValues(alpha: 0.5),
                                 ),
                               ),
                           ],
@@ -222,11 +215,8 @@ class MultiCheckIndicator extends StatelessWidget {
           ),
           Text(
             '$count',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-              color: colorScheme.onSurface,
-            ),
+            style: QvTextStyles.caption
+                .copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface),
           ),
         ],
       ),
