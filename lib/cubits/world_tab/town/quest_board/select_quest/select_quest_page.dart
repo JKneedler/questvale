@@ -44,8 +44,8 @@ class SelectQuestPage extends StatelessWidget {
         return QvFadingScrollable(
           child: ListView.builder(
             padding: const EdgeInsets.only(
-              left: 20,
-              right: 20,
+              left: 4,
+              right: 4,
               top: 10,
               bottom: 10,
             ),
