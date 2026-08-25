@@ -224,11 +224,13 @@ class CombatView extends StatelessWidget {
 // Skills sit above vitals here (unlike CombatStatusCard's own order),
 // per feedback — they're the primary action in this card.
 //
-// AP is deliberately not shown here for now, per feedback — it used to
-// sit between the health bar and motes as its own badge. Character.
-// actionPoints itself is untouched (still read/spent normally elsewhere,
-// e.g. onSkillButtonTap's AP-cost check); this only drops the visual
-// readout while a permanent home for it gets decided.
+// AP sits as a small top-right badge above the skill row rather than
+// between health and motes (its old spot, and CombatStatusCard's own
+// _ApBadge placement) — chosen over two other options (a slim column
+// back between Health/Motes, or a HUD chip up near "Encounter N / M")
+// because AP is what gates tapping a skill, so pairing it visually with
+// the skill row it limits reads clearer than grouping it with the
+// vitals row below.
 class CombatVitalsAndSkillsCard extends StatelessWidget {
   const CombatVitalsAndSkillsCard({
     super.key,
@@ -245,6 +247,7 @@ class CombatVitalsAndSkillsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 10),
       child: QvButton(
@@ -253,6 +256,22 @@ class CombatVitalsAndSkillsCard extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                QvButton(
+                  height: 26,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Center(
+                    child: Text(
+                      '${character.actionPoints} AP',
+                      style: QvTextStyles.itemTitle.copyWith(color: colorScheme.secondary),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
             SizedBox(
               height: 65,
               child: Row(
@@ -451,8 +470,13 @@ class BattleFieldDisplay extends StatelessWidget {
               ),
               Expanded(
                 child: Padding(
+                  // top/bottom trimmed from 40 to 24 — the new AP badge row
+                  // in CombatVitalsAndSkillsCard added ~32px below, shrinking
+                  // this Expanded area enough to overflow the enemy column
+                  // by a few px; this reclaims that headroom at the source
+                  // rather than shrinking the badge to compensate.
                   padding: const EdgeInsets.only(
-                      left: 30, right: 30, top: 40, bottom: 40),
+                      left: 30, right: 30, top: 24, bottom: 24),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
