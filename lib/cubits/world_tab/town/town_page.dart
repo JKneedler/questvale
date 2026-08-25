@@ -104,7 +104,11 @@ class _EquipmentIcon extends StatelessWidget {
     // padding) for the border to visibly reach the box's real edges,
     // hence wrapping the icon in a SizedBox sized to fill the padded area
     // and centering the actual image within that instead of inside it.
-    const padding = 8.0;
+    // 12 (not QvCardBorder's own default, but matching it) — an earlier,
+    // tighter 8 let the icon's own opaque pixels visually crowd/overlap the
+    // rarity border's inner edge, since the border frame's decoration paints
+    // across the full box while only `padding` insets the child from it.
+    const padding = 12.0;
     final iconSize = (boxHeight - padding * 2).clamp(0.0, double.infinity);
     return QvCardBorder(
       width: boxWidth,
@@ -383,7 +387,8 @@ class _ArtifactGridItem extends StatelessWidget {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     final boxWidth = width ?? size;
     final boxHeight = height ?? size;
-    const padding = 8.0;
+    // See _EquipmentIcon's own doc comment on this same value/reasoning.
+    const padding = 12.0;
     final iconSize = (boxHeight - padding * 2).clamp(0.0, double.infinity);
     return GestureDetector(
       onTap: () => QvPickerSheet.showModal(
