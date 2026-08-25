@@ -26,8 +26,6 @@ class SelectQuestPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-
     final questZones = context.read<GameData>().questZones;
     final character = context.read<PlayerCubit>().state.character;
 
@@ -35,39 +33,38 @@ class SelectQuestPage extends StatelessWidget {
       return const Center(child: CircularProgressIndicator());
     }
 
-    return Container(
-      color: colorScheme.surface,
-      child: BlocProvider(
-        create: (context) => SelectQuestCubit(questZones: questZones),
-        child: BlocBuilder<SelectQuestCubit, SelectQuestState>(
-            builder: (context, selectQuestState) {
-          return QvFadingScrollable(
-            child: ListView.builder(
-              padding: const EdgeInsets.only(
-                left: 20,
-                right: 20,
-                top: 10,
-                bottom: 10,
-              ),
-              itemCount: questZones.length,
-              itemBuilder: (context, index) {
-                final isOpen =
-                    selectQuestState.selectedQuestZoneIndex == index;
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: SelectQuestZoneCard(
-                    questZone: questZones[index],
-                    isOpen: isOpen,
-                    onTap: () => context
-                        .read<SelectQuestCubit>()
-                        .toggleQuestZone(index),
-                  ),
-                );
-              },
+    // No background fill of its own — sits directly on TownVisitSheet's own
+    // QvBackground, like every other Town Square destination's content, per
+    // feedback that the flat colorScheme.surface fill this used to have read
+    // as a visibly darker box against the sheet around it.
+    return BlocProvider(
+      create: (context) => SelectQuestCubit(questZones: questZones),
+      child: BlocBuilder<SelectQuestCubit, SelectQuestState>(
+          builder: (context, selectQuestState) {
+        return QvFadingScrollable(
+          child: ListView.builder(
+            padding: const EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: 10,
+              bottom: 10,
             ),
-          );
-        }),
-      ),
+            itemCount: questZones.length,
+            itemBuilder: (context, index) {
+              final isOpen = selectQuestState.selectedQuestZoneIndex == index;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: SelectQuestZoneCard(
+                  questZone: questZones[index],
+                  isOpen: isOpen,
+                  onTap: () =>
+                      context.read<SelectQuestCubit>().toggleQuestZone(index),
+                ),
+              );
+            },
+          ),
+        );
+      }),
     );
   }
 }
