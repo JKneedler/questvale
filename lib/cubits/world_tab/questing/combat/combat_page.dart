@@ -10,7 +10,9 @@ import 'package:questvale/cubits/world_tab/questing/combat/combat_state.dart';
 import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_encounter_cubit.dart';
 import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_flee_confirmation_modal.dart';
 import 'package:questvale/cubits/theme/theme_cubit.dart';
+import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/enemy.dart';
+import 'package:questvale/data/models/mage_motes.dart';
 import 'package:questvale/data/models/player_combat_stats.dart';
 import 'package:questvale/data/models/scheduled_timer.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_attack_data.dart';
@@ -19,18 +21,16 @@ import 'package:questvale/data/providers/game_data_models/skill_data.dart';
 import 'package:questvale/data/skills/base_active_skill.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/data_formatters.dart';
-import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_animated_transition.dart';
 import 'package:questvale/widgets/qv_blinking.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
+import 'package:questvale/widgets/qv_character_vitals_row.dart';
 import 'package:questvale/widgets/qv_damage_toast.dart';
 import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
 import 'package:questvale/widgets/qv_metal_corner_border.dart';
 import 'package:questvale/widgets/qv_bar.dart';
-import 'package:questvale/widgets/qv_mote_display.dart';
-import 'package:questvale/widgets/qv_resource_bar.dart';
 import 'package:questvale/widgets/qv_skill_button.dart';
 import 'package:questvale/widgets/qv_text_styles.dart';
 import 'package:sqflite/sqflite.dart';
@@ -85,8 +85,6 @@ class CombatView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-    final themeId = context.watch<ThemeCubit>().state.theme.id;
     return BlocBuilder<CombatCubit, CombatState>(
         builder: (context, combatState) {
       return MultiBlocListener(
@@ -200,150 +198,123 @@ class CombatView extends StatelessWidget {
                 ),
               ),
               BattleFieldDisplay(),
-              SizedBox(
-                  height: 65,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      if (playerSkills.activeSkillSlot1 != null)
-                        CombatSkillButton(
-                          onTap: () => context
-                              .read<CombatCubit>()
-                              .onSkillButtonTap(
-                                  context, playerSkills.activeSkillSlot1!),
-                          skill: playerSkills.activeSkillSlot1!,
-                          darkened: combatState.status ==
-                                  CombatStatus.targetingSkill &&
-                              combatState.targetingSkill?.id !=
-                                  playerSkills.activeSkillSlot1!.id,
-                        ),
-                      if (playerSkills.activeSkillSlot2 != null)
-                        CombatSkillButton(
-                          onTap: () => context
-                              .read<CombatCubit>()
-                              .onSkillButtonTap(
-                                  context, playerSkills.activeSkillSlot2!),
-                          skill: playerSkills.activeSkillSlot2!,
-                          darkened: combatState.status ==
-                                  CombatStatus.targetingSkill &&
-                              combatState.targetingSkill?.id !=
-                                  playerSkills.activeSkillSlot2!.id,
-                        ),
-                      if (playerSkills.activeSkillSlot3 != null)
-                        CombatSkillButton(
-                          onTap: () => context
-                              .read<CombatCubit>()
-                              .onSkillButtonTap(
-                                  context, playerSkills.activeSkillSlot3!),
-                          skill: playerSkills.activeSkillSlot3!,
-                          darkened: combatState.status ==
-                                  CombatStatus.targetingSkill &&
-                              combatState.targetingSkill?.id !=
-                                  playerSkills.activeSkillSlot3!.id,
-                        ),
-                      if (playerSkills.activeSkillSlot4 != null)
-                        CombatSkillButton(
-                          onTap: () => context
-                              .read<CombatCubit>()
-                              .onSkillButtonTap(
-                                  context, playerSkills.activeSkillSlot4!),
-                          skill: playerSkills.activeSkillSlot4!,
-                          darkened: combatState.status ==
-                                  CombatStatus.targetingSkill &&
-                              combatState.targetingSkill?.id !=
-                                  playerSkills.activeSkillSlot4!.id,
-                        ),
-                      if (playerSkills.activeSkillSlot5 != null)
-                        CombatSkillButton(
-                          onTap: () => context
-                              .read<CombatCubit>()
-                              .onSkillButtonTap(
-                                  context, playerSkills.activeSkillSlot5!),
-                          skill: playerSkills.activeSkillSlot5!,
-                          darkened: combatState.status ==
-                                  CombatStatus.targetingSkill &&
-                              combatState.targetingSkill?.id !=
-                                  playerSkills.activeSkillSlot5!.id,
-                        ),
-                    ],
-                  )),
-              SizedBox(
-                height: 80,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Expanded(
-                      child: QvResourceBar(
-                        color: HEALTH_COLOR,
-                        maxValue: playerCombatStats.maxHealth,
-                        currentValue: character.currentHealth,
-                        alignment: Alignment.centerLeft,
-                      ),
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: AssetImage(
-                              'images/ui/buttons/$themeId/button-primary-flat.png'),
-                          centerSlice: STANDARD_BORDER_SLICE,
-                          fit: BoxFit.fill,
-                        ),
-                      ),
-                      width: 80,
-                      height: combatState.status == CombatStatus.targetingSkill
-                          ? 80
-                          : 50,
-                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              height: 12,
-                              child: Text(
-                                'AP',
-                                style: QvTextStyles.itemTitle
-                                    .copyWith(color: colorScheme.secondary, height: 1),
-                              ),
-                            ),
-                            SizedBox(
-                              height: 30,
-                              child: Text(
-                                character.actionPoints.toString(),
-                                style: QvTextStyles.display
-                                    .copyWith(color: colorScheme.secondary, height: 1),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                            if (combatState.status ==
-                                CombatStatus.targetingSkill)
-                              SizedBox(
-                                height: 30,
-                                child: Text(
-                                  '(-${combatState.targetingSkill?.data.apCost ?? 0})',
-                                  style: QvTextStyles.impact
-                                      .copyWith(color: Colors.red, height: 1),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: character.characterClass == CharacterClass.mage &&
-                              playerState.mageMotes != null
-                          ? QvMoteDisplay(motes: playerState.mageMotes!)
-                          : const SizedBox.shrink(),
-                    ),
-                  ],
-                ),
+              const SizedBox(height: 10),
+              CombatVitalsAndSkillsCard(
+                character: character,
+                mageMotes: playerState.mageMotes,
+                playerSkills: playerSkills,
+                combatState: combatState,
               ),
             ],
           );
         }),
       );
     });
+  }
+}
+
+// Health/motes + skill buttons, as one list-item card — mirrors the Todo
+// tab's pinned CombatStatusCard (todos_overview/combat_status_card.dart)
+// outer surfaceContainer QvButton shell, and reuses its exact
+// CharacterVitalsRow for health/motes so the two read as the same vitals
+// language rather than two independently-styled copies. Skill buttons
+// stay the real CombatSkillButton (skill icon + level badge, live
+// targeting/darkened state) rather than CombatStatusCard's placeholder
+// cooldown buttons — there's a real cooldown/target flow here already.
+//
+// AP is deliberately not shown here for now, per feedback — it used to
+// sit between the health bar and motes as its own badge. Character.
+// actionPoints itself is untouched (still read/spent normally elsewhere,
+// e.g. onSkillButtonTap's AP-cost check); this only drops the visual
+// readout while a permanent home for it gets decided.
+class CombatVitalsAndSkillsCard extends StatelessWidget {
+  const CombatVitalsAndSkillsCard({
+    super.key,
+    required this.character,
+    required this.mageMotes,
+    required this.playerSkills,
+    required this.combatState,
+  });
+
+  final Character character;
+  final MageMotes? mageMotes;
+  final PlayerSkills playerSkills;
+  final CombatState combatState;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 10),
+      child: QvButton(
+        buttonColor: ButtonColor.surfaceContainer,
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CharacterVitalsRow(character: character, mageMotes: mageMotes),
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 65,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  if (playerSkills.activeSkillSlot1 != null)
+                    CombatSkillButton(
+                      onTap: () => context.read<CombatCubit>().onSkillButtonTap(
+                          context, playerSkills.activeSkillSlot1!),
+                      skill: playerSkills.activeSkillSlot1!,
+                      darkened:
+                          combatState.status == CombatStatus.targetingSkill &&
+                              combatState.targetingSkill?.id !=
+                                  playerSkills.activeSkillSlot1!.id,
+                    ),
+                  if (playerSkills.activeSkillSlot2 != null)
+                    CombatSkillButton(
+                      onTap: () => context.read<CombatCubit>().onSkillButtonTap(
+                          context, playerSkills.activeSkillSlot2!),
+                      skill: playerSkills.activeSkillSlot2!,
+                      darkened:
+                          combatState.status == CombatStatus.targetingSkill &&
+                              combatState.targetingSkill?.id !=
+                                  playerSkills.activeSkillSlot2!.id,
+                    ),
+                  if (playerSkills.activeSkillSlot3 != null)
+                    CombatSkillButton(
+                      onTap: () => context.read<CombatCubit>().onSkillButtonTap(
+                          context, playerSkills.activeSkillSlot3!),
+                      skill: playerSkills.activeSkillSlot3!,
+                      darkened:
+                          combatState.status == CombatStatus.targetingSkill &&
+                              combatState.targetingSkill?.id !=
+                                  playerSkills.activeSkillSlot3!.id,
+                    ),
+                  if (playerSkills.activeSkillSlot4 != null)
+                    CombatSkillButton(
+                      onTap: () => context.read<CombatCubit>().onSkillButtonTap(
+                          context, playerSkills.activeSkillSlot4!),
+                      skill: playerSkills.activeSkillSlot4!,
+                      darkened:
+                          combatState.status == CombatStatus.targetingSkill &&
+                              combatState.targetingSkill?.id !=
+                                  playerSkills.activeSkillSlot4!.id,
+                    ),
+                  if (playerSkills.activeSkillSlot5 != null)
+                    CombatSkillButton(
+                      onTap: () => context.read<CombatCubit>().onSkillButtonTap(
+                          context, playerSkills.activeSkillSlot5!),
+                      skill: playerSkills.activeSkillSlot5!,
+                      darkened:
+                          combatState.status == CombatStatus.targetingSkill &&
+                              combatState.targetingSkill?.id !=
+                                  playerSkills.activeSkillSlot5!.id,
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

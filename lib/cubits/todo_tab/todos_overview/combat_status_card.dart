@@ -4,12 +4,10 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_cubit.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_state.dart';
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/enemy.dart';
-import 'package:questvale/data/models/mage_motes.dart';
 import 'package:questvale/data/models/scheduled_timer.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
 import 'package:questvale/helpers/constants.dart';
@@ -19,8 +17,8 @@ import 'package:questvale/services/leveling_service.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_bar.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
+import 'package:questvale/widgets/qv_character_vitals_row.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
-import 'package:questvale/widgets/qv_mote_display.dart';
 import 'package:questvale/widgets/qv_text_styles.dart';
 
 // Scaffold for the character/combat status block pinned above the todo
@@ -151,7 +149,7 @@ class _CombatStatusCardState extends State<CombatStatusCard> {
                         ],
                       ),
                       const SizedBox(height: 6),
-                      _CharacterVitalsRow(
+                      CharacterVitalsRow(
                           character: character, mageMotes: state.mageMotes),
                     ],
                   ),
@@ -309,67 +307,10 @@ class _ApBadge extends StatelessWidget {
   }
 }
 
-// Row 1 — health bar / class-resource block, leaning toward the card's
-// outer edges. Health comes straight off the loaded Character; the
-// class-resource side is class-conditional (Motes for Mage today; Warrior's
-// Rage/Rogue's Focus will slot in here the same way once those trees
-// exist — see MageMotes' doc comment for why each gets its own model
-// instead of a shared one).
-class _CharacterVitalsRow extends StatelessWidget {
-  final Character character;
-  final MageMotes? mageMotes;
-  const _CharacterVitalsRow({required this.character, this.mageMotes});
-
-  @override
-  Widget build(BuildContext context) {
-    // Watched directly rather than threaded down from a distant ancestor —
-    // same pattern combat_page.dart's TargetEnemySkillBox already uses.
-    // maxHealth lives on PlayerCombatStats (not Character — see the Skill
-    // System Foundations ticket), since it's the only place gear's Health
-    // stat modifier is actually consulted.
-    final playerCombatStats = context.watch<PlayerCubit>().state.playerCombatStats;
-    if (playerCombatStats == null) return const SizedBox.shrink();
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '${character.currentHealth} / ${playerCombatStats.maxHealth}',
-                    style: QvTextStyles.sectionHeader.copyWith(color: HEALTH_COLOR),
-                  ),
-                  Text(
-                    'HP',
-                    style: QvTextStyles.sectionHeader.copyWith(color: HEALTH_COLOR),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 2),
-              QvBar(
-                currentValue: character.currentHealth,
-                maxValue: playerCombatStats.maxHealth,
-                resource: QvBarResource.health,
-                size: QvBarSize.mini,
-                height: 20,
-                child: const SizedBox.shrink(),
-              ),
-            ],
-          ),
-        ),
-        if (character.characterClass == CharacterClass.mage &&
-            mageMotes != null) ...[
-          const SizedBox(width: 8),
-          Expanded(child: QvMoteDisplay(motes: mageMotes!)),
-        ],
-      ],
-    );
-  }
-}
+// Row 1 — health bar / class-resource block. Now CharacterVitalsRow
+// (lib/widgets/qv_character_vitals_row.dart), pulled out to a shared
+// widget so the Combat page's own vitals+skills card can reuse the exact
+// same styling — see that file's own doc comment.
 
 // Row 2 — 5 skill-cooldown buttons. Placeholder colors/cooldowns only; no
 // live skill-cooldown tracking exists yet (see class doc comment above).
