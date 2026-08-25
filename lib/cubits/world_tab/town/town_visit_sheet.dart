@@ -5,7 +5,6 @@ import 'package:questvale/cubits/home/nav_aware_modal_sheet.dart';
 import 'package:questvale/cubits/world_tab/world_cubit.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_draggable_sheet.dart';
-import 'package:questvale/widgets/qv_metal_corner_border.dart';
 import 'package:questvale/widgets/qv_text_styles.dart';
 
 /// The shared "you have arrived" shell for every Town Square destination
@@ -83,20 +82,25 @@ class TownVisitSheet extends StatelessWidget {
   }
 }
 
+/// Plain header — icon + title, a close button, nothing else. Previously an
+/// ornate QvMetalCornerBorder "banner" box; simplified (per feedback, the
+/// fancy pixel-art border wasn't earning its keep on every single town
+/// destination) to match QvPickerSheet's own lighter header shape exactly,
+/// just with the destination's icon added in front of the title. The two
+/// sheet styles now share one header language instead of two.
 class _TownVisitHeader extends StatelessWidget {
   const _TownVisitHeader({required this.title, required this.iconPath});
 
   final String title;
   final String iconPath;
 
-  static const double _bannerHeight = 96;
-  static const double _closeButtonSize = 36;
+  static const double _height = 44;
   static const double _bottomSpacing = 10;
 
   /// Total rendered height — QvDraggableSheet renders [_TownVisitHeader] as
   /// a fixed overlay above the scrollable/body region, so it needs to know
   /// exactly how much room to reserve.
-  static const double totalHeight = _bannerHeight + _bottomSpacing;
+  static const double totalHeight = _height + _bottomSpacing;
 
   @override
   Widget build(BuildContext context) {
@@ -105,44 +109,33 @@ class _TownVisitHeader extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: _bottomSpacing),
       child: SizedBox(
-        height: _bannerHeight,
-        child: Stack(
-          clipBehavior: Clip.none,
+        height: _height,
+        child: Row(
           children: [
-            QvMetalCornerBorder(
-              color: colorScheme.secondary,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                spacing: 12,
-                children: [
-                  Image.asset(
-                    iconPath,
-                    width: 40,
-                    height: 40,
-                    filterQuality: FilterQuality.none,
-                  ),
-                  Text(
-                    title,
-                    style: QvTextStyles.banner.copyWith(color: colorScheme.onSecondary),
-                  ),
-                ],
+            Image.asset(
+              iconPath,
+              width: 32,
+              height: 32,
+              filterQuality: FilterQuality.none,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                title,
+                style: QvTextStyles.emphasis.copyWith(color: colorScheme.onSurface),
               ),
             ),
-            Positioned(
-              top: -_closeButtonSize / 4,
-              right: -_closeButtonSize / 4,
-              child: QvButton(
-                width: _closeButtonSize,
-                height: _closeButtonSize,
-                buttonColor: ButtonColor.surfaceContainer,
-                onTap: () => Navigator.of(context).pop(),
-                child: Icon(
-                  Symbols.close,
-                  weight: 700,
-                  size: 18,
-                  color: colorScheme.onSurface,
-                ),
+            const SizedBox(width: 12),
+            QvButton(
+              width: _height,
+              height: _height,
+              buttonColor: ButtonColor.surfaceContainer,
+              onTap: () => Navigator.of(context).pop(),
+              child: Icon(
+                Symbols.close,
+                weight: 700,
+                size: 18,
+                color: colorScheme.onSurface,
               ),
             ),
           ],

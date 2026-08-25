@@ -5,14 +5,16 @@ import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_draggable_sheet.dart';
 import 'package:questvale/widgets/qv_text_styles.dart';
 
-/// A lighter modal-sheet shell than TownVisitSheet's "arrival banner" — a
-/// title and a close button, nothing more. For quick in-context actions
-/// reached from a Town Square list row (swap a piece of gear, reassign a
-/// skill) that aren't "visiting a place" the way stepping into Forge or the
-/// Shop is; see the Combat & Questing Redesign ticket. [body] is expected
-/// to manage its own bounded layout (Expanded children, its own
-/// scrollables) — see QvDraggableSheet.scrollableBody's own doc comment for
-/// why this always passes false.
+/// A modal-sheet shell for quick in-context actions reached from a Town
+/// Square list row (swap a piece of gear, reassign a skill) that aren't
+/// "visiting a place" the way stepping into Forge or the Shop is — just a
+/// title and a close button, no icon. TownVisitSheet's own header
+/// (town_visit_sheet.dart) uses this same plain shape, just with a
+/// destination icon added in front of the title; see the Combat & Questing
+/// Redesign ticket. [body] is expected to manage its own bounded layout
+/// (Expanded children, its own scrollables) — see
+/// QvDraggableSheet.scrollableBody's own doc comment for why this always
+/// passes false.
 class QvPickerSheet extends StatelessWidget {
   const QvPickerSheet({super.key, required this.title, required this.body});
 
