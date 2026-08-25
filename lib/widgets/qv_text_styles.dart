@@ -28,6 +28,19 @@ import 'package:flutter/material.dart';
 //   button) — previously those were inconsistent (22px, or a bespoke
 //   un-migrated 14px), now every "tap this to go somewhere" button reads
 //   at one consistent size.
+//
+// Extended (same day) with a parallel *regular*-weight track — while
+// migrating the rest of the app beyond Town Square, 20px/22px/18px turned
+// out to be just as common at regular weight (combat numbers, equipment
+// item labels, toasts, the enemy info modal, Forge's rarity chips and
+// cost readouts) as they are at bold. Rather than force that text onto
+// the bold tiers above (which would visually embolden it) or leave it
+// all as inline literals, `subtitle`/`label`/`detail` sit at the same
+// three sizes as `emphasis`/`sectionTitle`/`sectionHeader` but regular —
+// together with `banner`/`title` (already regular) that's a complete
+// parallel ladder: 28/24/22/20/18 in both weights, matching how the app
+// already mixes bold headers with regular numeric/detail readouts at the
+// same visual size.
 class QvTextStyles {
   QvTextStyles._();
 
@@ -44,6 +57,11 @@ class QvTextStyles {
   // screen, not shared with ordinary menu buttons: a tier-divider header.
   static const TextStyle emphasis = TextStyle(fontSize: 22, fontWeight: FontWeight.bold);
 
+  // 22px, regular — the regular-weight sibling of `emphasis`: a menu-item
+  // button label that isn't meant to read as bold/shouty (Forge's slot
+  // picker buttons), a secondary title-weight line.
+  static const TextStyle subtitle = TextStyle(fontSize: 22);
+
   // 20px, bold — a page/sheet-level section header ("Skill Points: N", a
   // skill's name in its own detail panel) *and* any full-width tappable
   // menu-button label (Town Location buttons, the Skill Tree button) — one
@@ -52,6 +70,11 @@ class QvTextStyles {
   static const TextStyle sectionTitle =
       TextStyle(fontSize: 20, fontWeight: FontWeight.bold);
 
+  // 20px, regular — the regular-weight sibling of `sectionTitle`: a short
+  // label or numeric readout (a rarity name, "Level N", a gold amount, a
+  // combat damage number) rather than a header or a button.
+  static const TextStyle label = TextStyle(fontSize: 20);
+
   // 18px, bold — introduces a block of content: the character's name on
   // the stats card, or a list-item card's own section label (Equipment,
   // Skills, Weapon & Artifact, Potions on Town Square). Both are doing the
@@ -59,6 +82,11 @@ class QvTextStyles {
   // size rather than being split across two adjacent-but-different tiers.
   static const TextStyle sectionHeader =
       TextStyle(fontSize: 18, fontWeight: FontWeight.bold);
+
+  // 18px, regular — the regular-weight sibling of `sectionHeader`: dense
+  // info-panel text (a stat modifier line, a cost breakdown row) that
+  // needs to be a size up from `body` without reading as a heading.
+  static const TextStyle detail = TextStyle(fontSize: 18);
 
   // 14px, regular — descriptive/paragraph text and secondary subtitles.
   static const TextStyle body = TextStyle(fontSize: 14);

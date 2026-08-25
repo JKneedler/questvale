@@ -12,6 +12,7 @@ import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_equipment_item.dart';
 import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 import 'package:sqflite/sqflite.dart';
 
 class SelectEquipmentPage extends StatelessWidget {
@@ -111,8 +112,7 @@ class SlotButton extends StatelessWidget {
           .onEquipmentSlotSelected(equipmentSlot),
       child: Center(
         child: Text(capitalizedName,
-            style: TextStyle(
-                fontSize: 22, height: 1, color: colorScheme.secondary)),
+            style: QvTextStyles.subtitle.copyWith(height: 1, color: colorScheme.secondary)),
       ),
     );
   }
