@@ -59,7 +59,7 @@ class SkillsRow extends StatelessWidget {
           children: [
             Text(
               'Skills',
-              style: QvTextStyles.cardHeader.copyWith(color: colorScheme.onSurface),
+              style: QvTextStyles.sectionHeader.copyWith(color: colorScheme.onSurface),
             ),
             const SizedBox(height: 10),
             // Explicit per-item size via LayoutBuilder, filling the row
@@ -85,17 +85,13 @@ class SkillsRow extends StatelessWidget {
             const SizedBox(height: 10),
             QvButton(
               width: double.infinity,
-              height: 36,
+              height: 44,
               buttonColor: ButtonColor.surface,
               onTap: () => showSkillsSheet(context),
               child: Center(
                 child: Text(
                   'Skill Tree',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurface,
-                  ),
+                  style: QvTextStyles.sectionTitle.copyWith(color: colorScheme.onSurface),
                 ),
               ),
             ),

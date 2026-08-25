@@ -61,7 +61,7 @@ class CharacterStatsCard extends StatelessWidget {
                 children: [
                   Text(
                     character.name,
-                    style: QvTextStyles.subheading.copyWith(color: colorScheme.onSurface),
+                    style: QvTextStyles.sectionHeader.copyWith(color: colorScheme.onSurface),
                   ),
                   Text(
                     'Lv ${character.level} ${_capitalize(character.characterClass.name)}',

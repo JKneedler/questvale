@@ -162,7 +162,7 @@ class _EquipmentGridCard extends StatelessWidget {
             // SkillsRow/_PotionsRow use for their single-destination rows.
             Text(
               'Equipment',
-              style: QvTextStyles.cardHeader.copyWith(color: colorScheme.onSurface),
+              style: QvTextStyles.sectionHeader.copyWith(color: colorScheme.onSurface),
             ),
             const SizedBox(height: 10),
             // Explicit per-item size via LayoutBuilder rather than
@@ -282,7 +282,7 @@ class _WeaponArtifactCard extends StatelessWidget {
             // no card-wide onTap to chevron toward, each icon has its own.
             Text(
               'Weapon & Artifact',
-              style: QvTextStyles.cardHeader.copyWith(color: colorScheme.onSurface),
+              style: QvTextStyles.sectionHeader.copyWith(color: colorScheme.onSurface),
             ),
             const SizedBox(height: 10),
             LayoutBuilder(
@@ -444,7 +444,7 @@ class _PotionsRow extends StatelessWidget {
             // consistency across all four grid-style cards per feedback.
             Text(
               'Potions',
-              style: QvTextStyles.cardHeader.copyWith(color: colorScheme.onSurface),
+              style: QvTextStyles.sectionHeader.copyWith(color: colorScheme.onSurface),
             ),
             const SizedBox(height: 10),
             // Explicit per-item size via LayoutBuilder, filling the row
@@ -679,7 +679,7 @@ class _TownLocationButton extends StatelessWidget {
                 textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: QvTextStyles.emphasis.copyWith(color: colorScheme.onSurface),
+                style: QvTextStyles.sectionTitle.copyWith(color: colorScheme.onSurface),
               ),
             ),
           ],

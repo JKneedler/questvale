@@ -11,15 +11,23 @@ import 'package:flutter/material.dart';
 // 'Pixel1' comes from the app-wide ThemeData in main.dart and is inherited
 // automatically by any Text that doesn't override it.
 //
-// Named for the roles that were already recurring verbatim across Town
-// Square/Quest Board/Skill Tree before this existed, not generic
-// heading1/2/3 — each size below was pulled from ≥2 real call sites that
-// already agreed on it, so introducing these named styles doesn't change
-// any existing visual size, just gives the repeated values a name instead
-// of a copy-pasted literal. Sizes some call sites use only once (10, 12,
-// 15, 18-as-non-bold, etc.) are left as inline literals rather than forced
-// onto the nearest tier — not every text needs a named token, only the
-// ones that actually repeat.
+// This is the revised scale (2026-08-25) — the first version just named
+// whatever sizes were already scattered around; a live simulator pass
+// across Town Square/Skill Tree/Quest Board/combat surfaced a real
+// hierarchy inversion in that first-draft set (individual buttons reading
+// louder than the section headers organizing them, the character's own
+// name reading smaller than a menu button, one CTA left un-migrated at an
+// oddly small size) and this scale corrects it, not just catalogs it:
+// - `subheading`/`cardHeader` (18/16) merged into one `sectionHeader` (18)
+//   — the character's name and a card's own section label do the same
+//   job (introduce a block of content) and should carry the same weight.
+// - `emphasis` (22) narrowed to true one-off standouts (a tier-divider
+//   header) — it no longer covers ordinary menu buttons.
+// - `sectionTitle` (20) widened to cover every full-width tappable
+//   button label in this area (Town Location buttons, the Skill Tree
+//   button) — previously those were inconsistent (22px, or a bespoke
+//   un-migrated 14px), now every "tap this to go somewhere" button reads
+//   at one consistent size.
 class QvTextStyles {
   QvTextStyles._();
 
@@ -32,24 +40,25 @@ class QvTextStyles {
   // own label ("Begin Quest").
   static const TextStyle title = TextStyle(fontSize: 24);
 
-  // 22px, bold — a big, prominent label: a full-width menu button's own
-  // text, a tier-divider header.
+  // 22px, bold — reserved for a genuine one-off standout on its own
+  // screen, not shared with ordinary menu buttons: a tier-divider header.
   static const TextStyle emphasis = TextStyle(fontSize: 22, fontWeight: FontWeight.bold);
 
-  // 20px, bold — a page/sheet-level section header: "Skill Points: N", a
-  // skill's name in its own detail panel.
+  // 20px, bold — a page/sheet-level section header ("Skill Points: N", a
+  // skill's name in its own detail panel) *and* any full-width tappable
+  // menu-button label (Town Location buttons, the Skill Tree button) — one
+  // consistent size for "this text is a button you can press to go
+  // somewhere," regardless of which card it lives in.
   static const TextStyle sectionTitle =
       TextStyle(fontSize: 20, fontWeight: FontWeight.bold);
 
-  // 18px, bold — a secondary-but-prominent heading: the character's name
-  // on the stats card.
-  static const TextStyle subheading =
+  // 18px, bold — introduces a block of content: the character's name on
+  // the stats card, or a list-item card's own section label (Equipment,
+  // Skills, Weapon & Artifact, Potions on Town Square). Both are doing the
+  // same job at the same level of the page's hierarchy, so they share one
+  // size rather than being split across two adjacent-but-different tiers.
+  static const TextStyle sectionHeader =
       TextStyle(fontSize: 18, fontWeight: FontWeight.bold);
-
-  // 16px, bold — the repeated "list-item card" section header (Equipment,
-  // Skills, Weapon & Artifact, Potions, etc. on Town Square).
-  static const TextStyle cardHeader =
-      TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
 
   // 14px, regular — descriptive/paragraph text and secondary subtitles.
   static const TextStyle body = TextStyle(fontSize: 14);
