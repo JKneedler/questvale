@@ -12,6 +12,7 @@ import 'package:questvale/widgets/qv_app_bar.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_confirmation_modal.dart';
 import 'package:questvale/widgets/qv_fading_scrollable.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 import 'package:sqflite/sqflite.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -51,9 +52,8 @@ class SettingsPage extends StatelessWidget {
                                 children: [
                                   Expanded(
                                       child: Text('Generate 10 loot',
-                                          style: TextStyle(
-                                              fontSize: 20,
-                                              color: colorScheme.onSurface))),
+                                          style: QvTextStyles.label
+                                              .copyWith(color: colorScheme.onSurface))),
                                   QvButton(
                                     width: 180,
                                     height: 50,
@@ -63,9 +63,8 @@ class SettingsPage extends StatelessWidget {
                                         .generateLoot(),
                                     child: Center(
                                       child: Text('Generate',
-                                          style: TextStyle(
-                                              fontSize: 20,
-                                              color: colorScheme.onPrimary)),
+                                          style: QvTextStyles.label
+                                              .copyWith(color: colorScheme.onPrimary)),
                                     ),
                                   ),
                                 ],
@@ -74,9 +73,8 @@ class SettingsPage extends StatelessWidget {
                                 children: [
                                   Expanded(
                                       child: Text('Reset AP + daily AP to 0',
-                                          style: TextStyle(
-                                              fontSize: 20,
-                                              color: colorScheme.onSurface))),
+                                          style: QvTextStyles.label
+                                              .copyWith(color: colorScheme.onSurface))),
                                   QvButton(
                                     width: 180,
                                     height: 50,
@@ -85,9 +83,8 @@ class SettingsPage extends StatelessWidget {
                                         context.read<SettingsCubit>().resetAp(),
                                     child: Center(
                                       child: Text('Reset',
-                                          style: TextStyle(
-                                              fontSize: 20,
-                                              color: colorScheme.onPrimary)),
+                                          style: QvTextStyles.label
+                                              .copyWith(color: colorScheme.onPrimary)),
                                     ),
                                   ),
                                 ],
@@ -97,9 +94,8 @@ class SettingsPage extends StatelessWidget {
                                   Expanded(
                                       child: Text(
                                           'Level up (LVL ${characterDataState.character!.level})',
-                                          style: TextStyle(
-                                              fontSize: 20,
-                                              color: colorScheme.onSurface))),
+                                          style: QvTextStyles.label
+                                              .copyWith(color: colorScheme.onSurface))),
                                   QvButton(
                                     width: 180,
                                     height: 50,
@@ -108,9 +104,8 @@ class SettingsPage extends StatelessWidget {
                                         context.read<SettingsCubit>().levelUp(),
                                     child: Center(
                                       child: Text('Level Up',
-                                          style: TextStyle(
-                                              fontSize: 20,
-                                              color: colorScheme.onPrimary)),
+                                          style: QvTextStyles.label
+                                              .copyWith(color: colorScheme.onPrimary)),
                                     ),
                                   ),
                                 ],
@@ -120,9 +115,8 @@ class SettingsPage extends StatelessWidget {
                                   Expanded(
                                       child: Text(
                                           'Unlock next skill (${characterDataState.character!.skillPoints} pts)',
-                                          style: TextStyle(
-                                              fontSize: 20,
-                                              color: colorScheme.onSurface))),
+                                          style: QvTextStyles.label
+                                              .copyWith(color: colorScheme.onSurface))),
                                   QvButton(
                                     width: 180,
                                     height: 50,
@@ -132,9 +126,8 @@ class SettingsPage extends StatelessWidget {
                                         .unlockNextSkill(),
                                     child: Center(
                                       child: Text('Unlock',
-                                          style: TextStyle(
-                                              fontSize: 20,
-                                              color: colorScheme.onPrimary)),
+                                          style: QvTextStyles.label
+                                              .copyWith(color: colorScheme.onPrimary)),
                                     ),
                                   ),
                                 ],
@@ -143,9 +136,8 @@ class SettingsPage extends StatelessWidget {
                                 children: [
                                   Expanded(
                                       child: Text('Upgrade first owned skill',
-                                          style: TextStyle(
-                                              fontSize: 20,
-                                              color: colorScheme.onSurface))),
+                                          style: QvTextStyles.label
+                                              .copyWith(color: colorScheme.onSurface))),
                                   QvButton(
                                     width: 180,
                                     height: 50,
@@ -155,9 +147,8 @@ class SettingsPage extends StatelessWidget {
                                         .upgradeFirstSkill(),
                                     child: Center(
                                       child: Text('Upgrade',
-                                          style: TextStyle(
-                                              fontSize: 20,
-                                              color: colorScheme.onPrimary)),
+                                          style: QvTextStyles.label
+                                              .copyWith(color: colorScheme.onPrimary)),
                                     ),
                                   ),
                                 ],
@@ -166,19 +157,16 @@ class SettingsPage extends StatelessWidget {
                                 children: [
                                   Expanded(
                                       child: Text('Theme',
-                                          style: TextStyle(
-                                              fontSize: 20,
-                                              color: colorScheme.onSurface))),
+                                          style: QvTextStyles.label
+                                              .copyWith(color: colorScheme.onSurface))),
                                   ThemePicker(),
                                 ],
                               ),
                               Align(
                                 alignment: Alignment.centerLeft,
                                 child: Text('Admin Actions',
-                                    style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: colorScheme.onSurface)),
+                                    style: QvTextStyles.sectionTitle
+                                        .copyWith(color: colorScheme.onSurface)),
                               ),
                               _AdminActionRow(
                                 label: 'Delete all tasks/todos/habits',
@@ -294,8 +282,7 @@ class _AdminActionRow extends StatelessWidget {
       children: [
         Expanded(
             child: Text(label,
-                style:
-                    TextStyle(fontSize: 20, color: colorScheme.onSurface))),
+                style: QvTextStyles.label.copyWith(color: colorScheme.onSurface))),
         QvButton(
           width: 180,
           height: 50,
@@ -303,8 +290,7 @@ class _AdminActionRow extends StatelessWidget {
           onTap: onTap,
           child: Center(
             child: Text(buttonLabel,
-                style:
-                    TextStyle(fontSize: 20, color: colorScheme.onPrimary)),
+                style: QvTextStyles.label.copyWith(color: colorScheme.onPrimary)),
           ),
         ),
       ],
@@ -333,8 +319,7 @@ class ThemePicker extends StatelessWidget {
       ),
       child: Center(
         child: Text(activeTheme.displayName,
-            style: TextStyle(
-                fontSize: 16, color: Theme.of(context).colorScheme.onPrimary)),
+            style: QvTextStyles.note.copyWith(color: Theme.of(context).colorScheme.onPrimary)),
       ),
     );
   }
@@ -390,11 +375,8 @@ class _ThemeRow extends StatelessWidget {
                 size: 20),
             const SizedBox(width: 14),
             Text(theme.displayName,
-                style: TextStyle(
-                    color: isSelected
-                        ? colorScheme.primary
-                        : colorScheme.onSurface,
-                    fontSize: 16)),
+                style: QvTextStyles.note.copyWith(
+                    color: isSelected ? colorScheme.primary : colorScheme.onSurface)),
           ],
         ),
       ),
