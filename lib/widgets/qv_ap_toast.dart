@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:questvale/widgets/qv_button.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 // Shows a transient "+ N AP" pill about a third of the way down the screen.
 // Fire-and-forget: inserts its own OverlayEntry and removes itself once its
@@ -87,11 +88,7 @@ class _ApToastState extends State<_ApToast>
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Text(
                 '+ ${widget.amount} AP',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.onPrimary,
-                ),
+                style: QvTextStyles.sectionTitle.copyWith(color: colorScheme.onPrimary),
               ),
             ),
           ),

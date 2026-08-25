@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:questvale/widgets/qv_button.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 class QvQuestEncounterHeader extends StatelessWidget {
   const QvQuestEncounterHeader({
@@ -29,7 +30,7 @@ class QvQuestEncounterHeader extends StatelessWidget {
               children: [
                 Text(
                   'Encounter $curEncounterNum / $numEncountersCurFloor',
-                  style: TextStyle(color: colorScheme.secondary, fontSize: 26),
+                  style: QvTextStyles.overlay.copyWith(color: colorScheme.secondary),
                   textAlign: TextAlign.center,
                 ),
               ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 class QvSegmentedControlItem<T> {
   const QvSegmentedControlItem({
@@ -111,11 +112,8 @@ class QvSegmentedControl<T> extends StatelessWidget {
                                     item.label,
                                     textAlign: TextAlign.center,
                                     maxLines: 2,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: segmentColor,
-                                    ),
+                                    style: QvTextStyles.caption
+                                        .copyWith(fontWeight: FontWeight.w600, color: segmentColor),
                                   ),
                                 ],
                               ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 class QvPopupMenuItem extends StatefulWidget {
   final String text;
@@ -45,9 +46,8 @@ class _QvPopupMenuItemState extends State<QvPopupMenuItem> {
                 color: widget.iconColor ?? colorScheme.onPrimary, weight: 600),
             const SizedBox(width: 8),
             Text(widget.text,
-                style: TextStyle(
+                style: QvTextStyles.body.copyWith(
                   color: widget.textColor ?? colorScheme.onPrimary,
-                  fontSize: 14,
                   fontWeight: FontWeight.w500,
                 )),
           ],

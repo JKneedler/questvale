@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 /// A single-column number wheel scroller, styled to match TimePickerView's
 /// wheel columns (same QvInsetBackground highlight band, same
@@ -68,13 +69,11 @@ class QvNumberWheelPicker extends StatelessWidget {
                         labelBuilder != null
                             ? labelBuilder!(value)
                             : '$value',
-                        style: TextStyle(
-                          fontSize: 22,
+                        style: (isSelected ? QvTextStyles.emphasis : QvTextStyles.subtitle)
+                            .copyWith(
                           color: isSelected
                               ? colorScheme.primary
                               : colorScheme.onSurface.withValues(alpha: 0.35),
-                          fontWeight:
-                              isSelected ? FontWeight.bold : FontWeight.normal,
                         ),
                       ),
                     );

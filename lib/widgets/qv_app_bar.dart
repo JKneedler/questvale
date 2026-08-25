@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 class QvAppBarButton {
   final String button;
@@ -50,10 +51,7 @@ class QvAppBar extends StatelessWidget {
                     : SizedBox(
                         child: Text(
                           '<',
-                          style: TextStyle(
-                            fontSize: 26,
-                            color: colorScheme.onSurface,
-                          ),
+                          style: QvTextStyles.overlay.copyWith(color: colorScheme.onSurface),
                           textAlign: TextAlign.center,
                         ),
                       ),
@@ -63,7 +61,7 @@ class QvAppBar extends StatelessWidget {
             child: Center(
               child: Text(
                 title,
-                style: TextStyle(color: colorScheme.onSurface, fontSize: 28),
+                style: QvTextStyles.banner.copyWith(color: colorScheme.onSurface),
               ),
             ),
           ),
@@ -77,10 +75,7 @@ class QvAppBar extends StatelessWidget {
                   : SizedBox(
                       child: Text(
                         trailingButton!.button,
-                        style: TextStyle(
-                          fontSize: 26,
-                          color: colorScheme.onSurface,
-                        ),
+                        style: QvTextStyles.overlay.copyWith(color: colorScheme.onSurface),
                         textAlign: TextAlign.center,
                       ),
                     ),

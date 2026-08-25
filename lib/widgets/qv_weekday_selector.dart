@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:questvale/widgets/qv_button.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 /// A row of 7 independently-toggleable weekday buttons, for picking any
 /// combination of days a weekly habit repeats on. Fully controlled — no
@@ -43,8 +44,7 @@ class QvWeekdaySelector extends StatelessWidget {
                 child: Center(
                   child: Text(
                     _labels[i],
-                    style: TextStyle(
-                      fontSize: 15,
+                    style: QvTextStyles.body.copyWith(
                       fontWeight: FontWeight.bold,
                       color: isSelected
                           ? colorScheme.onPrimary

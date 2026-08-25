@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:questvale/data/models/mage_motes.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/shared_enums.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 // Mage's resource display: MOTE_CAP discrete pip slots rather than a
 // fraction-fill bar (QvBar/QvResourceBar), since Motes are a small capped
@@ -27,21 +28,13 @@ class QvMoteDisplay extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               'MOTES',
-              style: TextStyle(
-                color: MOTE_LABEL_COLOR,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: QvTextStyles.sectionHeader.copyWith(color: MOTE_LABEL_COLOR),
             ),
             Text(
               '${motes.totalMotes} / $MOTE_CAP',
-              style: const TextStyle(
-                color: MOTE_LABEL_COLOR,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: QvTextStyles.sectionHeader.copyWith(color: MOTE_LABEL_COLOR),
             ),
           ],
         ),

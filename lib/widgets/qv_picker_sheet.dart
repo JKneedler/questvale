@@ -3,6 +3,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:questvale/cubits/home/nav_aware_modal_sheet.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_draggable_sheet.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 /// A lighter modal-sheet shell than TownVisitSheet's "arrival banner" — a
 /// title and a close button, nothing more. For quick in-context actions
@@ -64,11 +65,7 @@ class _PickerHeader extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.onSurface,
-                ),
+                style: QvTextStyles.emphasis.copyWith(color: colorScheme.onSurface),
               ),
             ),
             const SizedBox(width: 12),

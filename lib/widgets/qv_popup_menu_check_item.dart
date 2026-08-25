@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 class QvPopupMenuCheckItem extends StatefulWidget {
   final String text;
@@ -42,11 +43,8 @@ class _QvPopupMenuCheckItemState extends State<QvPopupMenuCheckItem> {
           children: [
             Expanded(
               child: Text(widget.text,
-                  style: TextStyle(
-                    color: widget.isChecked
-                        ? colorScheme.primary
-                        : colorScheme.onPrimary,
-                    fontSize: 14,
+                  style: QvTextStyles.body.copyWith(
+                    color: widget.isChecked ? colorScheme.primary : colorScheme.onPrimary,
                     fontWeight: FontWeight.w500,
                   )),
             ),
