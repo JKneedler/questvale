@@ -54,6 +54,7 @@ class TownSquare extends StatelessWidget {
                   padding: const EdgeInsets.all(10),
                   children: [
                     const CharacterStatsCard(),
+                    const _QuestBoardCard(),
                     const _TownLocationsCard(),
                     const SkillsRow(),
                     const _WeaponArtifactCard(),
@@ -487,19 +488,69 @@ class _PotionsRow extends StatelessWidget {
   }
 }
 
-/// All 7 town destinations live in one shared card now (per feedback) —
-/// individual buttons inside a single list item, rather than one row each.
-/// Quest Board sits full-width up top as the primary
-/// action; the rest pair up 2-per-row in a Wrap, same grouping the
-/// original button-grid Town Square used. Deliberately explicit
-/// per-button width (via LayoutBuilder) rather than Row+Expanded+stretch —
-/// that combination, nested this deep inside QvButton's own centerSlice
-/// border decoration, hit a real Flutter layout/paint bug live (every
-/// QvCardBorder/QvButton border elsewhere on the page started throwing
-/// "centerSlice was used with a BoxFit that does not guarantee the image
-/// is fully visible" once this card scrolled into view) — explicit sizing
-/// sidesteps it the same way every other icon box on this page already
-/// avoids Expanded/Flex ambiguity.
+/// Quest Board is the single most important action on this page (per the
+/// ticket's own rationale: the AP loop is "fix loadout, go again," and
+/// Quest Board is "go again") — it gets its own standalone list item
+/// instead of sharing one with the other six destinations below, per
+/// feedback. Same icon+text treatment _TownLocationButton uses, just as
+/// its own directly-tappable QvButton (`surfaceContainer`, matching every
+/// other standalone list item on this page) rather than nested inside a
+/// decorative wrapper — always unlocked, so no ColorFiltered/level-gate
+/// dance is needed here.
+class _QuestBoardCard extends StatelessWidget {
+  const _QuestBoardCard();
+
+  @override
+  Widget build(BuildContext context) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: QvButton(
+        buttonColor: ButtonColor.surfaceContainer,
+        onTap: () => TownVisitSheet.showModal(
+          context,
+          title: 'Quest Board',
+          iconPath: 'images/pixel-icons/portal.png',
+          body: const QuestBoardPage(),
+        ),
+        height: 76,
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              'images/pixel-icons/portal.png',
+              width: 28,
+              height: 28,
+              filterQuality: FilterQuality.none,
+              fit: BoxFit.contain,
+              scale: .1,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'Quest Board',
+              style: QvTextStyles.sectionTitle.copyWith(color: colorScheme.onSurface),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The remaining 6 town destinations (Quest Board split out into its own
+/// _QuestBoardCard above, per feedback) share one card — individual
+/// buttons inside a single list item, paired 2-per-row in a Wrap, same
+/// grouping the original button-grid Town Square used. Deliberately
+/// explicit per-button width (via LayoutBuilder) rather than
+/// Row+Expanded+stretch — that combination, nested this deep inside
+/// QvButton's own centerSlice border decoration, hit a real Flutter
+/// layout/paint bug live (every QvCardBorder/QvButton border elsewhere on
+/// the page started throwing "centerSlice was used with a BoxFit that
+/// does not guarantee the image is fully visible" once this card scrolled
+/// into view) — explicit sizing sidesteps it the same way every other icon
+/// box on this page already avoids Expanded/Flex ambiguity.
 class _TownLocationsCard extends StatelessWidget {
   const _TownLocationsCard();
 
@@ -514,103 +565,86 @@ class _TownLocationsCard extends StatelessWidget {
           builder: (context, constraints) {
             const pairSpacing = 8.0;
             final pairWidth = (constraints.maxWidth - pairSpacing) / 2;
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              spacing: 8,
+            return Wrap(
+              spacing: pairSpacing,
+              runSpacing: 8,
               children: [
-                _TownLocationButton(
-                  title: 'Quest Board',
-                  iconPath: 'images/pixel-icons/portal.png',
-                  onTap: () => TownVisitSheet.showModal(
-                    context,
-                    title: 'Quest Board',
-                    iconPath: 'images/pixel-icons/portal.png',
-                    body: const QuestBoardPage(),
+                SizedBox(
+                  width: pairWidth,
+                  child: _TownLocationButton(
+                    title: 'Shop',
+                    iconPath: 'images/pixel-icons/all-coins-stack.png',
+                    onTap: () => _showComingSoonDestination(
+                      context,
+                      title: 'Shop',
+                      iconPath: 'images/pixel-icons/all-coins-stack.png',
+                    ),
                   ),
                 ),
-                Wrap(
-                  spacing: pairSpacing,
-                  runSpacing: 8,
-                  children: [
-                    SizedBox(
-                      width: pairWidth,
-                      child: _TownLocationButton(
-                        title: 'Shop',
-                        iconPath: 'images/pixel-icons/all-coins-stack.png',
-                        onTap: () => _showComingSoonDestination(
-                          context,
-                          title: 'Shop',
-                          iconPath: 'images/pixel-icons/all-coins-stack.png',
-                        ),
-                      ),
+                SizedBox(
+                  width: pairWidth,
+                  child: _TownLocationButton(
+                    title: 'Guild Hall',
+                    iconPath: 'images/pixel-icons/letter.png',
+                    onTap: () => _showComingSoonDestination(
+                      context,
+                      title: 'Guild Hall',
+                      iconPath: 'images/pixel-icons/letter.png',
                     ),
-                    SizedBox(
-                      width: pairWidth,
-                      child: _TownLocationButton(
-                        title: 'Guild Hall',
-                        iconPath: 'images/pixel-icons/letter.png',
-                        onTap: () => _showComingSoonDestination(
-                          context,
-                          title: 'Guild Hall',
-                          iconPath: 'images/pixel-icons/letter.png',
-                        ),
-                      ),
+                  ),
+                ),
+                SizedBox(
+                  width: pairWidth,
+                  child: _TownLocationButton(
+                    title: 'Forge',
+                    iconPath: 'images/pixel-icons/anvil-hammer-star.png',
+                    requiredLevel: 10,
+                    onTap: () => TownVisitSheet.showModal(
+                      context,
+                      title: 'Forge',
+                      iconPath: 'images/pixel-icons/anvil-hammer-star.png',
+                      body: const ForgePage(),
                     ),
-                    SizedBox(
-                      width: pairWidth,
-                      child: _TownLocationButton(
-                        title: 'Forge',
-                        iconPath: 'images/pixel-icons/anvil-hammer-star.png',
-                        requiredLevel: 10,
-                        onTap: () => TownVisitSheet.showModal(
-                          context,
-                          title: 'Forge',
-                          iconPath: 'images/pixel-icons/anvil-hammer-star.png',
-                          body: const ForgePage(),
-                        ),
-                      ),
+                  ),
+                ),
+                SizedBox(
+                  width: pairWidth,
+                  child: _TownLocationButton(
+                    title: 'Lab',
+                    iconPath: 'images/pixel-icons/potion-star.png',
+                    requiredLevel: 20,
+                    onTap: () => _showComingSoonDestination(
+                      context,
+                      title: 'Lab',
+                      iconPath: 'images/pixel-icons/potion-star.png',
                     ),
-                    SizedBox(
-                      width: pairWidth,
-                      child: _TownLocationButton(
-                        title: 'Lab',
-                        iconPath: 'images/pixel-icons/potion-star.png',
-                        requiredLevel: 20,
-                        onTap: () => _showComingSoonDestination(
-                          context,
-                          title: 'Lab',
-                          iconPath: 'images/pixel-icons/potion-star.png',
-                        ),
-                      ),
+                  ),
+                ),
+                SizedBox(
+                  width: pairWidth,
+                  child: _TownLocationButton(
+                    title: 'Gemforge',
+                    iconPath: 'images/pixel-icons/jewel-star.png',
+                    requiredLevel: 40,
+                    onTap: () => _showComingSoonDestination(
+                      context,
+                      title: 'Gemforge',
+                      iconPath: 'images/pixel-icons/jewel-star.png',
                     ),
-                    SizedBox(
-                      width: pairWidth,
-                      child: _TownLocationButton(
-                        title: 'Gemforge',
-                        iconPath: 'images/pixel-icons/jewel-star.png',
-                        requiredLevel: 40,
-                        onTap: () => _showComingSoonDestination(
-                          context,
-                          title: 'Gemforge',
-                          iconPath: 'images/pixel-icons/jewel-star.png',
-                        ),
-                      ),
+                  ),
+                ),
+                SizedBox(
+                  width: pairWidth,
+                  child: _TownLocationButton(
+                    title: 'Reliquary',
+                    iconPath: 'images/pixel-icons/artifact.png',
+                    requiredLevel: 80,
+                    onTap: () => _showComingSoonDestination(
+                      context,
+                      title: 'Reliquary',
+                      iconPath: 'images/pixel-icons/artifact.png',
                     ),
-                    SizedBox(
-                      width: pairWidth,
-                      child: _TownLocationButton(
-                        title: 'Reliquary',
-                        iconPath: 'images/pixel-icons/artifact.png',
-                        requiredLevel: 80,
-                        onTap: () => _showComingSoonDestination(
-                          context,
-                          title: 'Reliquary',
-                          iconPath: 'images/pixel-icons/artifact.png',
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             );
