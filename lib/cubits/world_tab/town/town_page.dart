@@ -493,10 +493,10 @@ class _PotionsRow extends StatelessWidget {
 /// Quest Board is "go again") — it gets its own standalone list item
 /// instead of sharing one with the other six destinations below, per
 /// feedback. Same icon+text treatment _TownLocationButton uses, just as
-/// its own directly-tappable QvButton (`surfaceContainer`, matching every
-/// other standalone list item on this page) rather than nested inside a
-/// decorative wrapper — always unlocked, so no ColorFiltered/level-gate
-/// dance is needed here.
+/// its own directly-tappable QvButton — `primary` (per feedback, to stand
+/// out from every other standalone list item on this page, which stay
+/// `surfaceContainer`) rather than nested inside a decorative wrapper —
+/// always unlocked, so no ColorFiltered/level-gate dance is needed here.
 class _QuestBoardCard extends StatelessWidget {
   const _QuestBoardCard();
 
@@ -506,7 +506,7 @@ class _QuestBoardCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       child: QvButton(
-        buttonColor: ButtonColor.surfaceContainer,
+        buttonColor: ButtonColor.primary,
         onTap: () => TownVisitSheet.showModal(
           context,
           title: 'Quest Board',
@@ -530,7 +530,7 @@ class _QuestBoardCard extends StatelessWidget {
             const SizedBox(width: 8),
             Text(
               'Quest Board',
-              style: QvTextStyles.sectionTitle.copyWith(color: colorScheme.onSurface),
+              style: QvTextStyles.sectionTitle.copyWith(color: colorScheme.onPrimary),
             ),
           ],
         ),
