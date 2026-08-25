@@ -213,7 +213,7 @@ class CombatView extends StatelessWidget {
   }
 }
 
-// Health/motes + skill buttons, as one list-item card — mirrors the Todo
+// Skill buttons + health/motes, as one list-item card — mirrors the Todo
 // tab's pinned CombatStatusCard (todos_overview/combat_status_card.dart)
 // outer surfaceContainer QvButton shell, and reuses its exact
 // CharacterVitalsRow for health/motes so the two read as the same vitals
@@ -221,6 +221,8 @@ class CombatView extends StatelessWidget {
 // stay the real CombatSkillButton (skill icon + level badge, live
 // targeting/darkened state) rather than CombatStatusCard's placeholder
 // cooldown buttons — there's a real cooldown/target flow here already.
+// Skills sit above vitals here (unlike CombatStatusCard's own order),
+// per feedback — they're the primary action in this card.
 //
 // AP is deliberately not shown here for now, per feedback — it used to
 // sit between the health bar and motes as its own badge. Character.
@@ -251,8 +253,6 @@ class CombatVitalsAndSkillsCard extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CharacterVitalsRow(character: character, mageMotes: mageMotes),
-            const SizedBox(height: 10),
             SizedBox(
               height: 65,
               child: Row(
@@ -311,6 +311,8 @@ class CombatVitalsAndSkillsCard extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(height: 10),
+            CharacterVitalsRow(character: character, mageMotes: mageMotes),
           ],
         ),
       ),
