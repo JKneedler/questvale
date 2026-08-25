@@ -29,7 +29,6 @@ import 'package:questvale/widgets/qv_character_vitals_row.dart';
 import 'package:questvale/widgets/qv_damage_toast.dart';
 import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
-import 'package:questvale/widgets/qv_metal_corner_border.dart';
 import 'package:questvale/widgets/qv_bar.dart';
 import 'package:questvale/widgets/qv_skill_button.dart';
 import 'package:questvale/widgets/qv_text_styles.dart';
@@ -630,7 +629,10 @@ class EnemyInfoBox extends StatelessWidget {
         .firstWhere((enemyData) => enemyData.id == enemy.enemyDataId);
     return Padding(
       padding: EdgeInsets.all(6),
-      child: QvMetalCornerBorder(
+      child: QvButton(
+        buttonColor: ButtonColor.surfaceContainer,
+        width: double.infinity,
+        height: double.infinity,
         padding: EdgeInsets.all(10),
         child: Column(
           children: [
@@ -885,7 +887,10 @@ class PlayerInfoBox extends StatelessWidget {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: EdgeInsets.all(20),
-      child: QvMetalCornerBorder(
+      child: QvButton(
+        buttonColor: ButtonColor.surfaceContainer,
+        width: double.infinity,
+        height: double.infinity,
         padding: EdgeInsets.all(10),
         child: Column(
           children: [
@@ -923,7 +928,10 @@ class TargetEnemySkillBox extends StatelessWidget {
     }
     return Padding(
       padding: EdgeInsets.all(6),
-      child: QvMetalCornerBorder(
+      child: QvButton(
+        buttonColor: ButtonColor.surfaceContainer,
+        width: double.infinity,
+        height: double.infinity,
         padding: EdgeInsets.all(10),
         child: Column(
           children: [
