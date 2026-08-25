@@ -670,7 +670,7 @@ class _TownLocationButton extends StatelessWidget {
         buttonColor: ButtonColor.surface,
         onTap: onTap,
         height: 76,
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
@@ -691,7 +691,7 @@ class _TownLocationButton extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: colorScheme.onSurface,
                 ),
