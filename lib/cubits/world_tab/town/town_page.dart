@@ -392,7 +392,7 @@ class _ArtifactGridItem extends StatelessWidget {
     final boxWidth = width ?? size;
     final boxHeight = height ?? size;
     // See _EquipmentIcon's own doc comment on this same value/reasoning.
-    const padding = 12.0;
+    const padding = 16.0;
     final iconSize = (boxHeight - padding * 2).clamp(0.0, double.infinity);
     return GestureDetector(
       onTap: () => QvPickerSheet.showModal(
