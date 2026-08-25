@@ -12,14 +12,13 @@ import 'package:questvale/widgets/qv_text_styles.dart';
 /// the Combat & Questing Redesign ticket. Replaces the old
 /// TownCubit/TownLocation full-page slide-swap: Town Square is now the
 /// permanent root and every destination opens as a tall modal sheet on top
-/// of it, similar in spirit to how AddTodo/EditTodo sit on top of the Todo
-/// Overview page — but unlike those, the bottom nav bar stays visible below
-/// a town sheet rather than being covered (see showModal's own doc comment
-/// on why that's a real, deliberate difference from AddTodoPage.showModal,
-/// not an oversight). [iconPath] and [title] reuse the same art/label
-/// already shown on the destination's row in Town Square's list, so the
-/// banner reads as a continuation of what was just tapped rather than a
-/// new, disconnected screen.
+/// of it, the same as AddTodo/EditTodo sitting on top of the Todo Overview
+/// page — including covering the bottom nav bar entirely while open (see
+/// showNavAwareModalSheet's own doc comment for the mechanics and the
+/// provider-scoping fallout that comes with it). [iconPath] and [title]
+/// reuse the same art/label already shown on the destination's row in
+/// Town Square's list, so the banner reads as a continuation of what was
+/// just tapped rather than a new, disconnected screen.
 class TownVisitSheet extends StatelessWidget {
   const TownVisitSheet({
     super.key,
@@ -46,15 +45,15 @@ class TownVisitSheet extends StatelessWidget {
     required Widget body,
     bool scrollableBody = false,
   }) async {
-    // WorldCubit is provided *inside* WorldPage, which is itself the route
-    // content the nav-aware Navigator (see showNavAwareModalSheet) is
-    // already displaying — sibling routes on one Navigator don't share
-    // each other's local providers, only ancestors *above* the Navigator
-    // do (that's why GameData/PlayerCubit, provided higher up in
-    // HomePage, are fine ambiently and don't need this). Captured here,
-    // from the real caller's context, and re-provided by value — Quest
-    // Board's "Begin Quest" reads it to flip WorldView over to the combat
-    // page once a quest is created.
+    // WorldCubit is provided *inside* WorldPage, one level further down
+    // than PlayerCubit/GameData — showNavAwareModalSheet already re-provides
+    // those two by value since it pushes onto the root Navigator (a sibling
+    // route to HomePage's own, which doesn't share HomePage's local
+    // providers — see its own doc comment), but has no way to know about
+    // WorldCubit, which lives even further down inside WorldPage's own
+    // subtree. Captured here, from the real caller's context, and
+    // re-provided by value the same way — Quest Board's "Begin Quest" reads
+    // it to flip WorldView over to the combat page once a quest is created.
     final worldCubit = context.read<WorldCubit>();
 
     await showNavAwareModalSheet<void>(

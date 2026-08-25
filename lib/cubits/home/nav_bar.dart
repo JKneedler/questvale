@@ -8,23 +8,12 @@ class NavBar extends StatelessWidget {
     required this.currentIndex,
     required this.onTap,
     this.showSeparator = false,
-    this.modalSheetOpen = false,
   });
 
   final List<NavBarItem> items;
   final int currentIndex;
   final ValueChanged<int> onTap;
   final bool showSeparator;
-
-  // True while a TownVisitSheet (or any future bottom sheet that leaves the
-  // nav bar visible beneath it) is open — see NavState.modalSheetOpen's own
-  // doc comment. Swaps the *entire* nav bar surface's background (the
-  // Material below, not just the icon band — see build()) to
-  // colorScheme.surfaceContainer to match QvBackground's own fill (see
-  // qv_background.dart's surfaceContainerNoBottom asset), so the sheet and
-  // the bar beneath it read as one continuous surface instead of a visible
-  // color seam.
-  final bool modalSheetOpen;
 
   // Width of the sliding QvInsetBackground highlight and the height of the
   // band it (and the icons) sit in — matches the old per-item
@@ -35,17 +24,15 @@ class NavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
-    final bandColor =
-        modalSheetOpen ? colorScheme.surfaceContainer : colorScheme.surface;
 
     // color here (not just the inner band Container below) is what was
     // missing before: Material has no color of its own by default, so the
     // 8px gap above the icon band and the SafeArea's bottom home-indicator
     // padding were both falling through to Scaffold's own background
-    // (colorScheme.surface) regardless of modalSheetOpen — a visible seam
-    // around the one region that *did* update.
+    // otherwise — a visible seam around the one region that *did* have a
+    // color set.
     return Material(
-      color: bandColor,
+      color: colorScheme.surface,
       child: SafeArea(
         top: false,
         child: Column(

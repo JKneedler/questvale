@@ -7,8 +7,4 @@ class NavCubit extends Cubit<NavState> {
   void changeTab(int tab) {
     emit(state.copyWith(tab: tab));
   }
-
-  void setModalSheetOpen(bool open) {
-    emit(state.copyWith(modalSheetOpen: open));
-  }
 }
