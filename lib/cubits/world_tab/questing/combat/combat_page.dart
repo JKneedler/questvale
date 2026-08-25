@@ -205,6 +205,7 @@ class CombatView extends StatelessWidget {
                 playerSkills: playerSkills,
                 combatState: combatState,
               ),
+              const SizedBox(height: 16),
             ],
           );
         }),
