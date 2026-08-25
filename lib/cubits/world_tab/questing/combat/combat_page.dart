@@ -257,8 +257,20 @@ class CombatVitalsAndSkillsCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                // Matches every other Town Square list-item card's own
+                // leading sectionHeader label (Equipment, Weapon &
+                // Artifact, Potions) — this card didn't have one yet, and
+                // it fills what was otherwise a big blank stretch to the
+                // AP badge's left.
+                Expanded(
+                  child: Text(
+                    'Skills',
+                    style: QvTextStyles.sectionHeader
+                        .copyWith(color: colorScheme.onSurface),
+                  ),
+                ),
                 QvButton(
                   height: 26,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
