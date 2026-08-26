@@ -23,13 +23,15 @@ class QuestEncounterPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final questZones = context.read<GameData>().questZones;
+    final gameData = context.read<GameData>();
+    final questZones = gameData.questZones;
     final questZone = questZones.firstWhere((zone) => zone.id == quest.zoneId);
     return BlocProvider<QuestEncounterCubit>(
       create: (context) => QuestEncounterCubit(
         quest: quest,
         initialQuestStatus: QuestStatus.questBegin,
         db: context.read<Database>(),
+        gameData: gameData,
         questZone: questZone,
       ),
       child: QuestEncounterView(),
