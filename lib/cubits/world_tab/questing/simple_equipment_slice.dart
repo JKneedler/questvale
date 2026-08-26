@@ -35,37 +35,41 @@ class SimpleEquipmentSlice extends StatelessWidget {
             ),
           ),
           SizedBox(width: 6),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(equipment.itemName(equipment.type, character.characterClass),
-                  style: QvTextStyles.detail.copyWith(height: 1)),
-              SizedBox(height: 6),
-              Row(
-                spacing: 4,
-                children: [
-                  QvInsetBackground(
-                    height: 40,
-                    width: 50,
-                    type: QvInsetBackgroundType.surface,
-                    child: Center(
-                      child: Text(
-                        '${equipment.attackPower > 0 ? equipment.attackPower : equipment.armorValue}',
-                        style: QvTextStyles.overlay.copyWith(height: 1),
-                        textAlign: TextAlign.center,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(equipment.itemName(equipment.type, character.characterClass),
+                    style: QvTextStyles.detail.copyWith(height: 1),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
+                SizedBox(height: 6),
+                Row(
+                  spacing: 4,
+                  children: [
+                    QvInsetBackground(
+                      height: 40,
+                      width: 50,
+                      type: QvInsetBackgroundType.surface,
+                      child: Center(
+                        child: Text(
+                          '${equipment.attackPower > 0 ? equipment.attackPower : equipment.armorValue}',
+                          style: QvTextStyles.overlay.copyWith(height: 1),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
-                  ),
-                  Text(
-                    equipment.attackPower > 0 ? 'Attack' : 'Armor',
-                    style: QvTextStyles.title.copyWith(height: 1),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ],
-          )
+                    Text(
+                      equipment.attackPower > 0 ? 'Attack' : 'Armor',
+                      style: QvTextStyles.title.copyWith(height: 1),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
