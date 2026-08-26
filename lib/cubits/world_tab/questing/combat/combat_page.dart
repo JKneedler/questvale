@@ -22,6 +22,7 @@ import 'package:questvale/data/skills/base_active_skill.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/data_formatters.dart';
 import 'package:questvale/widgets/qv_animated_transition.dart';
+import 'package:questvale/widgets/qv_background.dart';
 import 'package:questvale/widgets/qv_blinking.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
@@ -204,7 +205,6 @@ class CombatView extends StatelessWidget {
                 playerSkills: playerSkills,
                 combatState: combatState,
               ),
-              const SizedBox(height: 16),
             ],
           );
         }),
@@ -213,16 +213,24 @@ class CombatView extends StatelessWidget {
   }
 }
 
-// Skill buttons + health/motes, as one list-item card — mirrors the Todo
-// tab's pinned CombatStatusCard (todos_overview/combat_status_card.dart)
-// outer surfaceContainer QvButton shell, and reuses its exact
-// CharacterVitalsRow for health/motes so the two read as the same vitals
-// language rather than two independently-styled copies. Skill buttons
-// stay the real CombatSkillButton (skill icon + level badge, live
-// targeting/darkened state) rather than CombatStatusCard's placeholder
-// cooldown buttons — there's a real cooldown/target flow here already.
-// Skills sit above vitals here (unlike CombatStatusCard's own order),
-// per feedback — they're the primary action in this card.
+// Skill buttons + health/motes, as one list-item area — no gap below it
+// down to the nav bar (see CombatView.build, which used to add a trailing
+// spacer here), and a QvBackground(secondaryNoBottom) shell instead of a
+// bordered QvButton card: that texture's flat, cap-free bottom edge is
+// what actually sells "extension of the nav bar" — a bordered button shape
+// would still read as a floating card even with the gap removed. The
+// secondary color (not surfaceContainer, CombatStatusCard's own choice)
+// was asked for specifically here so this reads as its own distinct
+// region rather than just another list-item card.
+//
+// Health/motes still reuses CombatStatusCard's exact CharacterVitalsRow
+// (todos_overview/combat_status_card.dart) so the two read as the same
+// vitals language despite the different shell. Skill buttons stay the
+// real CombatSkillButton (skill icon + level badge, live targeting/
+// darkened state) rather than CombatStatusCard's placeholder cooldown
+// buttons — there's a real cooldown/target flow here already. Skills sit
+// above vitals here (unlike CombatStatusCard's own order), per feedback —
+// they're the primary action in this card.
 //
 // AP sits as a small top-right badge above the skill row rather than
 // between health and motes (its old spot, and CombatStatusCard's own
@@ -250,8 +258,8 @@ class CombatVitalsAndSkillsCard extends StatelessWidget {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 10),
-      child: QvButton(
-        buttonColor: ButtonColor.surfaceContainer,
+      child: QvBackground(
+        type: QvBackgroundType.secondaryNoBottom,
         padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
         child: Column(
           mainAxisSize: MainAxisSize.min,
