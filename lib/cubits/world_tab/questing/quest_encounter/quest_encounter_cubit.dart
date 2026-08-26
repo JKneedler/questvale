@@ -190,16 +190,21 @@ class QuestEncounterCubit extends Cubit<QuestEncounterState> {
 
   Future<void> fleeQuest() async {
     final quest = state.quest;
+    // Vault design ("Post-Quest Recovery"): health restores whether a quest
+    // is finished OR failed — fleeing counts as failing, same as finishQuest.
+    await _healToFull(quest.characterId);
     await questRepository
         .updateQuest(quest.copyWith(completedAt: DateTime.now()));
     emit(state.copyWith(questStatus: QuestStatus.questDeleted));
   }
 
-  // Full heal on quest completion, not quest start — players should always
-  // begin a quest at full HP, and healing here (rather than when the next
-  // quest is begun) covers that even if a player starts the next quest
-  // immediately with no real-world task in between to trigger anything
-  // else. maxHealth is computed the same way PlayerCubit.loadCharacter
+  // Full heal when a quest ends (finished or fled — see finishQuest/
+  // fleeQuest), not at quest start — players should always begin a quest at
+  // full HP, and healing at the end of the prior one covers that even if
+  // the next quest is started immediately with no real-world task in
+  // between to trigger anything else. Matches the vault's "Post-Quest
+  // Recovery" design (health restores whether a quest is finished or
+  // failed). maxHealth is computed the same way PlayerCubit.loadCharacter
   // does (equipment + passive skill modifiers), so this can't drift from
   // what the rest of the app considers "full" for this character.
   Future<void> _healToFull(String characterId) async {
