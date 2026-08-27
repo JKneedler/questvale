@@ -215,13 +215,15 @@ class CombatView extends StatelessWidget {
 
 // Skill buttons + health/motes, as one list-item area — no gap below it
 // down to the nav bar (see CombatView.build, which used to add a trailing
-// spacer here), and a QvBackground(secondaryNoBottom) shell instead of a
+// spacer here), and a QvBackground(surfaceNoBottom) shell instead of a
 // bordered QvButton card: that texture's flat, cap-free bottom edge is
 // what actually sells "extension of the nav bar" — a bordered button shape
-// would still read as a floating card even with the gap removed. The
-// secondary color (not surfaceContainer, CombatStatusCard's own choice)
-// was asked for specifically here so this reads as its own distinct
-// region rather than just another list-item card.
+// would still read as a floating card even with the gap removed. Colored
+// off colorScheme.surface specifically (a new button-surface-no-bottom.png
+// per theme, not the surfaceContainer default QvBackground normally uses)
+// because that's the exact color NavBar itself paints its own Material
+// with (see nav_bar.dart) — matching it, not just approximating it, is
+// what makes the seam disappear.
 //
 // Health/motes still reuses CombatStatusCard's exact CharacterVitalsRow
 // (todos_overview/combat_status_card.dart) so the two read as the same
@@ -256,104 +258,103 @@ class CombatVitalsAndSkillsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 10),
-      child: QvBackground(
-        type: QvBackgroundType.secondaryNoBottom,
-        padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Matches every other Town Square list-item card's own
-                // leading sectionHeader label (Equipment, Weapon &
-                // Artifact, Potions) — this card didn't have one yet, and
-                // it fills what was otherwise a big blank stretch to the
-                // AP badge's left.
-                Expanded(
+    return QvBackground(
+      width: double.infinity,
+      type: QvBackgroundType.surfaceNoBottom,
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Matches every other Town Square list-item card's own
+              // leading sectionHeader label (Equipment, Weapon &
+              // Artifact, Potions) — this card didn't have one yet, and
+              // it fills what was otherwise a big blank stretch to the
+              // AP badge's left.
+              Expanded(
+                child: Text(
+                  'Skills',
+                  style: QvTextStyles.sectionHeader
+                      .copyWith(color: colorScheme.onSurface),
+                ),
+              ),
+              QvButton(
+                height: 26,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Center(
                   child: Text(
-                    'Skills',
-                    style: QvTextStyles.sectionHeader
-                        .copyWith(color: colorScheme.onSurface),
+                    '${character.actionPoints} AP',
+                    style: QvTextStyles.itemTitle
+                        .copyWith(color: colorScheme.secondary),
                   ),
                 ),
-                QvButton(
-                  height: 26,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Center(
-                    child: Text(
-                      '${character.actionPoints} AP',
-                      style: QvTextStyles.itemTitle.copyWith(color: colorScheme.secondary),
-                    ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          SizedBox(
+            height: 65,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                if (playerSkills.activeSkillSlot1 != null)
+                  CombatSkillButton(
+                    onTap: () => context.read<CombatCubit>().onSkillButtonTap(
+                        context, playerSkills.activeSkillSlot1!),
+                    skill: playerSkills.activeSkillSlot1!,
+                    darkened:
+                        combatState.status == CombatStatus.targetingSkill &&
+                            combatState.targetingSkill?.id !=
+                                playerSkills.activeSkillSlot1!.id,
                   ),
-                ),
+                if (playerSkills.activeSkillSlot2 != null)
+                  CombatSkillButton(
+                    onTap: () => context.read<CombatCubit>().onSkillButtonTap(
+                        context, playerSkills.activeSkillSlot2!),
+                    skill: playerSkills.activeSkillSlot2!,
+                    darkened:
+                        combatState.status == CombatStatus.targetingSkill &&
+                            combatState.targetingSkill?.id !=
+                                playerSkills.activeSkillSlot2!.id,
+                  ),
+                if (playerSkills.activeSkillSlot3 != null)
+                  CombatSkillButton(
+                    onTap: () => context.read<CombatCubit>().onSkillButtonTap(
+                        context, playerSkills.activeSkillSlot3!),
+                    skill: playerSkills.activeSkillSlot3!,
+                    darkened:
+                        combatState.status == CombatStatus.targetingSkill &&
+                            combatState.targetingSkill?.id !=
+                                playerSkills.activeSkillSlot3!.id,
+                  ),
+                if (playerSkills.activeSkillSlot4 != null)
+                  CombatSkillButton(
+                    onTap: () => context.read<CombatCubit>().onSkillButtonTap(
+                        context, playerSkills.activeSkillSlot4!),
+                    skill: playerSkills.activeSkillSlot4!,
+                    darkened:
+                        combatState.status == CombatStatus.targetingSkill &&
+                            combatState.targetingSkill?.id !=
+                                playerSkills.activeSkillSlot4!.id,
+                  ),
+                if (playerSkills.activeSkillSlot5 != null)
+                  CombatSkillButton(
+                    onTap: () => context.read<CombatCubit>().onSkillButtonTap(
+                        context, playerSkills.activeSkillSlot5!),
+                    skill: playerSkills.activeSkillSlot5!,
+                    darkened:
+                        combatState.status == CombatStatus.targetingSkill &&
+                            combatState.targetingSkill?.id !=
+                                playerSkills.activeSkillSlot5!.id,
+                  ),
               ],
             ),
-            const SizedBox(height: 6),
-            SizedBox(
-              height: 65,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  if (playerSkills.activeSkillSlot1 != null)
-                    CombatSkillButton(
-                      onTap: () => context.read<CombatCubit>().onSkillButtonTap(
-                          context, playerSkills.activeSkillSlot1!),
-                      skill: playerSkills.activeSkillSlot1!,
-                      darkened:
-                          combatState.status == CombatStatus.targetingSkill &&
-                              combatState.targetingSkill?.id !=
-                                  playerSkills.activeSkillSlot1!.id,
-                    ),
-                  if (playerSkills.activeSkillSlot2 != null)
-                    CombatSkillButton(
-                      onTap: () => context.read<CombatCubit>().onSkillButtonTap(
-                          context, playerSkills.activeSkillSlot2!),
-                      skill: playerSkills.activeSkillSlot2!,
-                      darkened:
-                          combatState.status == CombatStatus.targetingSkill &&
-                              combatState.targetingSkill?.id !=
-                                  playerSkills.activeSkillSlot2!.id,
-                    ),
-                  if (playerSkills.activeSkillSlot3 != null)
-                    CombatSkillButton(
-                      onTap: () => context.read<CombatCubit>().onSkillButtonTap(
-                          context, playerSkills.activeSkillSlot3!),
-                      skill: playerSkills.activeSkillSlot3!,
-                      darkened:
-                          combatState.status == CombatStatus.targetingSkill &&
-                              combatState.targetingSkill?.id !=
-                                  playerSkills.activeSkillSlot3!.id,
-                    ),
-                  if (playerSkills.activeSkillSlot4 != null)
-                    CombatSkillButton(
-                      onTap: () => context.read<CombatCubit>().onSkillButtonTap(
-                          context, playerSkills.activeSkillSlot4!),
-                      skill: playerSkills.activeSkillSlot4!,
-                      darkened:
-                          combatState.status == CombatStatus.targetingSkill &&
-                              combatState.targetingSkill?.id !=
-                                  playerSkills.activeSkillSlot4!.id,
-                    ),
-                  if (playerSkills.activeSkillSlot5 != null)
-                    CombatSkillButton(
-                      onTap: () => context.read<CombatCubit>().onSkillButtonTap(
-                          context, playerSkills.activeSkillSlot5!),
-                      skill: playerSkills.activeSkillSlot5!,
-                      darkened:
-                          combatState.status == CombatStatus.targetingSkill &&
-                              combatState.targetingSkill?.id !=
-                                  playerSkills.activeSkillSlot5!.id,
-                    ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 10),
-            CharacterVitalsRow(character: character, mageMotes: mageMotes),
-          ],
-        ),
+          ),
+          const SizedBox(height: 10),
+          CharacterVitalsRow(character: character, mageMotes: mageMotes),
+        ],
       ),
     );
   }
@@ -671,7 +672,8 @@ class EnemyInfoBox extends StatelessWidget {
                           child: Center(
                               child: Text(
                             enemyData.name,
-                            style: QvTextStyles.title.copyWith(color: colorScheme.secondary),
+                            style: QvTextStyles.title
+                                .copyWith(color: colorScheme.secondary),
                           )),
                         ),
                         Padding(
@@ -737,7 +739,8 @@ class EnemyInfoBox extends StatelessWidget {
               child: Center(
                   child: Text(
                 'Close',
-                style: QvTextStyles.title.copyWith(color: colorScheme.secondary),
+                style:
+                    QvTextStyles.title.copyWith(color: colorScheme.secondary),
               )),
             ),
           ],
@@ -817,7 +820,8 @@ class _EnemyNextAttackSliceState extends State<EnemyNextAttackSlice> {
             padding: EdgeInsets.only(left: 20),
             child: Text(
               'Next Attack',
-              style: QvTextStyles.note.copyWith(color: colorScheme.primary, height: 1),
+              style: QvTextStyles.note
+                  .copyWith(color: colorScheme.primary, height: 1),
               textAlign: TextAlign.left,
             ),
           ),
@@ -839,7 +843,8 @@ class _EnemyNextAttackSliceState extends State<EnemyNextAttackSlice> {
             children: [
               Expanded(
                   child: Text(countdownLabel,
-                      style: QvTextStyles.label.copyWith(color: Colors.grey[100], height: 1),
+                      style: QvTextStyles.label
+                          .copyWith(color: Colors.grey[100], height: 1),
                       textAlign: TextAlign.center)),
               Container(width: 2, height: 20, color: colorScheme.primary),
               SizedBox(width: 20),
@@ -847,11 +852,13 @@ class _EnemyNextAttackSliceState extends State<EnemyNextAttackSlice> {
                   flex: 3,
                   child: Text(
                     attack?.name ?? '—',
-                    style: QvTextStyles.label.copyWith(color: colorScheme.primary, height: 1),
+                    style: QvTextStyles.label
+                        .copyWith(color: colorScheme.primary, height: 1),
                   )),
               Expanded(
                   child: Text(attack == null ? '—' : '${attack.damage}',
-                      style: QvTextStyles.label.copyWith(color: colorScheme.primary, height: 1),
+                      style: QvTextStyles.label
+                          .copyWith(color: colorScheme.primary, height: 1),
                       textAlign: TextAlign.center)),
             ],
           ),
@@ -912,7 +919,8 @@ class PlayerInfoBox extends StatelessWidget {
               child: Center(
                   child: Text(
                 'Close',
-                style: QvTextStyles.title.copyWith(color: colorScheme.secondary),
+                style:
+                    QvTextStyles.title.copyWith(color: colorScheme.secondary),
               )),
             ),
           ],
@@ -945,19 +953,21 @@ class TargetEnemySkillBox extends StatelessWidget {
           children: [
             Text(skill.data.name),
             Text('Lv ${skill.level}',
-                style: QvTextStyles.micro.copyWith(color: colorScheme.onSurface)),
+                style:
+                    QvTextStyles.micro.copyWith(color: colorScheme.onSurface)),
             Text(skill.description),
             Padding(
               padding: const EdgeInsets.only(top: 2),
               child: Text(
                   'AP Cost: ${skill.data.apCost ?? 0} • Cooldown: ${_cooldownText(skill.data.cooldown)}',
-                  style: QvTextStyles.caption
-                      .copyWith(color: colorScheme.onSurface.withValues(alpha: 0.75))),
+                  style: QvTextStyles.caption.copyWith(
+                      color: colorScheme.onSurface.withValues(alpha: 0.75))),
             ),
             ..._effectLines(playerCombatStats).map((line) => Padding(
                   padding: const EdgeInsets.only(top: 2),
                   child: Text(line,
-                      style: QvTextStyles.caption.copyWith(color: colorScheme.onSurface)),
+                      style: QvTextStyles.caption
+                          .copyWith(color: colorScheme.onSurface)),
                 )),
             Expanded(child: Container()),
             QvButton(
@@ -969,7 +979,8 @@ class TargetEnemySkillBox extends StatelessWidget {
               child: Center(
                   child: Text(
                 'Attack',
-                style: QvTextStyles.title.copyWith(color: colorScheme.secondary),
+                style:
+                    QvTextStyles.title.copyWith(color: colorScheme.secondary),
               )),
             ),
           ],
@@ -991,8 +1002,8 @@ class TargetEnemySkillBox extends StatelessWidget {
     final damage = skill.data.damageEffect;
     if (damage != null) {
       final amount = (damage.valueAtLevel(skill.level) *
-              playerCombatStats
-                  .attackPowerFor(damage.damageType ?? SkillDamageType.physical))
+              playerCombatStats.attackPowerFor(
+                  damage.damageType ?? SkillDamageType.physical))
           .round();
       lines.add('${damage.damageType?.name ?? 'Weapon Type'} Damage: $amount');
     }

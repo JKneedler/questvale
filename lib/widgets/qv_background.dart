@@ -5,14 +5,14 @@ import 'package:questvale/helpers/constants.dart';
 
 enum QvBackgroundType {
   surfaceContainerNoBottom,
-  secondaryNoBottom;
+  surfaceNoBottom;
 
   String assetPath(String themeId) {
     switch (this) {
       case QvBackgroundType.surfaceContainerNoBottom:
         return 'images/ui/backgrounds/$themeId/button-surface-container-no-bottom.png';
-      case QvBackgroundType.secondaryNoBottom:
-        return 'images/ui/backgrounds/$themeId/button-secondary-no-bottom.png';
+      case QvBackgroundType.surfaceNoBottom:
+        return 'images/ui/backgrounds/$themeId/button-surface-no-bottom.png';
     }
   }
 }
