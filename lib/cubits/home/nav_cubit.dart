@@ -7,4 +7,8 @@ class NavCubit extends Cubit<NavState> {
   void changeTab(int tab) {
     emit(state.copyWith(tab: tab));
   }
+
+  void setShowCombatNavBackground(bool show) {
+    emit(state.copyWith(showCombatNavBackground: show));
+  }
 }

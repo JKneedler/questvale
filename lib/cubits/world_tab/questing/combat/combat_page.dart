@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:questvale/cubits/home/nav_cubit.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/home/player_state.dart';
 import 'package:questvale/cubits/world_tab/questing/combat/combat_cubit.dart';
@@ -56,15 +57,48 @@ String _cooldownText(double? cooldownHours) {
   return '${wholeHours}h ${minutes}m';
 }
 
-class CombatPage extends StatelessWidget {
+class CombatPage extends StatefulWidget {
   const CombatPage({super.key, required this.encounterId});
   final String encounterId;
+
+  @override
+  State<CombatPage> createState() => _CombatPageState();
+}
+
+// StatefulWidget (rather than the StatelessWidget this used to be) purely
+// to hook NavBar's own useCombatBackground over its mounted lifetime — see
+// NavState.showCombatNavBackground's doc comment. NavCubit is captured
+// once in initState rather than re-read via context in dispose, since
+// reading InheritedWidgets from a State that's already mid-teardown is
+// fragile; a plain captured reference isn't. The toggle-on call is
+// deferred a frame (addPostFrameCallback) because emitting into NavCubit
+// synchronously from initState — while this exact frame's build is still
+// in progress — risks flutter_bloc's BlocBuilder above (HomeView's own)
+// calling setState mid-build; the mounted check guards the rare case
+// where this page unmounts again before that deferred callback fires.
+class _CombatPageState extends State<CombatPage> {
+  late final NavCubit _navCubit;
+
+  @override
+  void initState() {
+    super.initState();
+    _navCubit = context.read<NavCubit>();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _navCubit.setShowCombatNavBackground(true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _navCubit.setShowCombatNavBackground(false);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider<CombatCubit>(
         create: (context) => CombatCubit(
-              encounterId: encounterId,
+              encounterId: widget.encounterId,
               questZone: context.read<QuestEncounterCubit>().questZone,
               playerCubit: context.read<PlayerCubit>(),
               db: context.read<Database>(),
