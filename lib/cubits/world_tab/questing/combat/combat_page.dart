@@ -188,6 +188,12 @@ class CombatView extends StatelessWidget {
 // height, this whole bar is noticeably more compact vertically than the
 // original two-column layout, leaving more room for BattleFieldDisplay
 // below it.
+//
+// All three buttons share ButtonColor.surfaceContainer — previously each
+// had its own color (silver, rare, surface), unrelated to any other list
+// item's own styling. Per feedback, now matches the color the Todo tab's
+// own list items use (see todos_overview_item.dart), and CombatStatusCard's
+// outer shell there too.
 class _CombatActionBar extends StatelessWidget {
   const _CombatActionBar({required this.combatState});
 
@@ -208,7 +214,7 @@ class _CombatActionBar extends StatelessWidget {
           Expanded(
             child: QvButton(
               height: _buttonHeight,
-              buttonColor: ButtonColor.silver,
+              buttonColor: ButtonColor.surfaceContainer,
               onTap: () {
                 if (combatState.status == CombatStatus.idle) {
                   QuestFleeConfirmationModal.showModal(context,
@@ -229,7 +235,7 @@ class _CombatActionBar extends StatelessWidget {
           Expanded(
             child: QvButton(
               height: _buttonHeight,
-              buttonColor: ButtonColor.rare,
+              buttonColor: ButtonColor.surfaceContainer,
               child: Center(
                 child: Image.asset(
                   'images/pixel-icons/potion-star.png',
@@ -244,7 +250,7 @@ class _CombatActionBar extends StatelessWidget {
           Expanded(
             child: QvButton(
               height: _buttonHeight,
-              buttonColor: ButtonColor.surface,
+              buttonColor: ButtonColor.surfaceContainer,
               child: Center(
                 child: Image.asset(
                   'images/pixel-icons/bag.png',
