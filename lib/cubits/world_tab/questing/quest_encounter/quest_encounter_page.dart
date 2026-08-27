@@ -146,7 +146,12 @@ class QuestEncounterView extends StatelessWidget {
                           numEncountersCurFloor:
                               questState.quest.numEncountersCurFloor,
                         )
-                      : SizedBox.shrink(),
+                      // Preserves the top clearance BackgroundPage's own
+                      // padding used to provide unconditionally — see its
+                      // doc comment — for the states that don't show the
+                      // header (and its own top filler bar) at all.
+                      : const SizedBox(
+                          height: QvQuestEncounterHeader.topFillerHeight),
                   Expanded(
                     child: QvAnimatedTransition(
                       duration: getTransitionDuration(questState),
