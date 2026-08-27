@@ -107,6 +107,13 @@ class QuestEncounterView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<QuestEncounterCubit, QuestEncounterState>(
       builder: (context, questState) {
+        // Only true while CombatPage itself is showing (not its loot page,
+        // not chest encounters) — see QvQuestEncounterHeader's own
+        // capBottom doc comment for why that's the one case the header
+        // needs to render without its own bottom cap.
+        final isLiveCombat = questState.questStatus ==
+                QuestStatus.encounterInProgress &&
+            (questState.encounter?.encounterType.isCombatEncounter() ?? false);
         return MultiBlocListener(
           listeners: [
             BlocListener<QuestEncounterCubit, QuestEncounterState>(
@@ -145,6 +152,7 @@ class QuestEncounterView extends StatelessWidget {
                           curEncounterNum: questState.quest.curEncounterNum,
                           numEncountersCurFloor:
                               questState.quest.numEncountersCurFloor,
+                          capBottom: !isLiveCombat,
                         )
                       // Preserves the top clearance BackgroundPage's own
                       // padding used to provide unconditionally — see its

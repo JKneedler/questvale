@@ -21,11 +21,23 @@ class QvQuestEncounterHeader extends StatelessWidget {
     required this.darkened,
     required this.curEncounterNum,
     required this.numEncountersCurFloor,
+    this.capBottom = true,
   });
 
   final bool darkened;
   final int curEncounterNum;
   final int numEncountersCurFloor;
+
+  // False only while CombatPage's own action-button bar (Flee/Potions/Bag,
+  // see combat_page.dart's _CombatActionBar) is about to render directly
+  // below this with no gap — that bar carries the actual cap/bottom
+  // border instead, so this bar renders flat (surfaceNoTopNoBottom) to
+  // keep the whole region reading as one continuous background rather
+  // than showing two caps stacked with a seam between them. Every other
+  // caller (chest encounters, both loot pages) has nothing capped
+  // following it, so defaults to true — same surfaceNoTop cap this
+  // always had.
+  final bool capBottom;
 
   // Matches BackgroundPage's old EdgeInsets.only(top: 60) exactly — see
   // this class's own doc comment. QuestEncounterView falls back to a
@@ -48,13 +60,16 @@ class QvQuestEncounterHeader extends StatelessWidget {
           child: const SizedBox.shrink(),
         ),
         QvBackground(
-          type: QvBackgroundType.surfaceNoTop,
+          type: capBottom
+              ? QvBackgroundType.surfaceNoTop
+              : QvBackgroundType.surfaceNoTopNoBottom,
           width: double.infinity,
           height: _barHeight,
           child: Center(
             child: Text(
               'Encounter $curEncounterNum / $numEncountersCurFloor',
-              style: QvTextStyles.overlay.copyWith(color: colorScheme.onSurface),
+              style:
+                  QvTextStyles.overlay.copyWith(color: colorScheme.onSurface),
               textAlign: TextAlign.center,
             ),
           ),
@@ -66,8 +81,8 @@ class QvQuestEncounterHeader extends StatelessWidget {
     // take a darkened param itself.
     if (!darkened) return region;
     return ColorFiltered(
-      colorFilter:
-          ColorFilter.mode(Colors.black.withValues(alpha: 0.5), BlendMode.srcATop),
+      colorFilter: ColorFilter.mode(
+          Colors.black.withValues(alpha: 0.5), BlendMode.srcATop),
       child: region,
     );
   }

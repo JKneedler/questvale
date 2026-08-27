@@ -154,83 +154,7 @@ class CombatView extends StatelessWidget {
           return Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              SizedBox(height: 10),
-              SizedBox(
-                height: 138,
-                child: Row(
-                  children: [
-                    Container(
-                      width: 84,
-                      padding: EdgeInsets.symmetric(horizontal: 10),
-                      child: Column(
-                        children: [
-                          QvButton(
-                            width: 64,
-                            height: 64,
-                            buttonColor: ButtonColor.silver,
-                            padding: EdgeInsets.only(bottom: 10),
-                            onTap: () {
-                              if (combatState.status == CombatStatus.idle) {
-                                QuestFleeConfirmationModal.showModal(
-                                    context,
-                                    () => context
-                                        .read<QuestEncounterCubit>()
-                                        .fleeQuest());
-                              }
-                            },
-                            child: Center(
-                              child: Image.asset(
-                                'images/pixel-icons/running-man.png',
-                                filterQuality: FilterQuality.none,
-                                width: 40,
-                                height: 40,
-                                scale: .08,
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 10),
-                          QvButton(
-                            width: 64,
-                            height: 64,
-                            buttonColor: ButtonColor.rare,
-                            padding: EdgeInsets.only(bottom: 0),
-                            child: Center(
-                              child: Image.asset(
-                                'images/pixel-icons/potion-star.png',
-                                filterQuality: FilterQuality.none,
-                                width: 40,
-                                height: 40,
-                                scale: .08,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Expanded(child: Container()),
-                    Container(
-                      width: 84,
-                      padding: EdgeInsets.symmetric(horizontal: 10),
-                      alignment: Alignment.topCenter,
-                      child: QvButton(
-                        width: 64,
-                        height: 64,
-                        buttonColor: ButtonColor.surface,
-                        padding: EdgeInsets.only(bottom: 0),
-                        child: Center(
-                          child: Image.asset(
-                            'images/pixel-icons/bag.png',
-                            filterQuality: FilterQuality.none,
-                            width: 40,
-                            height: 40,
-                            scale: .08,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              _CombatActionBar(combatState: combatState),
               BattleFieldDisplay(),
               const SizedBox(height: 10),
               CombatVitalsAndSkillsCard(
@@ -244,6 +168,84 @@ class CombatView extends StatelessWidget {
         }),
       );
     });
+  }
+}
+
+// Flee/Potions/Bag, in one row — sits directly below QvQuestEncounterHeader
+// with no gap, on the same surfaceNoTop texture (flat top, since the
+// header's own filler bar above already continues into it; capped bottom,
+// closing off the region). Per feedback: previously two floating,
+// unstyled columns (Flee+Potions stacked on the left, Bag alone on the
+// right) with the header's own cap ending right below "Encounter X / Y" —
+// QvQuestEncounterHeader.capBottom is false specifically during live
+// combat so that cap moves down to end here instead, making the header
+// text and this button row read as one continuous background instead of
+// two separately-capped pieces with a seam between them.
+class _CombatActionBar extends StatelessWidget {
+  const _CombatActionBar({required this.combatState});
+
+  final CombatState combatState;
+
+  @override
+  Widget build(BuildContext context) {
+    return QvBackground(
+      type: QvBackgroundType.surfaceNoTop,
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          QvButton(
+            width: 64,
+            height: 64,
+            buttonColor: ButtonColor.silver,
+            onTap: () {
+              if (combatState.status == CombatStatus.idle) {
+                QuestFleeConfirmationModal.showModal(context,
+                    () => context.read<QuestEncounterCubit>().fleeQuest());
+              }
+            },
+            child: Center(
+              child: Image.asset(
+                'images/pixel-icons/running-man.png',
+                filterQuality: FilterQuality.none,
+                width: 40,
+                height: 40,
+                scale: .08,
+              ),
+            ),
+          ),
+          QvButton(
+            width: 64,
+            height: 64,
+            buttonColor: ButtonColor.rare,
+            child: Center(
+              child: Image.asset(
+                'images/pixel-icons/potion-star.png',
+                filterQuality: FilterQuality.none,
+                width: 40,
+                height: 40,
+                scale: .08,
+              ),
+            ),
+          ),
+          QvButton(
+            width: 64,
+            height: 64,
+            buttonColor: ButtonColor.surface,
+            child: Center(
+              child: Image.asset(
+                'images/pixel-icons/bag.png',
+                filterQuality: FilterQuality.none,
+                width: 40,
+                height: 40,
+                scale: .08,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
