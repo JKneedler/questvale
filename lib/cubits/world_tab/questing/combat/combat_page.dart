@@ -181,65 +181,78 @@ class CombatView extends StatelessWidget {
 // combat so that cap moves down to end here instead, making the header
 // text and this button row read as one continuous background instead of
 // two separately-capped pieces with a seam between them.
+//
+// Buttons are Expanded (no explicit width) rather than fixed 64x64
+// squares, so they stretch to fill the row's full width evenly instead of
+// clustering with dead space between them — combined with a shorter fixed
+// height, this whole bar is noticeably more compact vertically than the
+// original two-column layout, leaving more room for BattleFieldDisplay
+// below it.
 class _CombatActionBar extends StatelessWidget {
   const _CombatActionBar({required this.combatState});
 
   final CombatState combatState;
+
+  static const double _buttonHeight = 48;
+  static const double _iconSize = 32;
 
   @override
   Widget build(BuildContext context) {
     return QvBackground(
       type: QvBackgroundType.surfaceNoTop,
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        spacing: 10,
         children: [
-          QvButton(
-            width: 64,
-            height: 64,
-            buttonColor: ButtonColor.silver,
-            onTap: () {
-              if (combatState.status == CombatStatus.idle) {
-                QuestFleeConfirmationModal.showModal(context,
-                    () => context.read<QuestEncounterCubit>().fleeQuest());
-              }
-            },
-            child: Center(
-              child: Image.asset(
-                'images/pixel-icons/running-man.png',
-                filterQuality: FilterQuality.none,
-                width: 40,
-                height: 40,
-                scale: .08,
+          Expanded(
+            child: QvButton(
+              height: _buttonHeight,
+              buttonColor: ButtonColor.silver,
+              onTap: () {
+                if (combatState.status == CombatStatus.idle) {
+                  QuestFleeConfirmationModal.showModal(context,
+                      () => context.read<QuestEncounterCubit>().fleeQuest());
+                }
+              },
+              child: Center(
+                child: Image.asset(
+                  'images/pixel-icons/running-man.png',
+                  filterQuality: FilterQuality.none,
+                  width: _iconSize,
+                  height: _iconSize,
+                  scale: .08,
+                ),
               ),
             ),
           ),
-          QvButton(
-            width: 64,
-            height: 64,
-            buttonColor: ButtonColor.rare,
-            child: Center(
-              child: Image.asset(
-                'images/pixel-icons/potion-star.png',
-                filterQuality: FilterQuality.none,
-                width: 40,
-                height: 40,
-                scale: .08,
+          Expanded(
+            child: QvButton(
+              height: _buttonHeight,
+              buttonColor: ButtonColor.rare,
+              child: Center(
+                child: Image.asset(
+                  'images/pixel-icons/potion-star.png',
+                  filterQuality: FilterQuality.none,
+                  width: _iconSize,
+                  height: _iconSize,
+                  scale: .08,
+                ),
               ),
             ),
           ),
-          QvButton(
-            width: 64,
-            height: 64,
-            buttonColor: ButtonColor.surface,
-            child: Center(
-              child: Image.asset(
-                'images/pixel-icons/bag.png',
-                filterQuality: FilterQuality.none,
-                width: 40,
-                height: 40,
-                scale: .08,
+          Expanded(
+            child: QvButton(
+              height: _buttonHeight,
+              buttonColor: ButtonColor.surface,
+              child: Center(
+                child: Image.asset(
+                  'images/pixel-icons/bag.png',
+                  filterQuality: FilterQuality.none,
+                  width: _iconSize,
+                  height: _iconSize,
+                  scale: .08,
+                ),
               ),
             ),
           ),
