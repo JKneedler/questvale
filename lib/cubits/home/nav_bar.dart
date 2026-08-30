@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:questvale/cubits/theme/theme_cubit.dart';
-import 'package:questvale/helpers/constants.dart';
-import 'package:questvale/widgets/qv_background.dart';
-import 'package:questvale/widgets/qv_inset_background.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 class NavBar extends StatelessWidget {
   const NavBar({

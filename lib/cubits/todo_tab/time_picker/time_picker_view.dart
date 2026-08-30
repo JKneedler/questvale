@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/todo_tab/time_picker/time_picker_cubit.dart';
 import 'package:questvale/cubits/todo_tab/time_picker/time_picker_state.dart';
-import 'package:questvale/widgets/qv_inset_background.dart';
-import 'package:questvale/widgets/qv_text_styles.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 /// Hour/minute/AM-PM wheel scroller for picking a time, styled to match the
 /// rest of the app's pixel-bordered look instead of a plain Material sheet —
@@ -46,18 +45,16 @@ class TimePickerView extends StatelessWidget {
                     selectedIndex: state.selectedHour - 1,
                     labelBuilder: (index) =>
                         (index + 1).toString().padLeft(2, '0'),
-                    onSelectedItemChanged: (index) => context
-                        .read<TimePickerCubit>()
-                        .hourChanged(index + 1),
+                    onSelectedItemChanged: (index) =>
+                        context.read<TimePickerCubit>().hourChanged(index + 1),
                   ),
                   _ColumnDivider(color: dividerColor),
                   _WheelColumn(
                     itemCount: 60,
                     selectedIndex: state.selectedMinute,
                     labelBuilder: (index) => index.toString().padLeft(2, '0'),
-                    onSelectedItemChanged: (index) => context
-                        .read<TimePickerCubit>()
-                        .minuteChanged(index),
+                    onSelectedItemChanged: (index) =>
+                        context.read<TimePickerCubit>().minuteChanged(index),
                   ),
                   _ColumnDivider(color: dividerColor),
                   _WheelColumn(
@@ -126,7 +123,9 @@ class _WheelColumn extends StatelessWidget {
             return Center(
               child: Text(
                 labelBuilder(index),
-                style: (isSelected ? QvTextStyles.emphasis : QvTextStyles.subtitle).copyWith(
+                style:
+                    (isSelected ? QvTextStyles.emphasis : QvTextStyles.subtitle)
+                        .copyWith(
                   color: isSelected
                       ? colorScheme.primary
                       : colorScheme.onSurface.withValues(alpha: 0.35),

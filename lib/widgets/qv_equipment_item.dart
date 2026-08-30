@@ -3,9 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/helpers/shared_enums.dart';
-import 'package:questvale/widgets/qv_card_border.dart';
-import 'package:questvale/widgets/qv_inset_background.dart';
-import 'package:questvale/widgets/qv_text_styles.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 class QvEquipmentItem extends StatelessWidget {
   final Equipment? equipment;
@@ -44,13 +42,16 @@ class QvEquipmentItem extends StatelessWidget {
         bgColor: equipment != null && isEquipped && changeEquippedColor
             ? colorScheme.secondary
             : colorScheme.surface,
-        rarity: equipment == null ? Rarity.common : equipment!.rarity,
+        rarityBorderAssetPath:
+            (equipment == null ? Rarity.common : equipment!.rarity)
+                .borderAssetPath,
         padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
         child: Builder(
           builder: (context) {
             if (equipment == null) {
               return Center(
-                child: Text('Empty', style: QvTextStyles.note.copyWith(height: 1)),
+                child:
+                    Text('Empty', style: QvTextStyles.note.copyWith(height: 1)),
               );
             }
             return SizedBox(
@@ -61,8 +62,8 @@ class QvEquipmentItem extends StatelessWidget {
                       ? SizedBox(
                           height: 30,
                           child: Text('Currently Equipped',
-                              style: QvTextStyles.label
-                                  .copyWith(height: 1, fontStyle: FontStyle.italic)),
+                              style: QvTextStyles.label.copyWith(
+                                  height: 1, fontStyle: FontStyle.italic)),
                         )
                       : SizedBox(),
                   if (showName)
@@ -179,7 +180,8 @@ class AttributeDisplay extends StatelessWidget {
           SizedBox(height: 4),
           Text(
             attribute,
-            style: QvTextStyles.label.copyWith(height: 1, color: colorScheme.primary),
+            style: QvTextStyles.label
+                .copyWith(height: 1, color: colorScheme.primary),
             textAlign: TextAlign.center,
           ),
         ],

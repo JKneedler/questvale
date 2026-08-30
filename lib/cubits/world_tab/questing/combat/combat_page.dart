@@ -10,7 +10,6 @@ import 'package:questvale/cubits/world_tab/questing/combat/combat_cubit.dart';
 import 'package:questvale/cubits/world_tab/questing/combat/combat_state.dart';
 import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_encounter_cubit.dart';
 import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_flee_confirmation_modal.dart';
-import 'package:questvale/cubits/theme/theme_cubit.dart';
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/models/mage_motes.dart';
@@ -22,19 +21,12 @@ import 'package:questvale/data/providers/game_data_models/skill_data.dart';
 import 'package:questvale/data/skills/base_active_skill.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/data_formatters.dart';
-import 'package:questvale/widgets/qv_animated_transition.dart';
-import 'package:questvale/widgets/qv_background.dart';
-import 'package:questvale/widgets/qv_blinking.dart';
-import 'package:questvale/widgets/qv_button.dart';
-import 'package:questvale/widgets/qv_card_border.dart';
+import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_character_vitals_row.dart';
 import 'package:questvale/widgets/qv_damage_toast.dart';
-import 'package:questvale/widgets/qv_fading_scrollable.dart';
-import 'package:questvale/widgets/qv_inset_background.dart';
-import 'package:questvale/widgets/qv_bar.dart';
 import 'package:questvale/widgets/qv_skill_button.dart';
-import 'package:questvale/widgets/qv_text_styles.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 // Shared with TargetEnemySkillBox's effect-line list below — same
 // formatting convention as skills_gear_up_page.dart's identically-named
@@ -723,7 +715,7 @@ class EnemyInfoBox extends StatelessWidget {
                       children: [
                         QvButton(
                           height: 36,
-                          buttonColor: ButtonColor.getColor(enemyData.rarity),
+                          buttonColor: rarityButtonColor(enemyData.rarity),
                           child: Center(
                               child: Text(
                             enemyData.name,

@@ -5,9 +5,8 @@ import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/mage_motes.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/shared_enums.dart';
-import 'package:questvale/widgets/qv_bar.dart';
 import 'package:questvale/widgets/qv_mote_display.dart';
-import 'package:questvale/widgets/qv_text_styles.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 /// Health bar / class-resource block, leaning toward its container's outer
 /// edges. Originally built for the Todo tab's pinned CombatStatusCard
@@ -23,7 +22,8 @@ import 'package:questvale/widgets/qv_text_styles.dart';
 class CharacterVitalsRow extends StatelessWidget {
   final Character character;
   final MageMotes? mageMotes;
-  const CharacterVitalsRow({super.key, required this.character, this.mageMotes});
+  const CharacterVitalsRow(
+      {super.key, required this.character, this.mageMotes});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +32,8 @@ class CharacterVitalsRow extends StatelessWidget {
     // maxHealth lives on PlayerCombatStats (not Character — see the Skill
     // System Foundations ticket), since it's the only place gear's Health
     // stat modifier is actually consulted.
-    final playerCombatStats = context.watch<PlayerCubit>().state.playerCombatStats;
+    final playerCombatStats =
+        context.watch<PlayerCubit>().state.playerCombatStats;
     if (playerCombatStats == null) return const SizedBox.shrink();
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -46,11 +47,13 @@ class CharacterVitalsRow extends StatelessWidget {
                 children: [
                   Text(
                     '${character.currentHealth} / ${playerCombatStats.maxHealth}',
-                    style: QvTextStyles.sectionHeader.copyWith(color: HEALTH_COLOR),
+                    style: QvTextStyles.sectionHeader
+                        .copyWith(color: HEALTH_COLOR),
                   ),
                   Text(
                     'HP',
-                    style: QvTextStyles.sectionHeader.copyWith(color: HEALTH_COLOR),
+                    style: QvTextStyles.sectionHeader
+                        .copyWith(color: HEALTH_COLOR),
                   ),
                 ],
               ),

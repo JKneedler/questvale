@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:questvale/cubits/home/home_page.dart';
-import 'package:questvale/cubits/theme/theme_cubit.dart';
-import 'package:questvale/cubits/theme/theme_state.dart';
+import 'package:questvale/cubits/theme/character_theme_persistence.dart';
 import 'package:questvale/data/questvale_db.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
 import 'package:questvale/services/notification_service.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,7 +30,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => ThemeCubit(
-        characterRepository: CharacterRepository(db: questvaleDB),
+        persistence: CharacterThemePersistence(
+          characterRepository: CharacterRepository(db: questvaleDB),
+        ),
       ),
       child: Provider(
         create: (_) => questvaleDB,

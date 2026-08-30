@@ -1,3 +1,4 @@
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 import 'package:path/path.dart';
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/character_skill.dart';
@@ -18,7 +19,6 @@ import 'package:questvale/data/models/character_tag.dart';
 import 'package:questvale/data/models/mage_motes.dart';
 import 'package:questvale/data/models/player_combat_stats.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
-import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';

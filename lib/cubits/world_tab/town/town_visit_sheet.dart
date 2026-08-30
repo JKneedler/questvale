@@ -3,9 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:questvale/cubits/home/nav_aware_modal_sheet.dart';
 import 'package:questvale/cubits/world_tab/world_cubit.dart';
-import 'package:questvale/widgets/qv_button.dart';
-import 'package:questvale/widgets/qv_draggable_sheet.dart';
-import 'package:questvale/widgets/qv_text_styles.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 /// The shared "you have arrived" shell for every Town Square destination
 /// (Quest Board, Shop, Guild Hall, Forge, Lab, Gemforge, Reliquary) — see
@@ -121,7 +119,8 @@ class _TownVisitHeader extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
-                style: QvTextStyles.emphasis.copyWith(color: colorScheme.onSurface),
+                style: QvTextStyles.emphasis
+                    .copyWith(color: colorScheme.onSurface),
               ),
             ),
             const SizedBox(width: 12),

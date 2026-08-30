@@ -9,15 +9,7 @@ import 'package:questvale/data/models/todo.dart';
 import 'package:questvale/data/models/todo_reminder.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/data_formatters.dart';
-import 'package:questvale/widgets/qv_button.dart';
-import 'package:questvale/widgets/qv_check_box.dart';
-import 'package:questvale/widgets/qv_inset_background.dart';
-import 'package:questvale/widgets/qv_month_calendar.dart';
-import 'package:questvale/widgets/qv_number_wheel_picker.dart';
-import 'package:questvale/widgets/qv_segmented_control.dart';
-import 'package:questvale/widgets/qv_text_styles.dart';
-import 'package:questvale/widgets/qv_textfield.dart';
-import 'package:questvale/widgets/qv_weekday_selector.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 /// The mutable todo fields the shared form body renders — everything below
 /// the title/description text fields. Both AddTodoState and EditTodoState
@@ -571,8 +563,9 @@ class _TodoFormBodyState extends State<TodoFormBody>
                   child: Center(
                     child: Text(
                       'Clear',
-                      style: QvTextStyles.caption
-                          .copyWith(color: colorScheme.error, fontWeight: FontWeight.w600),
+                      style: QvTextStyles.caption.copyWith(
+                          color: colorScheme.error,
+                          fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
@@ -651,8 +644,8 @@ class _TodoFormBodyState extends State<TodoFormBody>
                 const SizedBox(width: 3),
                 Text(
                   '${fields.currentStreak}',
-                  style: QvTextStyles.caption
-                      .copyWith(fontWeight: FontWeight.bold, color: colorScheme.primary),
+                  style: QvTextStyles.caption.copyWith(
+                      fontWeight: FontWeight.bold, color: colorScheme.primary),
                 ),
               ],
             )
@@ -816,7 +809,8 @@ class _TodoFormBodyState extends State<TodoFormBody>
             children: [
               Text(
                 label,
-                style: QvTextStyles.sectionHeader.copyWith(color: colorScheme.onSurface),
+                style: QvTextStyles.sectionHeader
+                    .copyWith(color: colorScheme.onSurface),
               ),
               if (trailing != null) ...[
                 const Spacer(),
@@ -849,8 +843,8 @@ class _TodoFormBodyState extends State<TodoFormBody>
           const SizedBox(width: 12),
           Text(
             'Allow multiple completions',
-            style: QvTextStyles.itemTitle
-                .copyWith(fontWeight: FontWeight.w500, color: colorScheme.onSurface),
+            style: QvTextStyles.itemTitle.copyWith(
+                fontWeight: FontWeight.w500, color: colorScheme.onSurface),
           ),
         ],
       ),
@@ -945,8 +939,8 @@ class _TodoFormBodyState extends State<TodoFormBody>
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
               ),
-              style: QvTextStyles.body
-                  .copyWith(fontWeight: FontWeight.w500, color: colorScheme.onSurface),
+              style: QvTextStyles.body.copyWith(
+                  fontWeight: FontWeight.w500, color: colorScheme.onSurface),
             ),
           ),
           if (hasText) ...[

@@ -14,12 +14,8 @@ import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/data_formatters.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/services/leveling_service.dart';
-import 'package:questvale/widgets/qv_button.dart';
-import 'package:questvale/widgets/qv_bar.dart';
-import 'package:questvale/widgets/qv_card_border.dart';
 import 'package:questvale/widgets/qv_character_vitals_row.dart';
-import 'package:questvale/widgets/qv_inset_background.dart';
-import 'package:questvale/widgets/qv_text_styles.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 // Scaffold for the character/combat status block pinned above the todo
 // list. XP (level/currentExp), health/AP/mana, in-combat enemy state, and
@@ -88,12 +84,12 @@ class _CombatStatusCardState extends State<CombatStatusCard> {
         if (!mounted) return;
         final cubit = context.read<TodosOverviewCubit>();
         final now = DateTime.now();
-        final hasExpiredAttackTimer = cubit.state.activeEncounter?.enemies
-                .any((enemy) {
-              final timer = cubit.state.attackTimerFor(enemy);
-              return timer != null && !timer.nextTriggerAt.isAfter(now);
-            }) ??
-            false;
+        final hasExpiredAttackTimer =
+            cubit.state.activeEncounter?.enemies.any((enemy) {
+                  final timer = cubit.state.attackTimerFor(enemy);
+                  return timer != null && !timer.nextTriggerAt.isAfter(now);
+                }) ??
+                false;
         if (hasExpiredAttackTimer) {
           cubit.loadCharacter();
         } else {
@@ -298,8 +294,8 @@ class _ApBadge extends StatelessWidget {
           ),
           Text(
             'AP',
-            style: QvTextStyles.body
-                .copyWith(color: colorScheme.onSurface, fontWeight: FontWeight.bold),
+            style: QvTextStyles.body.copyWith(
+                color: colorScheme.onSurface, fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -397,8 +393,8 @@ class _CombatEnemiesSection extends StatelessWidget {
               child: Text(
                 "Not in combat — you won't earn AP from battle right now.",
                 textAlign: TextAlign.center,
-                style: QvTextStyles.caption
-                    .copyWith(color: colorScheme.onSurface.withValues(alpha: 0.6)),
+                style: QvTextStyles.caption.copyWith(
+                    color: colorScheme.onSurface.withValues(alpha: 0.6)),
               ),
             ),
     );
@@ -410,7 +406,9 @@ class _EnemyCombatBlock extends StatelessWidget {
   final EnemyData? enemyData;
   final ScheduledTimer? attackTimer;
   const _EnemyCombatBlock(
-      {required this.enemy, required this.enemyData, required this.attackTimer});
+      {required this.enemy,
+      required this.enemyData,
+      required this.attackTimer});
 
   @override
   Widget build(BuildContext context) {
@@ -426,7 +424,8 @@ class _EnemyCombatBlock extends StatelessWidget {
     return Opacity(
       opacity: isDead ? 0.4 : 1,
       child: QvCardBorder(
-        rarity: enemyData?.rarity ?? Rarity.common,
+        rarityBorderAssetPath:
+            (enemyData?.rarity ?? Rarity.common).borderAssetPath,
         bgColor: colorScheme.surface,
         padding: const EdgeInsets.fromLTRB(8, 8, 8, 12),
         child: SizedBox(
@@ -442,7 +441,8 @@ class _EnemyCombatBlock extends StatelessWidget {
                 child: isDead
                     ? Text(
                         'X X X',
-                        style: QvTextStyles.micro.copyWith(color: Colors.grey[100], height: 1),
+                        style: QvTextStyles.micro
+                            .copyWith(color: Colors.grey[100], height: 1),
                       )
                     : const SizedBox.shrink(),
               ),
@@ -456,8 +456,8 @@ class _EnemyCombatBlock extends StatelessWidget {
                   child: isDead
                       ? Text(
                           'Defeated',
-                          style: QvTextStyles.itemTitle
-                              .copyWith(color: Colors.white, fontWeight: FontWeight.w600),
+                          style: QvTextStyles.itemTitle.copyWith(
+                              color: Colors.white, fontWeight: FontWeight.w600),
                         )
                       : attackTimer == null || attackCountdown == null
                           ? Text(
@@ -478,9 +478,11 @@ class _EnemyCombatBlock extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  DataFormatters.formatCountdown(attackCountdown),
-                                  style: QvTextStyles.itemTitle
-                                      .copyWith(color: Colors.white, fontWeight: FontWeight.w600),
+                                  DataFormatters.formatCountdown(
+                                      attackCountdown),
+                                  style: QvTextStyles.itemTitle.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600),
                                 ),
                               ],
                             ),

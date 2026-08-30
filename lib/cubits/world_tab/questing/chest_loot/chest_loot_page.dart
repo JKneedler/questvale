@@ -5,13 +5,8 @@ import 'package:questvale/cubits/world_tab/questing/chest_loot/chest_loot_state.
 import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_encounter_cubit.dart';
 import 'package:questvale/cubits/world_tab/questing/simple_equipment_slice.dart';
 import 'package:questvale/cubits/world_tab/questing/loot_summary_slice.dart';
-import 'package:questvale/cubits/theme/theme_cubit.dart';
-import 'package:questvale/helpers/constants.dart';
-import 'package:questvale/widgets/qv_button.dart';
-import 'package:questvale/widgets/qv_fading_scrollable.dart';
-import 'package:questvale/widgets/qv_primary_border.dart';
-import 'package:questvale/widgets/qv_text_styles.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 class ChestLootPage extends StatelessWidget {
   const ChestLootPage({super.key});
@@ -55,7 +50,8 @@ class ChestLootView extends StatelessWidget {
                 children: [
                   Text(
                     'Chest Contents',
-                    style: QvTextStyles.title.copyWith(color: colorScheme.primary, height: 1),
+                    style: QvTextStyles.title
+                        .copyWith(color: colorScheme.primary, height: 1),
                   ),
                   Container(
                     height: 1,
@@ -79,7 +75,8 @@ class ChestLootView extends StatelessWidget {
                       )),
                   Text(
                     'Drops',
-                    style: QvTextStyles.subtitle.copyWith(color: colorScheme.primary, height: 1),
+                    style: QvTextStyles.subtitle
+                        .copyWith(color: colorScheme.primary, height: 1),
                   ),
                   Expanded(
                     child: Container(

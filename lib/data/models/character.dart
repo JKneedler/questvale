@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 import 'package:questvale/data/models/character_skill.dart';
 import 'package:questvale/data/models/equipment.dart';
-import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 
 class Character extends Equatable {

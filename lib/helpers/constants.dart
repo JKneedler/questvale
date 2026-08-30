@@ -5,20 +5,7 @@ const DIFFICULTY_ICON = Symbols.trophy;
 const PRIORITY_ICON = Symbols.flag_2;
 const CALENDAR_ICON = Symbols.calendar_clock;
 
-const GRAY_FILTER_MATRIX = <double>[
-  // R         G         B         A  Bias
-  0.2126, 0.7152, 0.0722, 0, 0, // R'
-  0.2126, 0.7152, 0.0722, 0, 0, // G'
-  0.2126, 0.7152, 0.0722, 0, 0, // B'
-  0, 0, 0, 1, 0, // A'
-];
-
 const ENCOUNTER_FIRST_PLAY_DELAY = 1000; // 1 second
-
-// Distance (in logical pixels) that QvFadingScrollable's edge fade spans —
-// shared so every scrollable in the app fades at the same rate regardless
-// of its own size.
-const SCROLL_FADE_DISTANCE = 12.0;
 
 const HEALTH_COLOR = Color(0xffFF4646);
 // Mana is fully retired for Mage (replaced by Motes below) and no other
@@ -54,152 +41,6 @@ const PRIORITY_LOW_COLOR = Color(0xFF00BFFF); // Light Blue
 const PRIORITY_MEDIUM_COLOR = Color(0xFFFFA500); // Orange
 const PRIORITY_HIGH_COLOR = Color(0xFFDC143C); // Red
 
-// A theme's full color set — Main, Light Accent, and Dark Accent for each
-// of the 4 core roles (Primary/Secondary/Surface/Surface Container). These
-// 12 values are the single source of truth: whatever shade a theming skill
-// bakes into a theme's PNGs is recorded here too, so it stays readable from
-// code (e.g. AppTheme.primaryDark) without reverse-engineering it from an
-// image. Border is deliberately NOT part of this — it's a fixed universal
-// #000000 across every theme (see vault Theming.md), not theme-dependent.
-class AppTheme {
-  final String id;
-  final String displayName;
-  final Color primaryMain;
-  final Color primaryLight;
-  final Color primaryDark;
-  final Color secondaryMain;
-  final Color secondaryLight;
-  final Color secondaryDark;
-  final Color surfaceMain;
-  final Color surfaceLight;
-  final Color surfaceDark;
-  final Color surfaceContainerMain;
-  final Color surfaceContainerLight;
-  final Color surfaceContainerDark;
-
-  const AppTheme({
-    required this.id,
-    required this.displayName,
-    required this.primaryMain,
-    required this.primaryLight,
-    required this.primaryDark,
-    required this.secondaryMain,
-    required this.secondaryLight,
-    required this.secondaryDark,
-    required this.surfaceMain,
-    required this.surfaceLight,
-    required this.surfaceDark,
-    required this.surfaceContainerMain,
-    required this.surfaceContainerLight,
-    required this.surfaceContainerDark,
-  });
-
-  // onPrimary/onSecondary/onSurface each deliberately track another role's
-  // tone for contrast (established in the 2026-07 retheme) rather than
-  // being independent inputs: onPrimary uses Surface's Main, onSecondary
-  // uses Primary's Main, onSurface uses Primary's Light Accent. The
-  // remaining fields are still-unnamed Material placeholder grays, not
-  // theme-dependent (see Theming.md).
-  ColorScheme get colorScheme => ColorScheme(
-        brightness: Brightness.dark,
-        primary: primaryMain,
-        onPrimary: surfaceMain,
-        secondary: secondaryMain,
-        onSecondary: primaryMain,
-        error: const Color(0xffd83030),
-        onError: const Color(0xffeeeeee),
-        surface: surfaceMain,
-        onSurface: primaryLight,
-        primaryContainer: const Color(0xff222222),
-        surfaceContainerHigh: const Color(0xff383838),
-        surfaceContainer: surfaceContainerMain,
-        surfaceContainerLow: const Color(0xff292929),
-        surfaceContainerLowest: const Color(0xff181818),
-        onPrimaryContainer: const Color.fromARGB(255, 24, 24, 24),
-        onSecondaryContainer: const Color(0xffa7a7a7),
-        onSurfaceVariant: const Color(0xff313131),
-        onPrimaryFixedVariant: const Color.fromARGB(255, 75, 75, 75),
-      );
-}
-
-const Map<String, AppTheme> APP_THEMES = {
-  'charcoal-gold': AppTheme(
-    id: 'charcoal-gold',
-    displayName: 'Charcoal & Gold',
-    primaryMain: Color(0xffe8c468),
-    primaryLight: Color(0xffffe99c),
-    primaryDark: Color(0xffdaae3c),
-    secondaryMain: Color(0xff3a3a3e),
-    secondaryLight: Color(0xff707078),
-    secondaryDark: Color(0xff1c1c1e),
-    surfaceMain: Color(0xff1b1b1e),
-    surfaceLight: Color(0xff505059),
-    surfaceDark: Color(0xff0f0f11),
-    surfaceContainerMain: Color(0xff3c3c44),
-    surfaceContainerLight: Color(0xff717180),
-    surfaceContainerDark: Color(0xff1f1f23),
-  ),
-  'sunrise-peach': AppTheme(
-    id: 'sunrise-peach',
-    displayName: 'Sunrise Peach',
-    primaryMain: Color(0xffff9066),
-    primaryLight: Color(0xffffc2a7),
-    primaryDark: Color(0xfff96932),
-    secondaryMain: Color(0xff4a3b45),
-    secondaryLight: Color(0xff886d7f),
-    secondaryDark: Color(0xff281f25),
-    surfaceMain: Color(0xfffaf3ee),
-    surfaceLight: Color(0xffffffff),
-    surfaceDark: Color(0xffe9c9b3),
-    surfaceContainerMain: Color(0xfffefefe),
-    surfaceContainerLight: Color(0xffffffff),
-    surfaceContainerDark: Color(0xffdddddd),
-  ),
-  'violet-dusk': AppTheme(
-    id: 'violet-dusk',
-    displayName: 'Violet Dusk',
-    primaryMain: Color(0xffa66cff),
-    primaryLight: Color(0xffd1adff),
-    primaryDark: Color(0xff8438f9),
-    secondaryMain: Color(0xff432b6e),
-    secondaryLight: Color(0xff754fba),
-    secondaryDark: Color(0xff281a41),
-    surfaceMain: Color(0xff1c1330),
-    surfaceLight: Color(0xff4b3380),
-    surfaceDark: Color(0xff110c1e),
-    surfaceContainerMain: Color(0xff3f3456),
-    surfaceContainerLight: Color(0xff735f9c),
-    surfaceContainerDark: Color(0xff231d2f),
-  ),
-};
-
-const String DEFAULT_THEME_ID = 'charcoal-gold';
-
-// 9-slice (centerSlice) border/button asset families. All source PNGs are
-// 64x64 at scale 1.0. A widget rendered smaller than a family's min size
-// makes Flutter's centerSlice math collapse to zero and throws "centerSlice
-// was used with a BoxFit that does not guarantee that the image is fully
-// visible" — regardless of BoxFit. Keep each *_SLICE in sync with its PNG's
-// actual border inset if the art changes.
-//
-// Each *_MIN_SIZE must be STRICTLY GREATER than its slice's border inset
-// (inputSize - centerSlice.size), not merely >=. Flutter computes
-// outputSize = widgetSize - sliceBorder and requires outputSize > 0; at
-// exactly widgetSize == sliceBorder, outputSize is 0 and the same assertion
-// still fires. The values below add a few px of headroom past the bare
-// mathematical floor so the stretchy middle isn't zero-width either.
-const STANDARD_BORDER_SLICE = Rect.fromLTWH(16, 16, 32, 32);
-const STANDARD_BORDER_MIN_SIZE = Size(36, 36);
-
-const METAL_CORNER_BORDER_SLICE = Rect.fromLTWH(28, 28, 8, 8);
-const METAL_CORNER_BORDER_MIN_SIZE = Size(60, 60);
-
-const SMALL_BAR_SLICE = Rect.fromLTWH(8, 8, 48, 48);
-const SMALL_BAR_MIN_SIZE = Size(20, 20);
-
-const MINI_BAR_SLICE = Rect.fromLTWH(6, 6, 52, 52);
-const MINI_BAR_MIN_SIZE = Size(22, 22);
-
 // Combat
 // No flat BASE_HEALTH here — max HP's base term is per-class
 // (CharacterClass.baseMaxHealth), read by PlayerCombatStats.maxHealth.
@@ -213,3 +54,11 @@ const BASE_STATUS_EFFECT_CHANCE = .05;
 // Mage's Mote resource: a shared cap across both elements (not per-element)
 // — see the vault's Mage skill tree. A mote generated past this fizzles.
 const MOTE_CAP = 3;
+
+// AppTheme, APP_THEMES, DEFAULT_THEME_ID, the 9-slice geometry constants
+// (STANDARD_BORDER_*, METAL_CORNER_BORDER_*, SMALL_BAR_*, MINI_BAR_*),
+// GRAY_FILTER_MATRIX, and SCROLL_FADE_DISTANCE all moved to jk_pixel_ui's
+// own lib/src/constants.dart as part of the UI-kit extraction — they're
+// generic theming/geometry, not game data. Import
+// package:jk_pixel_ui/jk_pixel_ui.dart wherever this file's code used to
+// reach for one of those.

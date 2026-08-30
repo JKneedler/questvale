@@ -2,7 +2,6 @@ import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/settings/settings_state.dart';
-import 'package:questvale/cubits/theme/theme_cubit.dart';
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/character_skill.dart';
 import 'package:questvale/data/models/character_stats.dart';
@@ -22,6 +21,7 @@ import 'package:questvale/services/leveling_service.dart';
 import 'package:questvale/services/skill_progression_service.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 class SettingsCubit extends Cubit<SettingsState> {
   final Database db;
@@ -107,8 +107,8 @@ class SettingsCubit extends Cubit<SettingsState> {
     final skillProgressionService =
         SkillProgressionService(db: db, gameData: gameData);
     final character = state.character;
-    final nextSkill = gameData.skills.firstWhereOrNull((skill) =>
-        !character.skills.any((owned) => owned.skillId == skill.id));
+    final nextSkill = gameData.skills.firstWhereOrNull(
+        (skill) => !character.skills.any((owned) => owned.skillId == skill.id));
     if (nextSkill == null) return;
     await skillProgressionService.unlockSkill(
         character: character, skillId: nextSkill.id);
@@ -147,8 +147,8 @@ class SettingsCubit extends Cubit<SettingsState> {
   // 0 damage) now that CombatService actually consults it, per the Skill
   // System Foundations ticket's damage seam.
   Future<void> deleteAllEquipment() async {
-    final cleared = await characterRepository
-        .updateCharacter(_unequipped(state.character));
+    final cleared =
+        await characterRepository.updateCharacter(_unequipped(state.character));
     await equipmentRepository.deleteAllEquipmentForCharacter(cleared.id);
     final weapon = EquipmentService.generateStarterWeapon(cleared);
     await equipmentRepository.insertEquipment(weapon);
@@ -167,9 +167,11 @@ class SettingsCubit extends Cubit<SettingsState> {
   // found (0, 1, or many) and cleans each one's encounter/rewards before
   // deleting all of them.
   Future<void> cancelQuest() async {
-    final quests = await questRepository.getQuestsForCharacter(state.character.id);
+    final quests =
+        await questRepository.getQuestsForCharacter(state.character.id);
     for (final quest in quests) {
-      final encounter = await encounterRepository.getEncounterByQuestId(quest.id);
+      final encounter =
+          await encounterRepository.getEncounterByQuestId(quest.id);
       if (encounter != null) {
         await encounterRepository.enemyRepository
             .deleteEnemiesByEncounterId(encounter.id);

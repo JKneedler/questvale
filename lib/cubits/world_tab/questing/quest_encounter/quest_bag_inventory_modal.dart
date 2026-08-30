@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:questvale/widgets/qv_metal_corner_border.dart';
-import 'package:questvale/widgets/qv_text_styles.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 class QuestBagInventoryModal extends StatelessWidget {
   const QuestBagInventoryModal({super.key});
@@ -47,7 +46,8 @@ class QuestBagInventoryModal extends StatelessWidget {
                         alignment: Alignment.topCenter,
                         child: Text(
                           'x',
-                          style: QvTextStyles.display.copyWith(fontWeight: FontWeight.w500),
+                          style: QvTextStyles.display
+                              .copyWith(fontWeight: FontWeight.w500),
                         ),
                       ),
                     ),

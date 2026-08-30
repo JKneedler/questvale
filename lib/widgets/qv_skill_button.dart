@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 import 'package:questvale/data/providers/game_data_models/skill_data.dart';
-import 'package:questvale/helpers/constants.dart';
 
 class QvSkillButton extends StatelessWidget {
   const QvSkillButton({

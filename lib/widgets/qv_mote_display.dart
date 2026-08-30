@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:questvale/data/models/mage_motes.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/shared_enums.dart';
-import 'package:questvale/widgets/qv_bar.dart';
-import 'package:questvale/widgets/qv_text_styles.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 // Mage's resource display: MOTE_CAP discrete pip slots rather than a
 // fraction-fill bar (QvBar/QvResourceBar) used directly, since Motes are a

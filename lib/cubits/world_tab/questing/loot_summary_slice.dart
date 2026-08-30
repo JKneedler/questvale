@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:questvale/cubits/theme/theme_cubit.dart';
-import 'package:questvale/helpers/constants.dart';
-import 'package:questvale/widgets/qv_text_styles.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 class SummarySlice extends StatelessWidget {
   final String title;
@@ -33,7 +31,8 @@ class SummarySlice extends StatelessWidget {
         children: [
           Text(
             title,
-            style: QvTextStyles.note.copyWith(color: colorScheme.primary, height: 1),
+            style: QvTextStyles.note
+                .copyWith(color: colorScheme.primary, height: 1),
           ),
           Text(
             value,

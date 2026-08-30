@@ -10,13 +10,9 @@ import 'package:questvale/data/providers/game_data.dart';
 import 'package:questvale/data/providers/game_data_models/skill_data.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/services/skill_progression_service.dart';
-import 'package:questvale/widgets/qv_button.dart';
-import 'package:questvale/widgets/qv_confirmation_modal.dart';
-import 'package:questvale/widgets/qv_fading_scrollable.dart';
-import 'package:questvale/widgets/qv_card_border.dart';
 import 'package:questvale/widgets/qv_skill_button.dart';
-import 'package:questvale/widgets/qv_text_styles.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 String _percentText(double value) => '${(value * 100).round()}%';
 
@@ -80,9 +76,11 @@ class SkillsGearUpView extends StatelessWidget {
     return BlocBuilder<SkillsGearUpCubit, SkillsGearUpState>(
       builder: (context, state) {
         final classSkills = gameData.skills
-            .where((skill) => skill.characterClass == state.character.characterClass)
+            .where((skill) =>
+                skill.characterClass == state.character.characterClass)
             .toList();
-        final tiers = classSkills.map((skill) => skill.tier).toSet().toList()..sort();
+        final tiers = classSkills.map((skill) => skill.tier).toSet().toList()
+          ..sort();
         return Expanded(
           child: Column(
             children: [
@@ -90,18 +88,21 @@ class SkillsGearUpView extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 6),
                 child: Text(
                   'Skill Points: ${state.character.skillPoints}',
-                  style: QvTextStyles.sectionTitle.copyWith(color: SKILL_POINTS_COLOR),
+                  style: QvTextStyles.sectionTitle
+                      .copyWith(color: SKILL_POINTS_COLOR),
                 ),
               ),
               Expanded(
                 child: QvFadingScrollable(
                   child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     itemCount: tiers.length,
                     itemBuilder: (context, index) {
                       final tier = tiers[index];
-                      final skillsInTier =
-                          classSkills.where((skill) => skill.tier == tier).toList();
+                      final skillsInTier = classSkills
+                          .where((skill) => skill.tier == tier)
+                          .toList();
                       return _TierSection(tier: tier, skills: skillsInTier);
                     },
                   ),
@@ -157,8 +158,8 @@ class _TierSection extends StatelessWidget {
     const columns = 3;
     final rows = <Widget>[];
     for (var i = 0; i < group.length; i += columns) {
-      final rowSkills =
-          group.sublist(i, i + columns > group.length ? group.length : i + columns);
+      final rowSkills = group.sublist(
+          i, i + columns > group.length ? group.length : i + columns);
       rows.add(_SkillRow(rowSkills: rowSkills, tierLocked: tierLocked));
     }
     return rows;
@@ -256,7 +257,8 @@ class _SkillGridIcon extends StatelessWidget {
           skillIconPath: skill.iconPath,
           skillButtonColor: skill.buttonColor,
           darkened: tierLocked,
-          onTap: () => context.read<SkillsGearUpCubit>().toggleExpanded(skill.id),
+          onTap: () =>
+              context.read<SkillsGearUpCubit>().toggleExpanded(skill.id),
         ),
         SizedBox(
           height: 16,
@@ -289,7 +291,9 @@ class _SkillDetailPanel extends StatelessWidget {
     final previewLevel = owned?.level ?? 1;
 
     final description = skill.type == SkillType.active
-        ? cubit.skillService.getSkillById(skill.id, level: previewLevel).description
+        ? cubit.skillService
+            .getSkillById(skill.id, level: previewLevel)
+            .description
         : cubit.skillService
             .getPassiveSkillById(skill.id, level: previewLevel)
             .description;
@@ -309,10 +313,12 @@ class _SkillDetailPanel extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(skill.name,
-                style: QvTextStyles.sectionTitle.copyWith(color: colorScheme.onSurface)),
+                style: QvTextStyles.sectionTitle
+                    .copyWith(color: colorScheme.onSurface)),
             const SizedBox(height: 4),
             Text(description,
-                style: QvTextStyles.body.copyWith(color: colorScheme.onSurface)),
+                style:
+                    QvTextStyles.body.copyWith(color: colorScheme.onSurface)),
             // AP cost/cooldown are only ever set on actives — skill.apCost
             // is null for every passive (see skills.json), so this line is
             // naturally omitted for them rather than needing its own
@@ -322,19 +328,23 @@ class _SkillDetailPanel extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
                     'AP Cost: ${skill.apCost} • Cooldown: ${_cooldownText(skill.cooldown)}',
-                    style: QvTextStyles.caption
-                        .copyWith(color: colorScheme.onSurface.withValues(alpha: 0.75))),
+                    style: QvTextStyles.caption.copyWith(
+                        color: colorScheme.onSurface.withValues(alpha: 0.75))),
               ),
             const SizedBox(height: 8),
             ..._statLines(skill, previewLevel, owned != null)
                 .map((line) => Padding(
                       padding: const EdgeInsets.only(bottom: 2),
                       child: Text(line,
-                          style: QvTextStyles.caption.copyWith(color: colorScheme.onSurface)),
+                          style: QvTextStyles.caption
+                              .copyWith(color: colorScheme.onSurface)),
                     )),
             const SizedBox(height: 8),
             _ActionButton(
-                skill: skill, owned: owned, tierLocked: tierLocked, character: character),
+                skill: skill,
+                owned: owned,
+                tierLocked: tierLocked,
+                character: character),
           ],
         ),
       ),
@@ -354,9 +364,12 @@ class _SkillDetailPanel extends StatelessWidget {
     final nextLevel = currentLevel + 1;
     final lines = <String>[];
 
-    String line(String label, double curVal, double nextVal, {bool isPercent = true}) {
-      final curText = isPercent ? _percentText(curVal) : curVal.round().toString();
-      final nextText = isPercent ? _percentText(nextVal) : nextVal.round().toString();
+    String line(String label, double curVal, double nextVal,
+        {bool isPercent = true}) {
+      final curText =
+          isPercent ? _percentText(curVal) : curVal.round().toString();
+      final nextText =
+          isPercent ? _percentText(nextVal) : nextVal.round().toString();
       return owned ? '$label: $curText → $nextText' : '$label: $curText';
     }
 
@@ -455,8 +468,8 @@ class _ActionButton extends StatelessWidget {
                 onConfirm: () => cubit.upgradeSkill(skill.id),
               )
           : null,
-      child:
-          Center(child: Text(label, style: TextStyle(color: colorScheme.onPrimary))),
+      child: Center(
+          child: Text(label, style: TextStyle(color: colorScheme.onPrimary))),
     );
   }
 }

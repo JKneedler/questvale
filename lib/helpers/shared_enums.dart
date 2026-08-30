@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 import 'package:questvale/helpers/constants.dart';
 
 enum CharacterClass {
@@ -70,6 +71,24 @@ enum Rarity {
       case Rarity.legendary:
         return 'images/ui/buttons/button-rarity-legendary.png';
     }
+  }
+}
+
+// Was ButtonColor.getColor(Rarity) on qv_button.dart itself — moved here
+// (app-side) as part of the jk_pixel_ui extraction, since ButtonColor is
+// now a fully generic library enum with no knowledge of Questvale's Rarity.
+ButtonColor rarityButtonColor(Rarity rarity) {
+  switch (rarity) {
+    case Rarity.common:
+      return ButtonColor.common;
+    case Rarity.uncommon:
+      return ButtonColor.uncommon;
+    case Rarity.rare:
+      return ButtonColor.rare;
+    case Rarity.epic:
+      return ButtonColor.epic;
+    case Rarity.legendary:
+      return ButtonColor.legendary;
   }
 }
 
