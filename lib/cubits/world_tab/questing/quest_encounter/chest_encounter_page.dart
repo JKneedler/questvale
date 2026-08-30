@@ -2,11 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_encounter_cubit.dart';
 import 'package:questvale/helpers/shared_enums.dart';
-import 'package:questvale/widgets/qv_blinking.dart';
-import 'package:questvale/widgets/qv_button.dart';
-import 'package:questvale/widgets/qv_fade_in.dart';
-import 'package:questvale/widgets/qv_card_border.dart';
-import 'package:questvale/widgets/qv_text_styles.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 class ChestEncounterPage extends StatelessWidget {
   const ChestEncounterPage(
@@ -46,7 +42,7 @@ class ChestEncounterPage extends StatelessWidget {
             child: QvCardBorder(
               height: 300,
               width: 200,
-              rarity: rarity,
+              rarityBorderAssetPath: rarity.borderAssetPath,
               bgColor: colorScheme.secondary,
               heightFactor: .98,
               padding: const EdgeInsets.only(
@@ -57,11 +53,12 @@ class ChestEncounterPage extends StatelessWidget {
                   QvButton(
                     height: 40,
                     width: double.infinity,
-                    buttonColor: ButtonColor.getColor(rarity),
+                    buttonColor: rarityButtonColor(rarity),
                     child: Center(
                       child: Text(
                         rarity.name.toUpperCase(),
-                        style: QvTextStyles.title.copyWith(color: colorScheme.secondary),
+                        style: QvTextStyles.title
+                            .copyWith(color: colorScheme.secondary),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -82,7 +79,8 @@ class ChestEncounterPage extends StatelessWidget {
                     curve: Curves.easeInOut,
                     child: Text(
                       'Open',
-                      style: QvTextStyles.impact.copyWith(color: colorScheme.primary),
+                      style: QvTextStyles.impact
+                          .copyWith(color: colorScheme.primary),
                       textAlign: TextAlign.center,
                     ),
                   ),

@@ -5,9 +5,8 @@ import 'package:questvale/cubits/world_tab/questing/quest_floor_begin/quest_floo
 import 'package:questvale/data/providers/game_data.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
 import 'package:questvale/data/repositories/quest_repository.dart';
-import 'package:questvale/widgets/qv_blinking.dart';
-import 'package:questvale/widgets/qv_text_styles.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 class QuestFloorBeginPage extends StatelessWidget {
   const QuestFloorBeginPage({super.key});
@@ -59,7 +58,8 @@ class QuestFloorBeginPage extends StatelessWidget {
                   SizedBox(height: 50),
                   Text(
                     state.quest != null ? 'Number of Encounters' : '',
-                    style: QvTextStyles.banner.copyWith(color: colorScheme.secondary),
+                    style: QvTextStyles.banner
+                        .copyWith(color: colorScheme.secondary),
                   ),
                   Container(
                       height: 2, width: 180, color: colorScheme.secondary),
@@ -67,7 +67,8 @@ class QuestFloorBeginPage extends StatelessWidget {
                     state.quest != null
                         ? '${state.quest!.numEncountersCurFloor}'
                         : '',
-                    style: QvTextStyles.display.copyWith(color: colorScheme.secondary),
+                    style: QvTextStyles.display
+                        .copyWith(color: colorScheme.secondary),
                   ),
                   SizedBox(height: 200),
                   QvBlinking(
@@ -75,8 +76,8 @@ class QuestFloorBeginPage extends StatelessWidget {
                     minOpacity: 0.5,
                     child: Text(
                       state.quest != null ? 'Tap anywhere to begin' : '',
-                      style: QvTextStyles.banner
-                          .copyWith(color: colorScheme.secondary.withValues(alpha: 0.5)),
+                      style: QvTextStyles.banner.copyWith(
+                          color: colorScheme.secondary.withValues(alpha: 0.5)),
                     ),
                   ),
                 ],

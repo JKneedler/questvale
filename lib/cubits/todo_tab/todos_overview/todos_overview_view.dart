@@ -13,12 +13,8 @@ import 'package:questvale/cubits/todo_tab/todos_calendar/todos_calendar_view.dar
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/tag.dart';
 import 'package:questvale/data/models/todo.dart';
-import 'package:questvale/widgets/qv_app_bar.dart';
-import 'package:questvale/widgets/qv_background.dart';
-import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_damage_toast.dart';
-import 'package:questvale/widgets/qv_fading_scrollable.dart';
-import 'package:questvale/widgets/qv_text_styles.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 class TodosOverviewView extends StatelessWidget {
   static const _todoTabIndex = 1;
@@ -366,7 +362,10 @@ class _FilterOptionRow extends StatelessWidget {
               child: Text(
                 label,
                 style: (isSelected ? QvTextStyles.itemTitle : QvTextStyles.note)
-                    .copyWith(color: isSelected ? colorScheme.primary : colorScheme.onSurface),
+                    .copyWith(
+                        color: isSelected
+                            ? colorScheme.primary
+                            : colorScheme.onSurface),
               ),
             ),
             if (isSelected)
@@ -447,8 +446,8 @@ class _MenuRow extends StatelessWidget {
             if (hint != null)
               Text(
                 hint!,
-                style: QvTextStyles.caption
-                    .copyWith(color: colorScheme.onSurface.withValues(alpha: 0.5)),
+                style: QvTextStyles.caption.copyWith(
+                    color: colorScheme.onSurface.withValues(alpha: 0.5)),
               ),
           ],
         ),

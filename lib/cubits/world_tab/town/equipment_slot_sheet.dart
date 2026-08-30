@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:questvale/cubits/home/nav_aware_modal_sheet.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/quest_board/gear_up/equipment_gear_up/equipment_gear_up_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/quest_board/gear_up/equipment_gear_up/equipment_gear_up_state.dart';
 import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/widgets/qv_equipment_item.dart';
-import 'package:questvale/widgets/qv_fading_scrollable.dart';
-import 'package:questvale/widgets/qv_picker_sheet.dart';
-import 'package:questvale/widgets/qv_text_styles.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 // Opens a lightweight picker sheet for one equipment slot. Reuses
 // EquipmentGearUpCubit's data layer as-is (unlike the old two-tab Gear Up
@@ -24,13 +23,12 @@ Future<void> showEquipmentSlotSheet(
 }) {
   final character = context.read<PlayerCubit>().state.character!;
   final db = context.read<Database>();
-  return QvPickerSheet.showModal(
+  return showQvPickerSheetModal(
     context,
     title: label,
     body: BlocProvider<EquipmentGearUpCubit>(
-      create: (context) =>
-          EquipmentGearUpCubit(db: db, character: character)
-            ..onEquipmentSlotSelected(slot, ringSlot: ringSlot),
+      create: (context) => EquipmentGearUpCubit(db: db, character: character)
+        ..onEquipmentSlotSelected(slot, ringSlot: ringSlot),
       child: const _EquipmentSlotSheetBody(),
     ),
   );
@@ -65,8 +63,9 @@ class _EquipmentSlotSheetBody extends StatelessWidget {
                   ? Center(
                       child: Text(
                         'No other gear for this slot',
-                        style: QvTextStyles.body
-                            .copyWith(color: colorScheme.onSurface.withValues(alpha: 0.6)),
+                        style: QvTextStyles.body.copyWith(
+                            color:
+                                colorScheme.onSurface.withValues(alpha: 0.6)),
                       ),
                     )
                   : QvFadingScrollable(

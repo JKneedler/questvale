@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:questvale/widgets/qv_background.dart';
-import 'package:questvale/widgets/qv_text_styles.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 // Full-width header region for the quest encounter flow (combat, chest
 // encounters, and their loot pages) — two stacked bars sharing the

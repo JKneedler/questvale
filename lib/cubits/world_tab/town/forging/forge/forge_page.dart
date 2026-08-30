@@ -7,14 +7,8 @@ import 'package:questvale/cubits/world_tab/town/forging/select_equipment/select_
 import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/shared_enums.dart';
-import 'package:questvale/widgets/qv_animated_transition.dart';
-import 'package:questvale/widgets/qv_button.dart';
-import 'package:questvale/widgets/qv_card_border.dart';
-import 'package:questvale/widgets/qv_inset_background.dart';
-import 'package:questvale/widgets/qv_metal_corner_border.dart';
-import 'package:questvale/widgets/qv_primary_border.dart';
-import 'package:questvale/widgets/qv_text_styles.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 class ForgePage extends StatelessWidget {
   const ForgePage({super.key});
@@ -125,9 +119,10 @@ class UpgradeView extends StatelessWidget {
                               type: equipment == null
                                   ? QvCardBorderType.surface
                                   : QvCardBorderType.rarity,
-                              rarity: equipment == null
-                                  ? Rarity.common
-                                  : equipment.rarity,
+                              rarityBorderAssetPath: (equipment == null
+                                      ? Rarity.common
+                                      : equipment.rarity)
+                                  .borderAssetPath,
                               bgColor: colorScheme.secondary,
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -178,7 +173,8 @@ class UpgradeView extends StatelessWidget {
                     onTap: () => context.read<ForgeCubit>().upgradeEquipment(),
                     child: Center(
                       child: Text(upgradeable ? 'Upgrade' : 'Max Level',
-                          style: QvTextStyles.banner.copyWith(color: colorScheme.secondary)),
+                          style: QvTextStyles.banner
+                              .copyWith(color: colorScheme.secondary)),
                     ),
                   ),
                 ],
@@ -226,7 +222,7 @@ class UpgradeEquipmentInfo extends StatelessWidget {
                 width: 140,
                 child: QvButton(
                   height: 36,
-                  buttonColor: ButtonColor.getColor(upgradeEquipment.rarity),
+                  buttonColor: rarityButtonColor(upgradeEquipment.rarity),
                   padding: EdgeInsets.symmetric(horizontal: 12),
                   child: Center(
                     child: Text(
@@ -246,7 +242,7 @@ class UpgradeEquipmentInfo extends StatelessWidget {
                   width: 140,
                   child: QvButton(
                     height: 36,
-                    buttonColor: ButtonColor.getColor(
+                    buttonColor: rarityButtonColor(
                         Rarity.values[upgradeEquipment.rarity.index + 1]),
                     padding: EdgeInsets.symmetric(horizontal: 12),
                     child: Center(
@@ -287,8 +283,8 @@ class UpgradeEquipmentInfo extends StatelessWidget {
                                     upgradeEquipment.statModifiers.length &&
                                 getsNewModifier) {
                               return Text('+New Random Modifier',
-                                  style: QvTextStyles.detail
-                                      .copyWith(height: 1, color: Colors.lightGreen));
+                                  style: QvTextStyles.detail.copyWith(
+                                      height: 1, color: Colors.lightGreen));
                             }
                             return Text(
                               upgradeEquipment.statModifiers[index]
@@ -310,7 +306,8 @@ class UpgradeEquipmentInfo extends StatelessWidget {
                         children: [
                           Center(
                               child: Text('Cost',
-                                  style: QvTextStyles.detail.copyWith(height: 1))),
+                                  style:
+                                      QvTextStyles.detail.copyWith(height: 1))),
                           SizedBox(width: 8),
                           Container(
                               width: 2, height: 40, color: colorScheme.primary),
@@ -322,12 +319,13 @@ class UpgradeEquipmentInfo extends StatelessWidget {
                                   children: [
                                     Text(
                                       '${equipment!.rarity.goldCost} Gold',
-                                      style: QvTextStyles.label
-                                          .copyWith(height: 1, color: GOLD_COLOR),
+                                      style: QvTextStyles.label.copyWith(
+                                          height: 1, color: GOLD_COLOR),
                                     ),
                                     Text(
                                       'x2 (6) Apprentice Weave',
-                                      style: QvTextStyles.label.copyWith(height: 1),
+                                      style: QvTextStyles.label
+                                          .copyWith(height: 1),
                                     ),
                                   ],
                                 )

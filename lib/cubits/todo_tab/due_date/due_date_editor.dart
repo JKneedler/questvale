@@ -6,10 +6,7 @@ import 'package:questvale/cubits/todo_tab/add_todo/add_todo_state.dart'
 import 'package:questvale/cubits/todo_tab/time_picker/time_picker_cubit.dart';
 import 'package:questvale/cubits/todo_tab/time_picker/time_picker_view.dart';
 import 'package:questvale/helpers/data_formatters.dart';
-import 'package:questvale/widgets/qv_month_calendar.dart';
-import 'package:questvale/widgets/qv_popup_menu.dart';
-import 'package:questvale/widgets/qv_popup_menu_check_item.dart';
-import 'package:questvale/widgets/qv_text_styles.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 /// Shared due-date editing UI — quick-select shortcuts, full month
 /// calendar, time picker, and reminders picker — used both by the
@@ -106,8 +103,7 @@ class _DueDateEditorState extends State<DueDateEditor> {
               onTap: () {
                 final now = DateTime.now();
                 final daysUntilMonday = (8 - now.weekday) % 7;
-                widget
-                    .onDateSelected(now.add(Duration(days: daysUntilMonday)));
+                widget.onDateSelected(now.add(Duration(days: daysUntilMonday)));
               },
             ),
           ],
@@ -136,8 +132,8 @@ class _DueDateEditorState extends State<DueDateEditor> {
                 onTimeCleared: widget.onTimeCleared,
               ),
               Divider(
-                color: Color.lerp(colorScheme.onPrimaryFixedVariant,
-                    Colors.transparent, 0.5),
+                color: Color.lerp(
+                    colorScheme.onPrimaryFixedVariant, Colors.transparent, 0.5),
                 height: 1,
                 indent: 16,
                 endIndent: 16,
@@ -226,8 +222,7 @@ class _TimeRow extends StatelessWidget {
         child: Row(
           children: [
             Icon(Icons.access_time,
-                color:
-                    hasTime ? colorScheme.primary : colorScheme.onSurface,
+                color: hasTime ? colorScheme.primary : colorScheme.onSurface,
                 size: 20),
             SizedBox(width: 10),
             Expanded(
@@ -242,7 +237,9 @@ class _TimeRow extends StatelessWidget {
             Text(
               hasTime ? DataFormatters.formatTime(selectedDate!) : 'None',
               style: QvTextStyles.body.copyWith(
-                color: hasTime ? colorScheme.primary : colorScheme.onPrimaryFixedVariant,
+                color: hasTime
+                    ? colorScheme.primary
+                    : colorScheme.onPrimaryFixedVariant,
               ),
             ),
             const SizedBox(width: 10),
@@ -317,7 +314,9 @@ class _ReminderRow extends StatelessWidget {
               child: Text(
                 'Reminders',
                 style: QvTextStyles.body.copyWith(
-                  color: reminders.isNotEmpty ? colorScheme.primary : colorScheme.onSurface,
+                  color: reminders.isNotEmpty
+                      ? colorScheme.primary
+                      : colorScheme.onSurface,
                   fontWeight: FontWeight.w500,
                 ),
               ),

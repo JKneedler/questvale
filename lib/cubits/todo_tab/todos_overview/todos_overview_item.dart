@@ -5,11 +5,8 @@ import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_cubit.da
 import 'package:questvale/helpers/data_formatters.dart';
 import 'package:questvale/cubits/todo_tab/edit_todo/edit_todo_page.dart';
 import 'package:questvale/widgets/qv_ap_toast.dart';
-import 'package:questvale/widgets/qv_button.dart';
-import 'package:questvale/widgets/qv_confirmation_modal.dart';
-import 'package:questvale/widgets/qv_check_box.dart';
-import 'package:questvale/widgets/qv_text_styles.dart';
 import '../../../data/models/todo.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 class TodosOverviewItem extends StatefulWidget {
   final Todo todo;
@@ -137,8 +134,9 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
                             softWrap: true,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: QvTextStyles.body
-                                .copyWith(color: colorScheme.onSurface.withValues(alpha: 0.5)),
+                            style: QvTextStyles.body.copyWith(
+                                color: colorScheme.onSurface
+                                    .withValues(alpha: 0.5)),
                           ),
                         Row(
                           children: [
@@ -177,7 +175,8 @@ class _TodosOverviewItemState extends State<TodosOverviewItem> {
                                 style: QvTextStyles.body.copyWith(
                                   color: isPastDue
                                       ? colorScheme.error
-                                      : colorScheme.onSurface.withValues(alpha: 0.5),
+                                      : colorScheme.onSurface
+                                          .withValues(alpha: 0.5),
                                 ),
                               ),
                           ],
@@ -215,8 +214,8 @@ class MultiCheckIndicator extends StatelessWidget {
           ),
           Text(
             '$count',
-            style: QvTextStyles.caption
-                .copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+            style: QvTextStyles.caption.copyWith(
+                fontWeight: FontWeight.bold, color: colorScheme.onSurface),
           ),
         ],
       ),

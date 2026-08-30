@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:questvale/cubits/home/nav_aware_modal_sheet.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/character_stats_card.dart';
 import 'package:questvale/cubits/world_tab/town/equipment_slot_sheet.dart';
@@ -9,12 +10,7 @@ import 'package:questvale/cubits/world_tab/town/skills_row.dart';
 import 'package:questvale/cubits/world_tab/town/town_visit_sheet.dart';
 import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/helpers/shared_enums.dart';
-import 'package:questvale/widgets/qv_app_bar.dart';
-import 'package:questvale/widgets/qv_button.dart';
-import 'package:questvale/widgets/qv_card_border.dart';
-import 'package:questvale/widgets/qv_fading_scrollable.dart';
-import 'package:questvale/widgets/qv_picker_sheet.dart';
-import 'package:questvale/widgets/qv_text_styles.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 /// Town Square: the permanent root of the World tab's town flow, and — per
 /// the Combat & Questing Redesign ticket's second pass — now also where
@@ -117,7 +113,8 @@ class _EquipmentIcon extends StatelessWidget {
       type: equipment == null
           ? QvCardBorderType.surface
           : QvCardBorderType.rarity,
-      rarity: equipment?.rarity ?? Rarity.common,
+      rarityBorderAssetPath:
+          (equipment?.rarity ?? Rarity.common).borderAssetPath,
       bgColor: colorScheme.surface,
       padding: const EdgeInsets.all(padding),
       child: SizedBox(
@@ -395,7 +392,7 @@ class _ArtifactGridItem extends StatelessWidget {
     const padding = 16.0;
     final iconSize = (boxHeight - padding * 2).clamp(0.0, double.infinity);
     return GestureDetector(
-      onTap: () => QvPickerSheet.showModal(
+      onTap: () => showQvPickerSheetModal(
         context,
         title: 'Artifact',
         body: const _ComingSoonBody(),
@@ -439,7 +436,7 @@ class _PotionsRow extends StatelessWidget {
       child: QvButton(
         buttonColor: ButtonColor.surfaceContainer,
         padding: const EdgeInsets.all(12),
-        onTap: () => QvPickerSheet.showModal(
+        onTap: () => showQvPickerSheetModal(
           context,
           title: 'Potions',
           body: const _ComingSoonBody(),

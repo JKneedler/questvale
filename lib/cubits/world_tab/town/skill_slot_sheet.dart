@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:questvale/cubits/home/nav_aware_modal_sheet.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/quest_board/gear_up/skills_gear_up/skills_gear_up_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/quest_board/gear_up/skills_gear_up/skills_gear_up_state.dart';
 import 'package:questvale/data/providers/game_data.dart';
 import 'package:questvale/data/providers/game_data_models/skill_data.dart';
-import 'package:questvale/widgets/qv_card_border.dart';
-import 'package:questvale/widgets/qv_fading_scrollable.dart';
-import 'package:questvale/widgets/qv_picker_sheet.dart';
 import 'package:questvale/widgets/qv_skill_button.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 // Opens a lightweight picker sheet for one active-skill loadout slot —
 // mirrors equipment_slot_sheet.dart's shape/reasoning exactly, just for
@@ -21,12 +20,13 @@ import 'package:sqflite/sqflite.dart';
 // dropped its own redundant Loadout section/slot cards (per feedback,
 // SkillsRow already covers the same job) rather than opening this sheet
 // from two places.
-Future<void> showSkillSlotSheet(BuildContext context, {required int slotNumber}) {
+Future<void> showSkillSlotSheet(BuildContext context,
+    {required int slotNumber}) {
   final character = context.read<PlayerCubit>().state.character!;
   final db = context.read<Database>();
   final gameData = context.read<GameData>();
   final playerCubit = context.read<PlayerCubit>();
-  return QvPickerSheet.showModal(
+  return showQvPickerSheetModal(
     context,
     title: 'Slot $slotNumber',
     body: BlocProvider<SkillsGearUpCubit>(
@@ -54,7 +54,8 @@ Future<void> showSkillSlotSheet(BuildContext context, {required int slotNumber})
 class SkillSlotAssignmentList extends StatelessWidget {
   final int slotNumber;
   final VoidCallback? onAssigned;
-  const SkillSlotAssignmentList({super.key, required this.slotNumber, this.onAssigned});
+  const SkillSlotAssignmentList(
+      {super.key, required this.slotNumber, this.onAssigned});
 
   @override
   Widget build(BuildContext context) {
@@ -65,8 +66,8 @@ class SkillSlotAssignmentList extends StatelessWidget {
         final cubit = context.read<SkillsGearUpCubit>();
         final character = state.character;
         final ownedActives = character.skills
-            .where(
-                (cs) => gameData.getSkillDataById(cs.skillId).type == SkillType.active)
+            .where((cs) =>
+                gameData.getSkillDataById(cs.skillId).type == SkillType.active)
             .toList();
         final currentlyAssigned = character.activeSkillSlotAt(slotNumber);
 
@@ -128,7 +129,8 @@ class SkillSlotAssignmentList extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     child: GestureDetector(
                       onTap: () async {
-                        await cubit.assignSkillToSlot(slotNumber, characterSkill);
+                        await cubit.assignSkillToSlot(
+                            slotNumber, characterSkill);
                         onAssigned?.call();
                       },
                       child: QvCardBorder(
@@ -145,7 +147,8 @@ class SkillSlotAssignmentList extends StatelessWidget {
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(label,
-                                  style: TextStyle(color: colorScheme.onSurface)),
+                                  style:
+                                      TextStyle(color: colorScheme.onSurface)),
                             ),
                           ],
                         ),

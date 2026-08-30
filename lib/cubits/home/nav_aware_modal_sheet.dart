@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/data/providers/game_data.dart';
@@ -44,5 +45,22 @@ Future<T?> showNavAwareModalSheet<T>(
         child: Builder(builder: builder),
       ),
     ),
+  );
+}
+
+/// Questvale's own wiring for jk_pixel_ui's QvPickerSheet — that package's
+/// widget only renders the shell (title + close button), since it has no
+/// concept of this app's own navigation stack. This is the app-side
+/// equivalent of the old QvPickerSheet.showModal (pre jk_pixel_ui
+/// extraction): push it through showNavAwareModalSheet like every other
+/// Town Square sheet.
+Future<void> showQvPickerSheetModal(
+  BuildContext context, {
+  required String title,
+  required Widget body,
+}) {
+  return showNavAwareModalSheet<void>(
+    context,
+    builder: (context) => QvPickerSheet(title: title, body: body),
   );
 }

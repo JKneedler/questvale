@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:questvale/cubits/home/nav_aware_modal_sheet.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/quest_board/gear_up/skills_gear_up/skills_gear_up_page.dart';
 import 'package:questvale/cubits/world_tab/town/skill_slot_sheet.dart';
 import 'package:questvale/data/skills/base_active_skill.dart';
-import 'package:questvale/widgets/qv_button.dart';
-import 'package:questvale/widgets/qv_picker_sheet.dart';
 import 'package:questvale/widgets/qv_skill_button.dart';
-import 'package:questvale/widgets/qv_text_styles.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 // Opens SkillsGearUpPage's tier grid (browsing/unlocking/upgrading skills;
 // its own Loadout section was dropped as redundant with this row, see the
@@ -19,7 +18,7 @@ import 'package:questvale/widgets/qv_text_styles.dart';
 // browsing/unlocking skills moved off the row itself, see the row's own
 // doc comment.
 void showSkillsSheet(BuildContext context) {
-  QvPickerSheet.showModal(
+  showQvPickerSheetModal(
     context,
     title: 'Skills',
     body: const Column(children: [SkillsGearUpPage()]),
@@ -59,7 +58,8 @@ class SkillsRow extends StatelessWidget {
           children: [
             Text(
               'Skills',
-              style: QvTextStyles.sectionHeader.copyWith(color: colorScheme.onSurface),
+              style: QvTextStyles.sectionHeader
+                  .copyWith(color: colorScheme.onSurface),
             ),
             const SizedBox(height: 10),
             // Explicit per-item size via LayoutBuilder, filling the row
@@ -91,7 +91,8 @@ class SkillsRow extends StatelessWidget {
               child: Center(
                 child: Text(
                   'Skill Tree',
-                  style: QvTextStyles.sectionTitle.copyWith(color: colorScheme.onSurface),
+                  style: QvTextStyles.sectionTitle
+                      .copyWith(color: colorScheme.onSurface),
                 ),
               ),
             ),

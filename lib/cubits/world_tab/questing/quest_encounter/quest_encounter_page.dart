@@ -13,9 +13,9 @@ import 'package:questvale/cubits/world_tab/world_cubit.dart';
 import 'package:questvale/data/models/quest.dart';
 import 'package:questvale/data/providers/game_data.dart';
 import 'package:questvale/helpers/shared_enums.dart';
-import 'package:questvale/widgets/qv_animated_transition.dart';
 import 'package:questvale/widgets/qv_quest_encounter_header.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 class QuestEncounterPage extends StatelessWidget {
   const QuestEncounterPage({super.key, required this.quest});

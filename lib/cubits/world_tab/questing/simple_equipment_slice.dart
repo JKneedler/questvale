@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/data/models/equipment.dart';
-import 'package:questvale/widgets/qv_card_border.dart';
-import 'package:questvale/widgets/qv_inset_background.dart';
-import 'package:questvale/widgets/qv_text_styles.dart';
+import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 class SimpleEquipmentSlice extends StatelessWidget {
   final Equipment equipment;
@@ -16,7 +14,7 @@ class SimpleEquipmentSlice extends StatelessWidget {
     return QvCardBorder(
       height: 100,
       type: QvCardBorderType.rarity,
-      rarity: equipment.rarity,
+      rarityBorderAssetPath: equipment.rarity.borderAssetPath,
       padding: EdgeInsets.only(left: 12, right: 12, top: 12, bottom: 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -40,7 +38,9 @@ class SimpleEquipmentSlice extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(equipment.itemName(equipment.type, character.characterClass),
+                Text(
+                    equipment.itemName(
+                        equipment.type, character.characterClass),
                     style: QvTextStyles.detail.copyWith(height: 1),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis),
