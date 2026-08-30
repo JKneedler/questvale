@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_metal_corner_border.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 /// Generic destructive-action confirmation dialog, matching
 /// QuestFleeConfirmationModal's look but parameterized for reuse (e.g. the
@@ -58,10 +59,7 @@ class QvConfirmationModal extends StatelessWidget {
                       alignment: Alignment.centerLeft,
                       child: Text(
                         title,
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w500,
-                        ),
+                        style: QvTextStyles.heading,
                       ),
                     ),
                   )),
@@ -74,10 +72,7 @@ class QvConfirmationModal extends StatelessWidget {
                         alignment: Alignment.topCenter,
                         child: Text(
                           'x',
-                          style: TextStyle(
-                            fontSize: 36,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: QvTextStyles.display.copyWith(fontWeight: FontWeight.w500),
                         ),
                       ),
                     ),
@@ -93,10 +88,7 @@ class QvConfirmationModal extends StatelessWidget {
               Expanded(
                 child: Text(
                   description,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: colorScheme.onSurface,
-                  ),
+                  style: QvTextStyles.note.copyWith(color: colorScheme.onSurface),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -112,8 +104,7 @@ class QvConfirmationModal extends StatelessWidget {
                 child: Center(
                   child: Text(
                     confirmLabel,
-                    style:
-                        TextStyle(fontSize: 26, color: colorScheme.secondary),
+                    style: QvTextStyles.overlay.copyWith(color: colorScheme.secondary),
                   ),
                 ),
               ),

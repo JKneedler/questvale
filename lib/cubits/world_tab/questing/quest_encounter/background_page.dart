@@ -13,7 +13,14 @@ class BackgroundPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(top: 60),
+      // Used to pad the child down by 60px to clear the status bar/notch,
+      // leaving this Container's own scenic background image visible in
+      // that gap. QvQuestEncounterHeader now renders its own top filler
+      // bar of the exact same height instead, covering that space with a
+      // themed background rather than showing the scenery through it —
+      // see its own doc comment. QuestEncounterView falls back to a plain
+      // SizedBox of the same height on the states that don't show that
+      // header at all, so this removal doesn't shift their content.
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.height,
       decoration: BoxDecoration(

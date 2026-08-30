@@ -158,17 +158,26 @@ class SettingsCubit extends Cubit<SettingsState> {
     await playerCubit.loadCharacter();
   }
 
+  // Uses getQuestsForCharacter (never throws on >1 row), not getQuest — a
+  // debug recovery action can't depend on the very "at most one quest row"
+  // invariant it might be the one called on to repair. Previously this
+  // called getQuest first, which throws on a character with more than one
+  // stray quest row, so the action couldn't self-recover from that state
+  // and had to be fixed by hand in the DB. Loops over every quest row
+  // found (0, 1, or many) and cleans each one's encounter/rewards before
+  // deleting all of them.
   Future<void> cancelQuest() async {
-    final quest = await questRepository.getQuest(state.character.id);
-    if (quest == null) return;
-    final encounter = await encounterRepository.getEncounterByQuestId(quest.id);
-    if (encounter != null) {
-      await encounterRepository.enemyRepository
-          .deleteEnemiesByEncounterId(encounter.id);
-      await encounterRepository.deleteEncounter(encounter);
+    final quests = await questRepository.getQuestsForCharacter(state.character.id);
+    for (final quest in quests) {
+      final encounter = await encounterRepository.getEncounterByQuestId(quest.id);
+      if (encounter != null) {
+        await encounterRepository.enemyRepository
+            .deleteEnemiesByEncounterId(encounter.id);
+        await encounterRepository.deleteEncounter(encounter);
+      }
+      await encounterRepository.deleteEncounterRewardsByQuestId(quest.id);
     }
-    await encounterRepository.deleteEncounterRewardsByQuestId(quest.id);
-    await questRepository.deleteQuest(quest);
+    await questRepository.deleteQuestsForCharacter(state.character.id);
     await playerCubit.loadCharacter();
   }
 

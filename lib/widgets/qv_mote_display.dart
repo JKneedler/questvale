@@ -2,22 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:questvale/data/models/mage_motes.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/shared_enums.dart';
+import 'package:questvale/widgets/qv_bar.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 // Mage's resource display: MOTE_CAP discrete pip slots rather than a
-// fraction-fill bar (QvBar/QvResourceBar), since Motes are a small capped
-// count of two typed items, not a pool that drains/refills continuously.
-// Purely presentational — pip fill order (Fire slots first, then Ice) is
+// fraction-fill bar (QvBar/QvResourceBar) used directly, since Motes are a
+// small capped count of two typed items, not a pool that drains/refills
+// continuously. Each pip is still a real QvBar underneath (currentValue 0
+// or 1 against maxValue 1) — per feedback, this should look like the
+// health bar (same inset background peeking through an empty pip, same
+// bordered/beveled bar image filling a full one), just recolored per mote
+// element and split into MOTE_CAP discrete stretched segments instead of
+// one continuous fraction. Pip fill order (Fire slots first, then Ice) is
 // just a stable, deterministic way to lay out two counts against one
 // shared cap; it carries no game-logic meaning of its own.
 class QvMoteDisplay extends StatelessWidget {
   const QvMoteDisplay({
     super.key,
     required this.motes,
-    this.pipSize = 18,
+    this.pipHeight = 20,
   });
 
   final MageMotes motes;
-  final double pipSize;
+  final double pipHeight;
+
+  static const double _pipSpacing = 4;
 
   @override
   Widget build(BuildContext context) {
@@ -27,33 +36,31 @@ class QvMoteDisplay extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               'MOTES',
-              style: TextStyle(
-                color: MOTE_LABEL_COLOR,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style:
+                  QvTextStyles.sectionHeader.copyWith(color: MOTE_LABEL_COLOR),
             ),
             Text(
               '${motes.totalMotes} / $MOTE_CAP',
-              style: const TextStyle(
-                color: MOTE_LABEL_COLOR,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style:
+                  QvTextStyles.sectionHeader.copyWith(color: MOTE_LABEL_COLOR),
             ),
           ],
         ),
         const SizedBox(height: 2),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            for (int i = 0; i < MOTE_CAP; i++) ...[
-              if (i != 0) SizedBox(width: pipSize * 0.3),
-              _MotePip(size: pipSize, element: _elementForPip(i)),
+        SizedBox(
+          height: pipHeight,
+          child: Row(
+            spacing: _pipSpacing,
+            children: [
+              for (int i = 0; i < MOTE_CAP; i++)
+                Expanded(
+                  child:
+                      _MotePip(height: pipHeight, element: _elementForPip(i)),
+                ),
             ],
-          ],
+          ),
         ),
       ],
     );
@@ -68,22 +75,27 @@ class QvMoteDisplay extends StatelessWidget {
   }
 }
 
+// A single mote slot as a QvBar with only two states — fully filled
+// (currentValue: 1, maxValue: 1) or fully empty (currentValue: 0) — rather
+// than a genuine fraction. An empty pip's resource choice is irrelevant
+// (QvBar renders zero-width fill at fraction 0, leaving just the shared
+// inset background visible, same as an empty stretch of the health bar).
 class _MotePip extends StatelessWidget {
-  const _MotePip({required this.size, required this.element});
+  const _MotePip({required this.height, required this.element});
 
-  final double size;
+  final double height;
   final MoteElement? element;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: element?.color ?? Colors.white.withValues(alpha: 0.15),
-        border: Border.all(color: Colors.black, width: 2),
-        borderRadius: BorderRadius.circular(3),
-      ),
+    return QvBar(
+      currentValue: element == null ? 0 : 1,
+      maxValue: 1,
+      resource:
+          element == MoteElement.ice ? QvBarResource.ice : QvBarResource.fire,
+      size: QvBarSize.mini,
+      height: height,
+      child: const SizedBox.shrink(),
     );
   }
 }

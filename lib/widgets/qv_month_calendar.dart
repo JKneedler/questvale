@@ -3,6 +3,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:questvale/helpers/data_formatters.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 /// Month calendar grid shared between the todos calendar tab and the
 /// due-date editor. Fully controlled — no internal state — so each caller
@@ -79,11 +80,7 @@ class QvMonthCalendar extends StatelessWidget {
                     horizontal: 16, vertical: 4),
                 child: Text(
                   DataFormatters.formatMonthYear(displayedMonth),
-                  style: TextStyle(
-                    color: colorScheme.onSurface,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: QvTextStyles.sectionHeader.copyWith(color: colorScheme.onSurface),
                 ),
               ),
               QvButton(
@@ -103,9 +100,8 @@ class QvMonthCalendar extends StatelessWidget {
                     child: Center(
                       child: Text(
                         label,
-                        style: TextStyle(
+                        style: QvTextStyles.micro.copyWith(
                           color: colorScheme.onSurface.withValues(alpha: 0.5),
-                          fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -144,13 +140,12 @@ class QvMonthCalendar extends StatelessWidget {
               children: [
                 Text(
                   '$dayNum',
-                  style: TextStyle(
+                  style: QvTextStyles.body.copyWith(
                     color: isDisabled
                         ? colorScheme.onSurface.withValues(alpha: 0.25)
                         : isSelected
                             ? colorScheme.onPrimary
                             : colorScheme.onSurface,
-                    fontSize: 14,
                     fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),

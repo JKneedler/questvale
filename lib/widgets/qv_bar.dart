@@ -36,13 +36,19 @@ enum QvBarSize {
   });
 }
 
-// Which resource's baked-color bar asset to use — health/mana/exp each have
-// their own pre-colored PNG per QvBarSize (generated from the same template
-// via retheme_color.py, matching HEALTH_COLOR/MANA_COLOR/EXP_COLOR).
+// Which resource's baked-color bar asset to use — health/mana/exp/fire/ice
+// each have their own pre-colored PNG per QvBarSize (generated from the
+// same template via retheme_color.py, matching HEALTH_COLOR/MANA_COLOR/
+// EXP_COLOR/FIRE_MOTE_COLOR/ICE_MOTE_COLOR — fire/ice's own Light/Dark
+// accents were derived from health-bar's own Main/Light/Dark offsets via
+// retheme_color.py's derive mode, there being no separately-authored
+// accent pair for either mote color).
 enum QvBarResource {
   health(assetPrefix: 'health'),
   mana(assetPrefix: 'mana'),
-  exp(assetPrefix: 'exp');
+  exp(assetPrefix: 'exp'),
+  fire(assetPrefix: 'fire'),
+  ice(assetPrefix: 'ice');
 
   final String assetPrefix;
   const QvBarResource({required this.assetPrefix});

@@ -23,13 +23,15 @@ class QuestEncounterPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final questZones = context.read<GameData>().questZones;
+    final gameData = context.read<GameData>();
+    final questZones = gameData.questZones;
     final questZone = questZones.firstWhere((zone) => zone.id == quest.zoneId);
     return BlocProvider<QuestEncounterCubit>(
       create: (context) => QuestEncounterCubit(
         quest: quest,
         initialQuestStatus: QuestStatus.questBegin,
         db: context.read<Database>(),
+        gameData: gameData,
         questZone: questZone,
       ),
       child: QuestEncounterView(),
@@ -105,6 +107,13 @@ class QuestEncounterView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<QuestEncounterCubit, QuestEncounterState>(
       builder: (context, questState) {
+        // Only true while CombatPage itself is showing (not its loot page,
+        // not chest encounters) — see QvQuestEncounterHeader's own
+        // capBottom doc comment for why that's the one case the header
+        // needs to render without its own bottom cap.
+        final isLiveCombat = questState.questStatus ==
+                QuestStatus.encounterInProgress &&
+            (questState.encounter?.encounterType.isCombatEncounter() ?? false);
         return MultiBlocListener(
           listeners: [
             BlocListener<QuestEncounterCubit, QuestEncounterState>(
@@ -143,8 +152,14 @@ class QuestEncounterView extends StatelessWidget {
                           curEncounterNum: questState.quest.curEncounterNum,
                           numEncountersCurFloor:
                               questState.quest.numEncountersCurFloor,
+                          capBottom: !isLiveCombat,
                         )
-                      : SizedBox.shrink(),
+                      // Preserves the top clearance BackgroundPage's own
+                      // padding used to provide unconditionally — see its
+                      // doc comment — for the states that don't show the
+                      // header (and its own top filler bar) at all.
+                      : const SizedBox(
+                          height: QvQuestEncounterHeader.topFillerHeight),
                   Expanded(
                     child: QvAnimatedTransition(
                       duration: getTransitionDuration(questState),

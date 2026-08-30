@@ -7,6 +7,7 @@ import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_item.dar
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_state.dart';
 import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:questvale/widgets/qv_month_calendar.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 // Rendered inline in TodosOverviewView when viewMode is calendar — no
 // Scaffold/QvAppBar of its own, so the three-dot menu stays put and swapping
@@ -53,11 +54,8 @@ class TodosCalendarBody extends StatelessWidget {
                       ? Center(
                           child: Text(
                             'Nothing due this day',
-                            style: TextStyle(
-                              color:
-                                  colorScheme.onSurface.withValues(alpha: 0.5),
-                              fontSize: 14,
-                            ),
+                            style: QvTextStyles.body
+                                .copyWith(color: colorScheme.onSurface.withValues(alpha: 0.5)),
                           ),
                         )
                       : QvFadingScrollable(

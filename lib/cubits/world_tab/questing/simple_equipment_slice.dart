@@ -4,6 +4,7 @@ import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 class SimpleEquipmentSlice extends StatelessWidget {
   final Equipment equipment;
@@ -34,37 +35,41 @@ class SimpleEquipmentSlice extends StatelessWidget {
             ),
           ),
           SizedBox(width: 6),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(equipment.itemName(equipment.type, character.characterClass),
-                  style: TextStyle(fontSize: 18, height: 1)),
-              SizedBox(height: 6),
-              Row(
-                spacing: 4,
-                children: [
-                  QvInsetBackground(
-                    height: 40,
-                    width: 50,
-                    type: QvInsetBackgroundType.surface,
-                    child: Center(
-                      child: Text(
-                        '${equipment.attackPower > 0 ? equipment.attackPower : equipment.armorValue}',
-                        style: TextStyle(fontSize: 26, height: 1),
-                        textAlign: TextAlign.center,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(equipment.itemName(equipment.type, character.characterClass),
+                    style: QvTextStyles.detail.copyWith(height: 1),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
+                SizedBox(height: 6),
+                Row(
+                  spacing: 4,
+                  children: [
+                    QvInsetBackground(
+                      height: 40,
+                      width: 50,
+                      type: QvInsetBackgroundType.surface,
+                      child: Center(
+                        child: Text(
+                          '${equipment.attackPower > 0 ? equipment.attackPower : equipment.armorValue}',
+                          style: QvTextStyles.overlay.copyWith(height: 1),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
-                  ),
-                  Text(
-                    equipment.attackPower > 0 ? 'Attack' : 'Armor',
-                    style: TextStyle(fontSize: 24, height: 1),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ],
-          )
+                    Text(
+                      equipment.attackPower > 0 ? 'Attack' : 'Armor',
+                      style: QvTextStyles.title.copyWith(height: 1),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

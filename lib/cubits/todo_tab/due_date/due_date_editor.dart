@@ -9,6 +9,7 @@ import 'package:questvale/helpers/data_formatters.dart';
 import 'package:questvale/widgets/qv_month_calendar.dart';
 import 'package:questvale/widgets/qv_popup_menu.dart';
 import 'package:questvale/widgets/qv_popup_menu_check_item.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 /// Shared due-date editing UI — quick-select shortcuts, full month
 /// calendar, time picker, and reminders picker — used both by the
@@ -188,10 +189,7 @@ class _QuickSelectButton extends StatelessWidget {
             Text(
               label,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 12,
-                color: colorScheme.onSurface,
-              ),
+              style: QvTextStyles.micro.copyWith(color: colorScheme.onSurface),
             ),
           ],
         ),
@@ -235,21 +233,16 @@ class _TimeRow extends StatelessWidget {
             Expanded(
               child: Text(
                 'Time',
-                style: TextStyle(
-                  color:
-                      hasTime ? colorScheme.primary : colorScheme.onSurface,
-                  fontSize: 14,
+                style: QvTextStyles.body.copyWith(
+                  color: hasTime ? colorScheme.primary : colorScheme.onSurface,
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ),
             Text(
               hasTime ? DataFormatters.formatTime(selectedDate!) : 'None',
-              style: TextStyle(
-                color: hasTime
-                    ? colorScheme.primary
-                    : colorScheme.onPrimaryFixedVariant,
-                fontSize: 14,
+              style: QvTextStyles.body.copyWith(
+                color: hasTime ? colorScheme.primary : colorScheme.onPrimaryFixedVariant,
               ),
             ),
             const SizedBox(width: 10),
@@ -323,11 +316,8 @@ class _ReminderRow extends StatelessWidget {
             Expanded(
               child: Text(
                 'Reminders',
-                style: TextStyle(
-                  color: reminders.isNotEmpty
-                      ? colorScheme.primary
-                      : colorScheme.onSurface,
-                  fontSize: 14,
+                style: QvTextStyles.body.copyWith(
+                  color: reminders.isNotEmpty ? colorScheme.primary : colorScheme.onSurface,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -338,11 +328,10 @@ class _ReminderRow extends StatelessWidget {
                 reminders.isNotEmpty
                     ? reminders.map((e) => e.name).join(', ')
                     : 'None',
-                style: TextStyle(
+                style: QvTextStyles.body.copyWith(
                   color: reminders.isNotEmpty
                       ? colorScheme.primary
                       : colorScheme.onPrimaryFixedVariant,
-                  fontSize: 14,
                 ),
                 textAlign: TextAlign.end,
                 overflow: TextOverflow.ellipsis,

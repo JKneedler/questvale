@@ -5,6 +5,7 @@ import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 class QvEquipmentItem extends StatelessWidget {
   final Equipment? equipment;
@@ -49,7 +50,7 @@ class QvEquipmentItem extends StatelessWidget {
           builder: (context) {
             if (equipment == null) {
               return Center(
-                child: Text('Empty', style: TextStyle(fontSize: 16, height: 1)),
+                child: Text('Empty', style: QvTextStyles.note.copyWith(height: 1)),
               );
             }
             return SizedBox(
@@ -60,10 +61,8 @@ class QvEquipmentItem extends StatelessWidget {
                       ? SizedBox(
                           height: 30,
                           child: Text('Currently Equipped',
-                              style: TextStyle(
-                                  fontSize: 20,
-                                  height: 1,
-                                  fontStyle: FontStyle.italic)),
+                              style: QvTextStyles.label
+                                  .copyWith(height: 1, fontStyle: FontStyle.italic)),
                         )
                       : SizedBox(),
                   if (showName)
@@ -73,7 +72,7 @@ class QvEquipmentItem extends StatelessWidget {
                         child: Text(
                           equipment!.itemName(
                               equipment!.type, character.characterClass),
-                          style: TextStyle(fontSize: 16, height: 1),
+                          style: QvTextStyles.note.copyWith(height: 1),
                           textAlign: TextAlign.center,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -180,8 +179,7 @@ class AttributeDisplay extends StatelessWidget {
           SizedBox(height: 4),
           Text(
             attribute,
-            style:
-                TextStyle(fontSize: 20, height: 1, color: colorScheme.primary),
+            style: QvTextStyles.label.copyWith(height: 1, color: colorScheme.primary),
             textAlign: TextAlign.center,
           ),
         ],
@@ -216,7 +214,7 @@ class ModifiersDisplay extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 2),
               child: Text(
                 equipment.statModifiers[index].valueString(),
-                style: TextStyle(fontSize: 16, height: 1),
+                style: QvTextStyles.note.copyWith(height: 1),
               ),
             );
           },

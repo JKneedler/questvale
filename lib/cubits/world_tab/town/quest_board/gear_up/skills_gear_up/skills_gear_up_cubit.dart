@@ -56,14 +56,6 @@ class SkillsGearUpCubit extends Cubit<SkillsGearUpState> {
     await playerCubit.loadCharacter();
   }
 
-  void selectLoadoutSlot(int slotNumber) {
-    emit(state.withSelectingLoadoutSlot(slotNumber));
-  }
-
-  void cancelLoadoutSelection() {
-    emit(state.withSelectingLoadoutSlot(null));
-  }
-
   // Assigns `skill` (one of the character's owned actives) into
   // activeSkillSlotN, replacing whatever was there — see the Skills UI
   // ticket's subtask 4. Character.copyWithActiveSkillSlot enforces "a
@@ -74,13 +66,7 @@ class SkillsGearUpCubit extends Cubit<SkillsGearUpState> {
     final updatedCharacter =
         state.character.copyWithActiveSkillSlot(slotNumber, skill);
     final persisted = await characterRepository.updateCharacter(updatedCharacter);
-    if (!isClosed) {
-      emit(SkillsGearUpState(
-        character: persisted,
-        expandedSkillId: state.expandedSkillId,
-        selectingLoadoutSlot: null,
-      ));
-    }
+    if (!isClosed) emit(state.copyWith(character: persisted));
     await playerCubit.loadCharacter();
   }
 
@@ -89,13 +75,7 @@ class SkillsGearUpCubit extends Cubit<SkillsGearUpState> {
     final updatedCharacter =
         state.character.copyWithClearedActiveSkillSlot(slotNumber);
     final persisted = await characterRepository.updateCharacter(updatedCharacter);
-    if (!isClosed) {
-      emit(SkillsGearUpState(
-        character: persisted,
-        expandedSkillId: state.expandedSkillId,
-        selectingLoadoutSlot: null,
-      ));
-    }
+    if (!isClosed) emit(state.copyWith(character: persisted));
     await playerCubit.loadCharacter();
   }
 }

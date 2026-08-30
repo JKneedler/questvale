@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:questvale/widgets/qv_button.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 // Shows a transient "- N HP" pill about a third of the way down the screen,
 // for when an enemy attack resolves and damages the player — the same
@@ -82,11 +83,7 @@ class _DamageToastState extends State<_DamageToast>
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Text(
                 '- ${widget.amount} HP',
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+                style: QvTextStyles.sectionTitle.copyWith(color: Colors.white),
               ),
             ),
           ),

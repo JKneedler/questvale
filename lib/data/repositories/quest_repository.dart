@@ -26,6 +26,18 @@ class QuestRepository {
     return quest;
   }
 
+  // GET ALL QUESTS BY CHARACTER ID — unlike getQuest above, never throws on
+  // more than one row. Exists specifically for recovery/cleanup paths (see
+  // SettingsCubit.cancelQuest) that need to self-recover from the very
+  // "a character somehow has more than one quest row" state getQuest is
+  // built to catch elsewhere — a cleanup action can't depend on the
+  // invariant it might be the one repairing.
+  Future<List<Quest>> getQuestsForCharacter(String characterId) async {
+    final result = await db.query(Quest.questTableName,
+        where: '${Quest.characterIdColumnName} = ?', whereArgs: [characterId]);
+    return Future.wait(result.map(_getQuestFromMap));
+  }
+
   // GET NUMBER OF QUEST BY CHARACTER ID
   Future<int> getQuestsNum() async {
     final result = await db.query(Quest.questTableName);

@@ -4,12 +4,10 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_cubit.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_state.dart';
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/enemy.dart';
-import 'package:questvale/data/models/mage_motes.dart';
 import 'package:questvale/data/models/scheduled_timer.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
 import 'package:questvale/helpers/constants.dart';
@@ -19,8 +17,9 @@ import 'package:questvale/services/leveling_service.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_bar.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
+import 'package:questvale/widgets/qv_character_vitals_row.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
-import 'package:questvale/widgets/qv_mote_display.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 // Scaffold for the character/combat status block pinned above the todo
 // list. XP (level/currentExp), health/AP/mana, in-combat enemy state, and
@@ -150,7 +149,7 @@ class _CombatStatusCardState extends State<CombatStatusCard> {
                         ],
                       ),
                       const SizedBox(height: 6),
-                      _CharacterVitalsRow(
+                      CharacterVitalsRow(
                           character: character, mageMotes: state.mageMotes),
                     ],
                   ),
@@ -204,11 +203,8 @@ class _SectionHeader extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Text(
             label,
-            style: TextStyle(
-              color: colorScheme.onSurface.withValues(alpha: 0.6),
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+            style: QvTextStyles.itemTitle
+                .copyWith(color: colorScheme.onSurface.withValues(alpha: 0.6)),
           ),
         ),
         Expanded(child: Container(height: 1, color: dividerColor)),
@@ -240,22 +236,16 @@ class _ExperienceBar extends StatelessWidget {
           children: [
             Text(
               'LVL ${character.level}',
-              style: const TextStyle(
-                color: EXP_COLOR,
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-              ),
+              style: QvTextStyles.sectionTitle
+                  .copyWith(color: EXP_COLOR, fontWeight: FontWeight.w900),
             ),
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   '${character.currentExp} / $expForNextLevel',
-                  style: const TextStyle(
-                    color: EXP_COLOR,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: QvTextStyles.sectionHeader
+                      .copyWith(color: EXP_COLOR, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(width: 2),
                 Icon(
@@ -300,20 +290,16 @@ class _ApBadge extends StatelessWidget {
         children: [
           Text(
             '${character.actionPoints}',
-            style: TextStyle(
+            style: QvTextStyles.banner.copyWith(
               color: colorScheme.onSurface,
-              fontSize: 28,
               fontWeight: FontWeight.bold,
               height: 1,
             ),
           ),
           Text(
             'AP',
-            style: TextStyle(
-              color: colorScheme.onSurface,
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
+            style: QvTextStyles.body
+                .copyWith(color: colorScheme.onSurface, fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -321,75 +307,10 @@ class _ApBadge extends StatelessWidget {
   }
 }
 
-// Row 1 — health bar / class-resource block, leaning toward the card's
-// outer edges. Health comes straight off the loaded Character; the
-// class-resource side is class-conditional (Motes for Mage today; Warrior's
-// Rage/Rogue's Focus will slot in here the same way once those trees
-// exist — see MageMotes' doc comment for why each gets its own model
-// instead of a shared one).
-class _CharacterVitalsRow extends StatelessWidget {
-  final Character character;
-  final MageMotes? mageMotes;
-  const _CharacterVitalsRow({required this.character, this.mageMotes});
-
-  @override
-  Widget build(BuildContext context) {
-    // Watched directly rather than threaded down from a distant ancestor —
-    // same pattern combat_page.dart's TargetEnemySkillBox already uses.
-    // maxHealth lives on PlayerCombatStats (not Character — see the Skill
-    // System Foundations ticket), since it's the only place gear's Health
-    // stat modifier is actually consulted.
-    final playerCombatStats = context.watch<PlayerCubit>().state.playerCombatStats;
-    if (playerCombatStats == null) return const SizedBox.shrink();
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '${character.currentHealth} / ${playerCombatStats.maxHealth}',
-                    style: const TextStyle(
-                      color: HEALTH_COLOR,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    'HP',
-                    style: const TextStyle(
-                      color: HEALTH_COLOR,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 2),
-              QvBar(
-                currentValue: character.currentHealth,
-                maxValue: playerCombatStats.maxHealth,
-                resource: QvBarResource.health,
-                size: QvBarSize.mini,
-                height: 20,
-                child: const SizedBox.shrink(),
-              ),
-            ],
-          ),
-        ),
-        if (character.characterClass == CharacterClass.mage &&
-            mageMotes != null) ...[
-          const SizedBox(width: 8),
-          Expanded(child: QvMoteDisplay(motes: mageMotes!)),
-        ],
-      ],
-    );
-  }
-}
+// Row 1 — health bar / class-resource block. Now CharacterVitalsRow
+// (lib/widgets/qv_character_vitals_row.dart), pulled out to a shared
+// widget so the Combat page's own vitals+skills card can reuse the exact
+// same styling — see that file's own doc comment.
 
 // Row 2 — 5 skill-cooldown buttons. Placeholder colors/cooldowns only; no
 // live skill-cooldown tracking exists yet (see class doc comment above).
@@ -436,11 +357,7 @@ class _SkillCooldownSlot extends StatelessWidget {
         child: onCooldown
             ? Text(
                 DataFormatters.formatCountdown(cooldown),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: QvTextStyles.itemTitle.copyWith(color: Colors.white),
               )
             : const Icon(Symbols.check, color: Colors.white, size: 20),
       ),
@@ -480,10 +397,8 @@ class _CombatEnemiesSection extends StatelessWidget {
               child: Text(
                 "Not in combat — you won't earn AP from battle right now.",
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: colorScheme.onSurface.withValues(alpha: 0.6),
-                  fontSize: 13,
-                ),
+                style: QvTextStyles.caption
+                    .copyWith(color: colorScheme.onSurface.withValues(alpha: 0.6)),
               ),
             ),
     );
@@ -527,11 +442,7 @@ class _EnemyCombatBlock extends StatelessWidget {
                 child: isDead
                     ? Text(
                         'X X X',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[100],
-                          height: 1,
-                        ),
+                        style: QvTextStyles.micro.copyWith(color: Colors.grey[100], height: 1),
                       )
                     : const SizedBox.shrink(),
               ),
@@ -543,20 +454,16 @@ class _EnemyCombatBlock extends StatelessWidget {
               Expanded(
                 child: Center(
                   child: isDead
-                      ? const Text(
+                      ? Text(
                           'Defeated',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: QvTextStyles.itemTitle
+                              .copyWith(color: Colors.white, fontWeight: FontWeight.w600),
                         )
                       : attackTimer == null || attackCountdown == null
                           ? Text(
                               '—',
-                              style: TextStyle(
+                              style: QvTextStyles.itemTitle.copyWith(
                                 color: Colors.white.withValues(alpha: 0.7),
-                                fontSize: 16,
                                 fontWeight: FontWeight.w600,
                               ),
                             )
@@ -565,19 +472,15 @@ class _EnemyCombatBlock extends StatelessWidget {
                               children: [
                                 Text(
                                   attackTimer!.payload,
-                                  style: TextStyle(
+                                  style: QvTextStyles.micro.copyWith(
                                     color: Colors.white.withValues(alpha: 0.7),
-                                    fontSize: 12,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 Text(
                                   DataFormatters.formatCountdown(attackCountdown),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                  style: QvTextStyles.itemTitle
+                                      .copyWith(color: Colors.white, fontWeight: FontWeight.w600),
                                 ),
                               ],
                             ),

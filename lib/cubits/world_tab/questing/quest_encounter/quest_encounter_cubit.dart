@@ -2,7 +2,9 @@ import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_encounter_state.dart';
 import 'package:questvale/data/models/encounter.dart';
+import 'package:questvale/data/models/player_combat_stats.dart';
 import 'package:questvale/data/models/quest.dart';
+import 'package:questvale/data/providers/game_data.dart';
 import 'package:questvale/data/providers/game_data_models/quest_zone.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
 import 'package:questvale/data/repositories/encounter_repository.dart';
@@ -12,6 +14,7 @@ import 'package:questvale/services/enemy_attack_scheduling_service.dart';
 import 'package:questvale/services/leveling_service.dart';
 import 'package:questvale/services/notification_service.dart';
 import 'package:questvale/services/quest_service.dart';
+import 'package:questvale/services/skill_service.dart';
 import 'package:sqflite/sqflite.dart';
 
 class QuestEncounterCubit extends Cubit<QuestEncounterState> {
@@ -21,6 +24,7 @@ class QuestEncounterCubit extends Cubit<QuestEncounterState> {
   late EnemyRepository enemyRepository;
   late CharacterRepository characterRepository;
   late EnemyAttackSchedulingService enemyAttackSchedulingService;
+  late SkillService skillService;
 
   final QuestZone questZone;
 
@@ -28,6 +32,7 @@ class QuestEncounterCubit extends Cubit<QuestEncounterState> {
       {required Quest quest,
       required QuestStatus initialQuestStatus,
       required Database db,
+      required GameData gameData,
       required this.questZone})
       : super(QuestEncounterState(
             quest: quest, questStatus: initialQuestStatus)) {
@@ -37,6 +42,7 @@ class QuestEncounterCubit extends Cubit<QuestEncounterState> {
     characterRepository = CharacterRepository(db: db);
     questService = QuestService(db: db);
     enemyAttackSchedulingService = EnemyAttackSchedulingService(db: db);
+    skillService = SkillService(gameData: gameData);
     init();
   }
 
@@ -184,13 +190,38 @@ class QuestEncounterCubit extends Cubit<QuestEncounterState> {
 
   Future<void> fleeQuest() async {
     final quest = state.quest;
+    // Vault design ("Post-Quest Recovery"): health restores whether a quest
+    // is finished OR failed — fleeing counts as failing, same as finishQuest.
+    await _healToFull(quest.characterId);
     await questRepository
         .updateQuest(quest.copyWith(completedAt: DateTime.now()));
     emit(state.copyWith(questStatus: QuestStatus.questDeleted));
   }
 
+  // Full heal when a quest ends (finished or fled — see finishQuest/
+  // fleeQuest), not at quest start — players should always begin a quest at
+  // full HP, and healing at the end of the prior one covers that even if
+  // the next quest is started immediately with no real-world task in
+  // between to trigger anything else. Matches the vault's "Post-Quest
+  // Recovery" design (health restores whether a quest is finished or
+  // failed). maxHealth is computed the same way PlayerCubit.loadCharacter
+  // does (equipment + passive skill modifiers), so this can't drift from
+  // what the rest of the app considers "full" for this character.
+  Future<void> _healToFull(String characterId) async {
+    final character = await characterRepository.getCharacterById(characterId);
+    final playerCombatStats = PlayerCombatStats(
+      playerLevel: character.level,
+      characterClass: character.characterClass,
+      equipments: character.equippedEquipmentList,
+      passiveModifiers: skillService.passiveModifiersFor(character),
+    );
+    await characterRepository.updateCharacter(
+        character.copyWith(currentHealth: playerCombatStats.maxHealth));
+  }
+
   Future<void> finishQuest() async {
     final quest = state.quest;
+    await _healToFull(quest.characterId);
     await questRepository.deleteQuest(quest);
     final encounter = await encounterRepository.getEncounterByQuestId(quest.id);
     await encounterRepository.deleteEncounterRewardsByQuestId(quest.id);

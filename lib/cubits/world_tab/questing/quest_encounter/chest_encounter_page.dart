@@ -6,6 +6,7 @@ import 'package:questvale/widgets/qv_blinking.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_fade_in.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 class ChestEncounterPage extends StatelessWidget {
   const ChestEncounterPage(
@@ -27,7 +28,7 @@ class ChestEncounterPage extends StatelessWidget {
           child: Center(
             child: Text(
               'Found a chest!',
-              style: TextStyle(fontSize: 30, color: colorScheme.secondary),
+              style: QvTextStyles.impact.copyWith(color: colorScheme.secondary),
               textAlign: TextAlign.center,
             ),
           ),
@@ -60,8 +61,7 @@ class ChestEncounterPage extends StatelessWidget {
                     child: Center(
                       child: Text(
                         rarity.name.toUpperCase(),
-                        style: TextStyle(
-                            fontSize: 24, color: colorScheme.secondary),
+                        style: QvTextStyles.title.copyWith(color: colorScheme.secondary),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -82,8 +82,7 @@ class ChestEncounterPage extends StatelessWidget {
                     curve: Curves.easeInOut,
                     child: Text(
                       'Open',
-                      style:
-                          TextStyle(fontSize: 30, color: colorScheme.primary),
+                      style: QvTextStyles.impact.copyWith(color: colorScheme.primary),
                       textAlign: TextAlign.center,
                     ),
                   ),

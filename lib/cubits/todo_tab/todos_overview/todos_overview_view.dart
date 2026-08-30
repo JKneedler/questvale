@@ -18,6 +18,7 @@ import 'package:questvale/widgets/qv_background.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_damage_toast.dart';
 import 'package:questvale/widgets/qv_fading_scrollable.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 class TodosOverviewView extends StatelessWidget {
   static const _todoTabIndex = 1;
@@ -364,12 +365,8 @@ class _FilterOptionRow extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: TextStyle(
-                  color:
-                      isSelected ? colorScheme.primary : colorScheme.onSurface,
-                  fontSize: 16,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                ),
+                style: (isSelected ? QvTextStyles.itemTitle : QvTextStyles.note)
+                    .copyWith(color: isSelected ? colorScheme.primary : colorScheme.onSurface),
               ),
             ),
             if (isSelected)
@@ -405,9 +402,8 @@ class _ChoiceChip extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: TextStyle(
+          style: QvTextStyles.caption.copyWith(
             color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
-            fontSize: 13,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -445,16 +441,14 @@ class _MenuRow extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: TextStyle(color: colorScheme.onSurface, fontSize: 16),
+                style: QvTextStyles.note.copyWith(color: colorScheme.onSurface),
               ),
             ),
             if (hint != null)
               Text(
                 hint!,
-                style: TextStyle(
-                  color: colorScheme.onSurface.withValues(alpha: 0.5),
-                  fontSize: 13,
-                ),
+                style: QvTextStyles.caption
+                    .copyWith(color: colorScheme.onSurface.withValues(alpha: 0.5)),
               ),
           ],
         ),

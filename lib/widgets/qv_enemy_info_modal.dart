@@ -9,6 +9,7 @@ import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_gray_filter.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
 import 'package:questvale/widgets/qv_fading_scrollable.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 class QvEnemyInfoModal extends StatelessWidget {
   final EnemyData enemyData;
@@ -110,10 +111,7 @@ class QvEnemyInfoModal extends StatelessWidget {
                               width: 40,
                               child: Text(
                                 'x',
-                                style: TextStyle(
-                                  fontSize: 36,
-                                  color: colorScheme.onSurface,
-                                ),
+                                style: QvTextStyles.display.copyWith(color: colorScheme.onSurface),
                                 textAlign: TextAlign.end,
                               ),
                             ),
@@ -251,10 +249,8 @@ class QvEnemyInfoModal extends StatelessWidget {
                                       Expanded(
                                         child: Text(
                                           'Attacks',
-                                          style: TextStyle(
-                                            fontSize: 20,
-                                            color: colorScheme.onSecondary,
-                                          ),
+                                          style: QvTextStyles.label
+                                              .copyWith(color: colorScheme.onSecondary),
                                           textAlign: TextAlign.start,
                                         ),
                                       ),
@@ -262,27 +258,24 @@ class QvEnemyInfoModal extends StatelessWidget {
                                           width: 50,
                                           child: Text(
                                             'DMG',
-                                            style: TextStyle(
-                                                fontSize: 14,
-                                                color: colorScheme.onSecondary),
+                                            style: QvTextStyles.body
+                                                .copyWith(color: colorScheme.onSecondary),
                                             textAlign: TextAlign.center,
                                           )),
                                       SizedBox(
                                           width: 50,
                                           child: Text(
                                             'SPD',
-                                            style: TextStyle(
-                                                fontSize: 14,
-                                                color: colorScheme.onSecondary),
+                                            style: QvTextStyles.body
+                                                .copyWith(color: colorScheme.onSecondary),
                                             textAlign: TextAlign.center,
                                           )),
                                       SizedBox(
                                           width: 50,
                                           child: Text(
                                             'TYPE',
-                                            style: TextStyle(
-                                                fontSize: 14,
-                                                color: colorScheme.onSecondary),
+                                            style: QvTextStyles.body
+                                                .copyWith(color: colorScheme.onSecondary),
                                             textAlign: TextAlign.center,
                                           )),
                                     ],
@@ -321,18 +314,16 @@ class QvEnemyInfoModal extends StatelessWidget {
                                       Expanded(
                                           child: Text(
                                         'Drops',
-                                        style: TextStyle(
-                                            fontSize: 20,
-                                            color: colorScheme.onSecondary),
+                                        style: QvTextStyles.label
+                                            .copyWith(color: colorScheme.onSecondary),
                                         textAlign: TextAlign.start,
                                       )),
                                       SizedBox(
                                           width: 80,
                                           child: Text(
                                             'USES',
-                                            style: TextStyle(
-                                                fontSize: 14,
-                                                color: colorScheme.onSecondary),
+                                            style: QvTextStyles.body
+                                                .copyWith(color: colorScheme.onSecondary),
                                             textAlign: TextAlign.center,
                                           )),
                                     ],
@@ -400,18 +391,12 @@ class EnemyInfoLine extends StatelessWidget {
             width: 80,
             child: Text(
               label,
-              style: TextStyle(
-                fontSize: 20,
-                color: colorScheme.onSecondary,
-              ),
+              style: QvTextStyles.label.copyWith(color: colorScheme.onSecondary),
             ),
           ),
           Text(
             value,
-            style: TextStyle(
-              fontSize: 20,
-              color: colorScheme.onSecondary,
-            ),
+            style: QvTextStyles.label.copyWith(color: colorScheme.onSecondary),
           ),
         ],
       ),
@@ -444,7 +429,7 @@ class ElementsView extends StatelessWidget {
         children: [
           Text(
             title,
-            style: TextStyle(fontSize: 18, color: colorScheme.onSecondary),
+            style: QvTextStyles.detail.copyWith(color: colorScheme.onSecondary),
             textAlign: TextAlign.center,
           ),
           Container(
@@ -470,10 +455,7 @@ class ElementsView extends StatelessWidget {
                           height: 18,
                           child: Text(
                             _capitalize(elements[index].name),
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: elements[index].color,
-                            ),
+                            style: QvTextStyles.note.copyWith(color: elements[index].color),
                             textAlign: TextAlign.center,
                           ),
                         );
@@ -484,10 +466,7 @@ class ElementsView extends StatelessWidget {
                     height: 18,
                     child: Text(
                       'None',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: colorScheme.onSecondary,
-                      ),
+                      style: QvTextStyles.note.copyWith(color: colorScheme.onSecondary),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -528,10 +507,7 @@ class EnemyAttackView extends StatelessWidget {
               Expanded(
                 child: Text(
                   attack.name,
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: colorScheme.onSecondary,
-                  ),
+                  style: QvTextStyles.label.copyWith(color: colorScheme.onSecondary),
                   textAlign: TextAlign.start,
                 ),
               ),
@@ -566,10 +542,7 @@ class AttackAttributeSlice extends StatelessWidget {
       width: 50,
       child: Text(
         value,
-        style: TextStyle(
-          fontSize: 16,
-          color: color ?? colorScheme.onSecondary,
-        ),
+        style: QvTextStyles.note.copyWith(color: color ?? colorScheme.onSecondary),
         textAlign: TextAlign.center,
       ),
     );
@@ -645,18 +618,15 @@ class EnemyDropView extends StatelessWidget {
                     height: 16,
                     child: Text(
                       discovered ? drop.itemName : '',
-                      style: TextStyle(
-                          fontSize: 20,
-                          color: colorScheme.onSecondary,
-                          height: .8),
+                      style: QvTextStyles.label
+                          .copyWith(color: colorScheme.onSecondary, height: .8),
                     ),
                   ),
                   SizedBox(
                     height: 16,
                     child: Text(
                       discovered ? _getDropString() : '',
-                      style: TextStyle(
-                          fontSize: 16, color: colorScheme.onSecondary),
+                      style: QvTextStyles.note.copyWith(color: colorScheme.onSecondary),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -669,8 +639,8 @@ class EnemyDropView extends StatelessWidget {
                 discovered
                     ? drop.useCases.map((e) => _capitalize(e.name)).join('\n')
                     : '',
-                style: TextStyle(
-                    fontSize: 12, color: colorScheme.onSecondary, height: 1.0),
+                style: QvTextStyles.micro
+                    .copyWith(color: colorScheme.onSecondary, height: 1.0),
                 textAlign: TextAlign.center,
               ),
             ),

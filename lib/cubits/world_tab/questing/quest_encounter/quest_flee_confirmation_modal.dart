@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_metal_corner_border.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
 class QuestFleeConfirmationModal extends StatelessWidget {
   final Future<void> Function() onFlee;
@@ -37,10 +38,7 @@ class QuestFleeConfirmationModal extends StatelessWidget {
                       alignment: Alignment.centerLeft,
                       child: Text(
                         'Would you like to flee?',
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w500,
-                        ),
+                        style: QvTextStyles.heading,
                       ),
                     ),
                   )),
@@ -53,10 +51,7 @@ class QuestFleeConfirmationModal extends StatelessWidget {
                         alignment: Alignment.topCenter,
                         child: Text(
                           'x',
-                          style: TextStyle(
-                            fontSize: 36,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: QvTextStyles.display.copyWith(fontWeight: FontWeight.w500),
                         ),
                       ),
                     ),
@@ -72,10 +67,7 @@ class QuestFleeConfirmationModal extends StatelessWidget {
               Expanded(
                 child: Text(
                   'Fleeing will end the current quest and return you fully back to town. You will lose any progress you have made in this quest but will receive any loot you have collected.',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: colorScheme.onSurface,
-                  ),
+                  style: QvTextStyles.note.copyWith(color: colorScheme.onSurface),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -91,8 +83,7 @@ class QuestFleeConfirmationModal extends StatelessWidget {
                 child: Center(
                   child: Text(
                     'Yes, Flee',
-                    style:
-                        TextStyle(fontSize: 26, color: colorScheme.secondary),
+                    style: QvTextStyles.overlay.copyWith(color: colorScheme.secondary),
                   ),
                 ),
               ),

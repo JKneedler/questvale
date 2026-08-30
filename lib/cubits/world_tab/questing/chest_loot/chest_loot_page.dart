@@ -10,6 +10,7 @@ import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:questvale/widgets/qv_primary_border.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 import 'package:sqflite/sqflite.dart';
 
 class ChestLootPage extends StatelessWidget {
@@ -54,11 +55,7 @@ class ChestLootView extends StatelessWidget {
                 children: [
                   Text(
                     'Chest Contents',
-                    style: TextStyle(
-                      fontSize: 24,
-                      color: colorScheme.primary,
-                      height: 1,
-                    ),
+                    style: QvTextStyles.title.copyWith(color: colorScheme.primary, height: 1),
                   ),
                   Container(
                     height: 1,
@@ -82,11 +79,7 @@ class ChestLootView extends StatelessWidget {
                       )),
                   Text(
                     'Drops',
-                    style: TextStyle(
-                      fontSize: 22,
-                      color: colorScheme.primary,
-                      height: 1,
-                    ),
+                    style: QvTextStyles.subtitle.copyWith(color: colorScheme.primary, height: 1),
                   ),
                   Expanded(
                     child: Container(
@@ -127,11 +120,8 @@ class ChestLootView extends StatelessWidget {
                     child: Center(
                       child: Text(
                         'Continue...',
-                        style: TextStyle(
-                          fontSize: 22,
-                          color: colorScheme.secondary,
-                          height: 1,
-                        ),
+                        style: QvTextStyles.subtitle
+                            .copyWith(color: colorScheme.secondary, height: 1),
                       ),
                     ),
                   ),

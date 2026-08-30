@@ -5,18 +5,20 @@ import 'package:questvale/cubits/world_tab/town/quest_board/quest_board_cubit.da
 import 'package:questvale/cubits/world_tab/town/quest_board/select_quest/select_quest_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/quest_board/select_quest/select_quest_state.dart';
 import 'package:questvale/cubits/theme/theme_cubit.dart';
-import 'package:questvale/cubits/world_tab/town/town_cubit.dart';
-import 'package:questvale/cubits/world_tab/town/town_state.dart';
 import 'package:questvale/data/providers/game_data.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
 import 'package:questvale/data/providers/game_data_models/quest_zone.dart';
 import 'package:questvale/helpers/constants.dart';
-import 'package:questvale/widgets/qv_app_bar.dart';
 import 'package:questvale/widgets/qv_enemy_info_modal.dart';
 import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:questvale/widgets/qv_gray_filter.dart';
 import 'package:questvale/widgets/qv_card_border.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 
+// Renders inside TownVisitSheet's non-scrollable body slot (see
+// QuestBoardPage/TownVisitSheet) — TownVisitSheet's own arrival header
+// already shows "Quest Board", so this page contributes only its zone list,
+// no Scaffold/AppBar of its own.
 class SelectQuestPage extends StatelessWidget {
   const SelectQuestPage({
     super.key,
@@ -24,8 +26,6 @@ class SelectQuestPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-
     final questZones = context.read<GameData>().questZones;
     final character = context.read<PlayerCubit>().state.character;
 
@@ -33,53 +33,38 @@ class SelectQuestPage extends StatelessWidget {
       return const Center(child: CircularProgressIndicator());
     }
 
-    return Scaffold(
-      body: Column(
-        children: [
-          QvAppBar(
-            title: 'Quest Board',
-            onBackButtonPressed: () => context
-                .read<TownCubit>()
-                .setCurrentLocation(TownLocation.townSquare),
-          ),
-          Expanded(
-            child: Container(
-              color: colorScheme.surface,
-              child: BlocProvider(
-                create: (context) => SelectQuestCubit(questZones: questZones),
-                child: BlocBuilder<SelectQuestCubit, SelectQuestState>(
-                    builder: (context, selectQuestState) {
-                  return QvFadingScrollable(
-                    child: ListView.builder(
-                      padding: const EdgeInsets.only(
-                        left: 20,
-                        right: 20,
-                        top: 10,
-                        bottom: 10,
-                      ),
-                      itemCount: questZones.length,
-                      itemBuilder: (context, index) {
-                        final isOpen =
-                            selectQuestState.selectedQuestZoneIndex == index;
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 8.0),
-                          child: SelectQuestZoneCard(
-                            questZone: questZones[index],
-                            isOpen: isOpen,
-                            onTap: () => context
-                                .read<SelectQuestCubit>()
-                                .toggleQuestZone(index),
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                }),
-              ),
+    // No background fill of its own — sits directly on TownVisitSheet's own
+    // QvBackground, like every other Town Square destination's content, per
+    // feedback that the flat colorScheme.surface fill this used to have read
+    // as a visibly darker box against the sheet around it.
+    return BlocProvider(
+      create: (context) => SelectQuestCubit(questZones: questZones),
+      child: BlocBuilder<SelectQuestCubit, SelectQuestState>(
+          builder: (context, selectQuestState) {
+        return QvFadingScrollable(
+          child: ListView.builder(
+            padding: const EdgeInsets.only(
+              left: 4,
+              right: 4,
+              top: 10,
+              bottom: 10,
             ),
-          )
-        ],
-      ),
+            itemCount: questZones.length,
+            itemBuilder: (context, index) {
+              final isOpen = selectQuestState.selectedQuestZoneIndex == index;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: SelectQuestZoneCard(
+                  questZone: questZones[index],
+                  isOpen: isOpen,
+                  onTap: () =>
+                      context.read<SelectQuestCubit>().toggleQuestZone(index),
+                ),
+              );
+            },
+          ),
+        );
+      }),
     );
   }
 }
@@ -143,10 +128,8 @@ class SelectQuestZoneCard extends StatelessWidget {
                                   SizedBox(
                                     height: 30,
                                     child: Text(questZone.name,
-                                        style: TextStyle(
-                                          fontSize: 28,
-                                          color: colorScheme.secondary,
-                                        )),
+                                        style: QvTextStyles.banner
+                                            .copyWith(color: colorScheme.secondary)),
                                   ),
                                   Text('Level ${questZone.requiredLevel}',
                                       style: TextStyle(
@@ -159,10 +142,7 @@ class SelectQuestZoneCard extends StatelessWidget {
                             Center(
                               child: Text(
                                 '>',
-                                style: TextStyle(
-                                  fontSize: 28,
-                                  color: colorScheme.secondary,
-                                ),
+                                style: QvTextStyles.banner.copyWith(color: colorScheme.secondary),
                               ),
                             ),
                           ],
@@ -194,9 +174,8 @@ class SelectQuestZoneCard extends StatelessWidget {
                                         child: Center(
                                             child: Text(
                                           '<',
-                                          style: TextStyle(
-                                              fontSize: 24,
-                                              color: colorScheme.onSecondary),
+                                          style: QvTextStyles.title
+                                              .copyWith(color: colorScheme.onSecondary),
                                         )),
                                       ),
                                       Expanded(
@@ -218,9 +197,8 @@ class SelectQuestZoneCard extends StatelessWidget {
                                         child: Center(
                                             child: Text(
                                           '>',
-                                          style: TextStyle(
-                                              fontSize: 24,
-                                              color: colorScheme.onSecondary),
+                                          style: QvTextStyles.title
+                                              .copyWith(color: colorScheme.onSecondary),
                                         )),
                                       ),
                                     ],
@@ -230,12 +208,14 @@ class SelectQuestZoneCard extends StatelessWidget {
                           SizedBox(height: 16),
                           Container(
                             padding: const EdgeInsets.only(left: 20, right: 20),
+                            // Gear/skills are always current now (managed
+                            // directly on Town Square), so this goes
+                            // straight to starting the quest instead of
+                            // routing through a Gear Up step first.
                             child: GestureDetector(
-                              onTap: () => {
-                                context
-                                    .read<QuestBoardCubit>()
-                                    .onQuestZoneSelected(questZone),
-                              },
+                              onTap: () => context
+                                  .read<QuestBoardCubit>()
+                                  .onBeginQuest(context, questZone),
                               child: Container(
                                 width: double.infinity,
                                 height: 40,
@@ -249,11 +229,8 @@ class SelectQuestZoneCard extends StatelessWidget {
                                 ),
                                 child: Center(
                                   child: Text(
-                                    'Gear Up',
-                                    style: TextStyle(
-                                      fontSize: 24,
-                                      color: colorScheme.secondary,
-                                    ),
+                                    'Begin Quest',
+                                    style: QvTextStyles.title.copyWith(color: colorScheme.secondary),
                                     textAlign: TextAlign.center,
                                   ),
                                 ),

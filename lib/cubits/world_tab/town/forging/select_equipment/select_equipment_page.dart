@@ -4,7 +4,6 @@ import 'package:questvale/cubits/world_tab/town/forging/forge/forge_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/forging/forge/forge_state.dart';
 import 'package:questvale/cubits/world_tab/town/forging/select_equipment/select_equipment_cubit.dart';
 import 'package:questvale/cubits/world_tab/town/forging/select_equipment/select_equipment_state.dart';
-import 'package:questvale/cubits/world_tab/town/town_cubit.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/data/models/equipment.dart';
 import 'package:questvale/widgets/qv_animated_transition.dart';
@@ -13,6 +12,7 @@ import 'package:questvale/widgets/qv_button.dart';
 import 'package:questvale/widgets/qv_equipment_item.dart';
 import 'package:questvale/widgets/qv_fading_scrollable.dart';
 import 'package:questvale/widgets/qv_inset_background.dart';
+import 'package:questvale/widgets/qv_text_styles.dart';
 import 'package:sqflite/sqflite.dart';
 
 class SelectEquipmentPage extends StatelessWidget {
@@ -112,8 +112,7 @@ class SlotButton extends StatelessWidget {
           .onEquipmentSlotSelected(equipmentSlot),
       child: Center(
         child: Text(capitalizedName,
-            style: TextStyle(
-                fontSize: 22, height: 1, color: colorScheme.secondary)),
+            style: QvTextStyles.subtitle.copyWith(height: 1, color: colorScheme.secondary)),
       ),
     );
   }
