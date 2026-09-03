@@ -42,15 +42,20 @@ class QuestLootView extends StatelessWidget {
     final themeId = context.watch<ThemeCubit>().state.theme.id;
     return BlocBuilder<QuestLootCubit, QuestLootState>(
         builder: (context, questLootState) {
-      return SizedBox(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height,
-        child: Column(
+      // Sized off LayoutBuilder's own bounded constraints, not MediaQuery's
+      // full device height — see ChestLootView's identical comment for why
+      // (also drops the old outer full-device-size SizedBox this view used
+      // to wrap itself in, which was even more prone to overflowing the
+      // real available space than the other two loot pages' own version of
+      // this bug, since it forced its own size rather than just sizing an
+      // inner box too generously).
+      return LayoutBuilder(builder: (context, constraints) {
+        return Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SizedBox(height: 30),
             SizedBox(
-              height: MediaQuery.of(context).size.height * 0.65,
+              height: constraints.maxHeight - 40,
               width: MediaQuery.of(context).size.width * 0.8,
               child: QvMetalCornerBorder(
                 heightFactor: 0.97,
@@ -117,7 +122,8 @@ class QuestLootView extends StatelessWidget {
                           alignment: Alignment.topCenter,
                           child: QvFadingScrollable(
                             child: ListView.builder(
-                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 10),
                               itemCount: questLootState.equipment.length,
                               itemBuilder: (context, index) {
                                 return Padding(
@@ -151,8 +157,8 @@ class QuestLootView extends StatelessWidget {
               ),
             ),
           ],
-        ),
-      );
+        );
+      });
     });
   }
 }

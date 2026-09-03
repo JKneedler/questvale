@@ -45,111 +45,118 @@ class CombatLootView extends StatelessWidget {
       if (combatLootState.encounterReward == null) {
         return const SizedBox.shrink();
       }
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(height: 30),
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.65,
-            width: MediaQuery.of(context).size.width * 0.8,
-            child: QvPrimaryBorder(
-              heightFactor: 0.97,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              child: Column(
-                spacing: 8,
-                children: [
-                  Text(
-                    'Combat Summary',
-                    style: QvTextStyles.title
-                        .copyWith(color: colorScheme.primary, height: 1),
-                  ),
-                  Container(
-                    height: 1,
-                    width: 230,
-                    color: colorScheme.primary,
-                  ),
-                  SizedBox(
-                      height: 50,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        spacing: 10,
-                        children: [
-                          Expanded(
+      // Sized off LayoutBuilder's own bounded constraints, not MediaQuery's
+      // full device height — see ChestLootView's identical comment for why.
+      return LayoutBuilder(builder: (context, constraints) {
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(height: 30),
+            SizedBox(
+              height: constraints.maxHeight - 40,
+              width: MediaQuery.of(context).size.width * 0.8,
+              child: QvPrimaryBorder(
+                heightFactor: 0.97,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                child: Column(
+                  spacing: 8,
+                  children: [
+                    Text(
+                      'Combat Summary',
+                      style: QvTextStyles.title
+                          .copyWith(color: colorScheme.primary, height: 1),
+                    ),
+                    Container(
+                      height: 1,
+                      width: 230,
+                      color: colorScheme.primary,
+                    ),
+                    SizedBox(
+                        height: 50,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          spacing: 10,
+                          children: [
+                            Expanded(
+                                child: SummarySlice(
+                              title: 'Time',
+                              value: _getEncounterTimeLengthString(context),
+                              valueColor: Colors.white,
+                            )),
+                            Expanded(
+                                child: SummarySlice(
+                              title: 'XP',
+                              value: '${combatLootState.encounterReward!.xp}',
+                              valueColor: Colors.greenAccent,
+                            )),
+                            Expanded(
                               child: SummarySlice(
-                            title: 'Time',
-                            value: _getEncounterTimeLengthString(context),
-                            valueColor: Colors.white,
-                          )),
-                          Expanded(
-                              child: SummarySlice(
-                            title: 'XP',
-                            value: '${combatLootState.encounterReward!.xp}',
-                            valueColor: Colors.greenAccent,
-                          )),
-                          Expanded(
-                            child: SummarySlice(
-                              title: 'Gold',
-                              value: '${combatLootState.encounterReward!.gold}',
-                              valueColor: Colors.yellowAccent,
+                                title: 'Gold',
+                                value:
+                                    '${combatLootState.encounterReward!.gold}',
+                                valueColor: Colors.yellowAccent,
+                              ),
+                            ),
+                          ],
+                        )),
+                    Text(
+                      'Drops',
+                      style: QvTextStyles.subtitle
+                          .copyWith(color: colorScheme.primary, height: 1),
+                    ),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 10),
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: jkAsset(
+                                'images/ui/backgrounds/$themeId/background-secondary.png'),
+                            centerSlice: STANDARD_BORDER_SLICE,
+                            fit: BoxFit.fill,
+                            filterQuality: FilterQuality.none,
+                          ),
+                        ),
+                        child: Align(
+                          alignment: Alignment.topCenter,
+                          child: QvFadingScrollable(
+                            child: ListView.builder(
+                              padding: const EdgeInsets.all(0),
+                              itemCount: combatLootState
+                                  .encounterReward!.equipmentRewards.length,
+                              itemBuilder: (context, index) {
+                                return SimpleEquipmentSlice(
+                                  equipment: combatLootState
+                                      .encounterReward!
+                                      .equipmentRewards[index],
+                                );
+                              },
                             ),
                           ),
-                        ],
-                      )),
-                  Text(
-                    'Drops',
-                    style: QvTextStyles.subtitle
-                        .copyWith(color: colorScheme.primary, height: 1),
-                  ),
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 10),
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: jkAsset(
-                              'images/ui/backgrounds/$themeId/background-secondary.png'),
-                          centerSlice: STANDARD_BORDER_SLICE,
-                          fit: BoxFit.fill,
-                          filterQuality: FilterQuality.none,
-                        ),
-                      ),
-                      child: Align(
-                        alignment: Alignment.topCenter,
-                        child: QvFadingScrollable(
-                          child: ListView.builder(
-                            padding: const EdgeInsets.all(0),
-                            itemCount: combatLootState
-                                .encounterReward!.equipmentRewards.length,
-                            itemBuilder: (context, index) {
-                              return SimpleEquipmentSlice(
-                                equipment: combatLootState
-                                    .encounterReward!.equipmentRewards[index],
-                              );
-                            },
-                          ),
                         ),
                       ),
                     ),
-                  ),
-                  QvButton(
-                    onTap: () {
-                      context.read<QuestEncounterCubit>().nextEncounter();
-                    },
-                    height: 50,
-                    child: Center(
-                      child: Text(
-                        'Continue...',
-                        style: QvTextStyles.subtitle
-                            .copyWith(color: colorScheme.secondary, height: 1),
+                    QvButton(
+                      onTap: () {
+                        context.read<QuestEncounterCubit>().nextEncounter();
+                      },
+                      height: 50,
+                      child: Center(
+                        child: Text(
+                          'Continue...',
+                          style: QvTextStyles.subtitle.copyWith(
+                              color: colorScheme.secondary, height: 1),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
-      );
+          ],
+        );
+      });
     });
   }
 }
