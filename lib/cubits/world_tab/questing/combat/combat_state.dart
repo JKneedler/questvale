@@ -9,6 +9,7 @@ enum CombatStatus {
   inspectingEnemy,
   targetingSkill,
   playingSkillAnimation,
+  confirmingFlee,
   complete,
 }
 

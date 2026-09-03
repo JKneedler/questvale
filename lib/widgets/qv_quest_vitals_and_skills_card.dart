@@ -38,20 +38,23 @@ import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 // non-null while a live combat encounter is actually in progress (see
 // QuestEncounterView's own doc comment for how that's wired).
 //
-// Also the destination for player/enemy inspection — tapping the player or
-// an enemy on the battlefield (BattleFieldDisplay, combat_page.dart) used
-// to slide a separate floating PlayerInfoBox/EnemyInfoBox in over the
-// battlefield; those are now this card's own detail content instead
-// (_PlayerDetailContent/_EnemyDetailContent below), and the card grows
+// Also the destination for player/enemy inspection and the flee
+// confirmation — tapping the player or an enemy on the battlefield used to
+// slide a separate floating PlayerInfoBox/EnemyInfoBox in over it, and
+// Flee used to open a QuestFleeConfirmationModal dialog; all three are now
+// this card's own detail content instead (_PlayerDetailContent/
+// _EnemyDetailContent/_FleeConfirmationContent below), and the card grows
 // upward via AnimatedSize (alignment: bottomCenter, so the card's bottom
 // edge — anchored against the nav bar — stays put while its top edge moves
 // up) to show them, fully replacing the normal Skills+Vitals content
-// rather than appending to it. The battlefield's own Expanded region above
-// this card shrinks to match automatically — plain Column/Expanded layout,
-// no stacking/z-index needed, since this card is a fixed-size sibling
-// after that Expanded in QuestEncounterView's own Column. Skill-targeting
-// (TargetEnemySkillBox) and the other planned moves (Flee/Potions/Bag)
-// stay as their own thing for now — see the Skill Cooldown UI ticket.
+// rather than appending to it. Per the player's explicit request, this
+// growth overlays the battlefield instead of resizing it —
+// QuestEncounterView's own Stack reserves this card's `collapsedHeight`
+// for the quest-step content behind it and positions this card as a
+// separate layer on top, free to grow past that reservation. Skill-
+// targeting (TargetEnemySkillBox) and the other planned moves
+// (Potions/Bag) stay as their own thing for now — see the Skill Cooldown
+// UI ticket.
 class QuestVitalsAndSkillsCard extends StatelessWidget {
   const QuestVitalsAndSkillsCard({
     super.key,
@@ -91,6 +94,8 @@ class QuestVitalsAndSkillsCard extends StatelessWidget {
         combatState.inspectingEnemyIndex != -1;
     final isInspectingPlayer = combatState != null &&
         combatState.status == CombatStatus.inspectingPlayer;
+    final isConfirmingFlee =
+        combatState != null && combatState.status == CombatStatus.confirmingFlee;
 
     final Widget content;
     if (isInspectingEnemy) {
@@ -102,6 +107,9 @@ class QuestVitalsAndSkillsCard extends StatelessWidget {
     } else if (isInspectingPlayer) {
       content =
           const SizedBox(height: _detailHeight, child: _PlayerDetailContent());
+    } else if (isConfirmingFlee) {
+      content = const SizedBox(
+          height: _detailHeight, child: _FleeConfirmationContent());
     } else {
       content = _NormalContent(
         character: character,
@@ -563,6 +571,79 @@ class _PlayerDetailContent extends StatelessWidget {
             'Close',
             style: QvTextStyles.title.copyWith(color: colorScheme.secondary),
           )),
+        ),
+      ],
+    );
+  }
+}
+
+// Moved from the old QuestFleeConfirmationModal (a showDialog popup) — same
+// copy, minus the dialog-specific chrome (its own centered/fixed-size
+// QvMetalCornerBorder card and "x" close icon, both redundant now that this
+// renders directly inside QuestVitalsAndSkillsCard's own shell). Cancel and
+// Yes/Flee sit side by side at the bottom rather than the old lone "Yes,
+// Flee" + a separate "x", matching how a two-way choice reads elsewhere in
+// this app (e.g. QvConfirmationModal's own confirm/cancel pairing) — "Yes,
+// Flee" alone with only a corner "x" to back out wasn't as discoverable.
+class _FleeConfirmationContent extends StatelessWidget {
+  const _FleeConfirmationContent();
+
+  @override
+  Widget build(BuildContext context) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+    return Column(
+      children: [
+        Text('Would you like to flee?', style: QvTextStyles.heading),
+        const SizedBox(height: 8),
+        Container(
+          height: 2,
+          width: MediaQuery.of(context).size.width * 0.7,
+          color: colorScheme.secondary,
+        ),
+        const SizedBox(height: 10),
+        Expanded(
+          child: Center(
+            child: Text(
+              'Fleeing will end the current quest and return you fully back '
+              'to town. You will lose any progress you have made in this '
+              'quest but will receive any loot you have collected.',
+              style: QvTextStyles.note.copyWith(color: colorScheme.onSurface),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+        Row(
+          spacing: 10,
+          children: [
+            Expanded(
+              child: QvButton(
+                height: 40,
+                buttonColor: ButtonColor.surfaceContainer,
+                onTap: () => context.read<CombatCubit>().setIdle(),
+                child: Center(
+                  child: Text(
+                    'Cancel',
+                    style: QvTextStyles.title
+                        .copyWith(color: colorScheme.onSurface),
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: QvButton(
+                height: 40,
+                buttonColor: ButtonColor.primary,
+                onTap: () => context.read<QuestEncounterCubit>().fleeQuest(),
+                child: Center(
+                  child: Text(
+                    'Yes, Flee',
+                    style: QvTextStyles.title
+                        .copyWith(color: colorScheme.secondary),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );

@@ -133,6 +133,23 @@ class CombatCubit extends Cubit<CombatState> {
     );
   }
 
+  // Same toggle shape as onPlayerTap below: idle <-> confirmingFlee, a
+  // no-op from any other status (mirrors QvButton's own guard that used to
+  // live at the _CombatActionBar call site before the flee confirmation
+  // moved into QuestVitalsAndSkillsCard).
+  void onFleeButtonTap() {
+    CombatStatus previousStatus = state.status;
+    CombatStatus newStatus = previousStatus;
+
+    if (previousStatus == CombatStatus.confirmingFlee) {
+      newStatus = CombatStatus.idle;
+    } else if (previousStatus == CombatStatus.idle) {
+      newStatus = CombatStatus.confirmingFlee;
+    }
+
+    emit(state.copyWith(status: newStatus));
+  }
+
   void onPlayerTap(BuildContext context) {
     CombatStatus previousStatus = state.status;
     CombatStatus newStatus = previousStatus;

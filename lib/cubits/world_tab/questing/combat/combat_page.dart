@@ -6,7 +6,6 @@ import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/world_tab/questing/combat/combat_cubit.dart';
 import 'package:questvale/cubits/world_tab/questing/combat/combat_state.dart';
 import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_encounter_cubit.dart';
-import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_flee_confirmation_modal.dart';
 import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/models/player_combat_stats.dart';
 import 'package:questvale/data/providers/game_data_models/skill_data.dart';
@@ -90,7 +89,7 @@ class CombatView extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _CombatActionBar(combatState: combatState),
+            _CombatActionBar(),
             BattleFieldDisplay(),
           ],
         ),
@@ -123,9 +122,7 @@ class CombatView extends StatelessWidget {
 // own list items use (see todos_overview_item.dart), and CombatStatusCard's
 // outer shell there too.
 class _CombatActionBar extends StatelessWidget {
-  const _CombatActionBar({required this.combatState});
-
-  final CombatState combatState;
+  const _CombatActionBar();
 
   static const double _buttonHeight = 48;
   static const double _iconSize = 32;
@@ -143,12 +140,7 @@ class _CombatActionBar extends StatelessWidget {
             child: QvButton(
               height: _buttonHeight,
               buttonColor: ButtonColor.surfaceContainer,
-              onTap: () {
-                if (combatState.status == CombatStatus.idle) {
-                  QuestFleeConfirmationModal.showModal(context,
-                      () => context.read<QuestEncounterCubit>().fleeQuest());
-                }
-              },
+              onTap: () => context.read<CombatCubit>().onFleeButtonTap(),
               child: Center(
                 child: Image.asset(
                   'images/pixel-icons/running-man.png',
