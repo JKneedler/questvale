@@ -236,14 +236,40 @@ class _QuestEncounterViewState extends State<QuestEncounterView> {
                       : const SizedBox(
                           height: QvQuestEncounterHeader.topFillerHeight),
                   Expanded(
-                    child: QvAnimatedTransition(
-                      duration: getTransitionDuration(questState),
-                      type: getTransitionType(questState),
-                      child: _getQuestView(context, questState),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        // Reserves vitalsPanel's own *collapsed* footprint
+                        // (plus the 10px gap that used to sit between them
+                        // as plain Column siblings) so the quest-step
+                        // content below renders identically to before in
+                        // the common case. vitalsPanel itself is a
+                        // separate Positioned layer on top, free to grow
+                        // taller than this reservation and draw over this
+                        // content instead of resizing it — see
+                        // QuestVitalsAndSkillsCard's own doc comment: the
+                        // player doesn't want the battlefield "scrunching"
+                        // when the panel expands to show detail content.
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: QuestVitalsAndSkillsCard.collapsedHeight + 10,
+                          child: QvAnimatedTransition(
+                            duration: getTransitionDuration(questState),
+                            type: getTransitionType(questState),
+                            child: _getQuestView(context, questState),
+                          ),
+                        ),
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          child: vitalsPanel,
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  vitalsPanel,
                 ],
               ),
             ),

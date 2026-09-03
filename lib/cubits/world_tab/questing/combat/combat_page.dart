@@ -1,6 +1,3 @@
-import 'dart:async';
-
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/nav_cubit.dart';
@@ -12,14 +9,9 @@ import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_encoun
 import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_flee_confirmation_modal.dart';
 import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/models/player_combat_stats.dart';
-import 'package:questvale/data/models/scheduled_timer.dart';
-import 'package:questvale/data/providers/game_data_models/enemy_attack_data.dart';
-import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
 import 'package:questvale/data/providers/game_data_models/skill_data.dart';
 import 'package:questvale/data/skills/base_active_skill.dart';
 import 'package:questvale/helpers/constants.dart';
-import 'package:questvale/helpers/data_formatters.dart';
-import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/widgets/qv_damage_toast.dart';
 import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
@@ -214,23 +206,6 @@ class BattleFieldDisplay extends StatelessWidget {
     return MainAxisAlignment.center;
   }
 
-  QvAnimatedTransitionType getEnemyInfoBoxTransitionType(
-      CombatState combatState) {
-    if (combatState.status == CombatStatus.inspectingEnemy &&
-        combatState.inspectingEnemyIndex != -1) {
-      return QvAnimatedTransitionType.slideLeft;
-    }
-    return QvAnimatedTransitionType.slideRight;
-  }
-
-  QvAnimatedTransitionType getPlayerInfoBoxTransitionType(
-      CombatState combatState) {
-    if (combatState.status == CombatStatus.inspectingPlayer) {
-      return QvAnimatedTransitionType.slideRight;
-    }
-    return QvAnimatedTransitionType.slideLeft;
-  }
-
   QvAnimatedTransitionType getSkillAnimationTransitionType(
       CombatState combatState) {
     if (combatState.status == CombatStatus.targetingSkill) {
@@ -244,90 +219,86 @@ class BattleFieldDisplay extends StatelessWidget {
     final combatState = context.read<CombatCubit>().state;
 
     return Expanded(
-      child: Stack(
+      child: Row(
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Stack(
-                  children: [
-                    Center(
-                      child: GestureDetector(
-                        onTap: () =>
-                            context.read<CombatCubit>().onPlayerTap(context),
-                        child: SizedBox(
-                          width: 100,
-                          height: 100,
-                          child: Image.asset(
-                            'images/characters/mage.png',
-                            filterQuality: FilterQuality.none,
-                            width: 100,
-                            height: 100,
-                            scale: .1,
-                          ),
-                        ),
+          Expanded(
+            child: Stack(
+              children: [
+                Center(
+                  child: GestureDetector(
+                    onTap: () =>
+                        context.read<CombatCubit>().onPlayerTap(context),
+                    child: SizedBox(
+                      width: 100,
+                      height: 100,
+                      child: Image.asset(
+                        'images/characters/mage.png',
+                        filterQuality: FilterQuality.none,
+                        width: 100,
+                        height: 100,
+                        scale: .1,
                       ),
                     ),
-                    QvAnimatedTransition(
-                      duration: Duration(milliseconds: 200),
-                      type: getSkillAnimationTransitionType(combatState),
-                      child: (combatState.status == CombatStatus.targetingSkill)
-                          ? TargetEnemySkillBox(
-                              skill: combatState.targetingSkill!)
-                          : SizedBox.shrink(),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Padding(
-                  // top/bottom trimmed from 40 to 24 — the new AP badge row
-                  // in CombatVitalsAndSkillsCard added ~32px below, shrinking
-                  // this Expanded area enough to overflow the enemy column
-                  // by a few px; this reclaims that headroom at the source
-                  // rather than shrinking the badge to compensate.
-                  padding: const EdgeInsets.only(
-                      left: 30, right: 30, top: 24, bottom: 24),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      for (int i = 0; i < combatState.enemies.length; i++)
-                        EnemyDisplay(
-                          enemy: combatState.enemies[i],
-                          onTap: () => context
-                              .read<CombatCubit>()
-                              .onEnemyTap(context, i),
-                          alignment:
-                              getAlignment(i, combatState.enemies.length),
-                          isTargeted: combatState.status ==
-                                  CombatStatus.targetingSkill &&
-                              (combatState.target.getEnemyIndex() == i ||
-                                  (combatState.target == SkillTarget.all &&
-                                      combatState.enemies[i].currentHealth >
-                                          0)),
-                        ),
-                    ],
                   ),
                 ),
-              ),
-            ],
+                QvAnimatedTransition(
+                  duration: Duration(milliseconds: 200),
+                  type: getSkillAnimationTransitionType(combatState),
+                  child: (combatState.status == CombatStatus.targetingSkill)
+                      ? TargetEnemySkillBox(skill: combatState.targetingSkill!)
+                      : SizedBox.shrink(),
+                ),
+              ],
+            ),
           ),
-          QvAnimatedTransition(
-            duration: Duration(milliseconds: 200),
-            type: getEnemyInfoBoxTransitionType(combatState),
-            child: (combatState.status == CombatStatus.inspectingEnemy &&
-                    combatState.inspectingEnemyIndex != -1)
-                ? EnemyInfoBox(
-                    enemy:
-                        combatState.enemies[combatState.inspectingEnemyIndex])
-                : SizedBox.shrink(),
-          ),
-          QvAnimatedTransition(
-            duration: Duration(milliseconds: 200),
-            type: getPlayerInfoBoxTransitionType(combatState),
-            child: (combatState.status == CombatStatus.inspectingPlayer)
-                ? PlayerInfoBox()
-                : SizedBox.shrink(),
+          Expanded(
+            child: Padding(
+              // top/bottom trimmed from 40 to 24 — the new AP badge row
+              // in QuestVitalsAndSkillsCard added ~32px below, shrinking
+              // this Expanded area enough to overflow the enemy column
+              // by a few px; this reclaims that headroom at the source
+              // rather than shrinking the badge to compensate.
+              padding: const EdgeInsets.only(
+                  left: 30, right: 30, top: 24, bottom: 24),
+              // LayoutBuilder + a ConstrainedBox(minHeight) + scrollable
+              // wrapper rather than a bare Column: this area shrinks a lot
+              // while QuestVitalsAndSkillsCard is showing player/enemy
+              // detail content (it grows upward into this same Expanded —
+              // see that class's own doc comment), and on this app's usual
+              // screen heights 3 enemies' natural size no longer fits
+              // underneath it, which overflowed here before this fix. The
+              // minHeight keeps today's exact spaceEvenly spread whenever
+              // there's enough room (the untouched, common case); only
+              // when there isn't does it degrade to scrolling instead of
+              // erroring.
+              child: LayoutBuilder(builder: (context, constraints) {
+                return SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        for (int i = 0; i < combatState.enemies.length; i++)
+                          EnemyDisplay(
+                            enemy: combatState.enemies[i],
+                            onTap: () => context
+                                .read<CombatCubit>()
+                                .onEnemyTap(context, i),
+                            alignment:
+                                getAlignment(i, combatState.enemies.length),
+                            isTargeted: combatState.status ==
+                                    CombatStatus.targetingSkill &&
+                                (combatState.target.getEnemyIndex() == i ||
+                                    (combatState.target == SkillTarget.all &&
+                                        combatState.enemies[i].currentHealth >
+                                            0)),
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ),
           ),
         ],
       ),
@@ -408,314 +379,6 @@ class EnemyDisplay extends StatelessWidget {
             ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-class EnemyInfoBox extends StatelessWidget {
-  final Enemy enemy;
-
-  const EnemyInfoBox({super.key, required this.enemy});
-
-  @override
-  Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-    final enemyData = context
-        .read<QuestEncounterCubit>()
-        .questZone
-        .enemies
-        .firstWhere((enemyData) => enemyData.id == enemy.enemyDataId);
-    return Padding(
-      padding: EdgeInsets.all(6),
-      child: QvButton(
-        buttonColor: ButtonColor.surfaceContainer,
-        width: double.infinity,
-        height: double.infinity,
-        padding: EdgeInsets.all(10),
-        child: Column(
-          children: [
-            SizedBox(
-              height: 80,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  QvCardBorder(
-                    width: 80,
-                    height: 80,
-                    rarityBorderAssetPath: enemyData.rarity.borderAssetPath,
-                    child: Image.asset(
-                      'images/enemies/${enemyData.id.toLowerCase()}.png',
-                      filterQuality: FilterQuality.none,
-                      width: 80,
-                      height: 80,
-                      scale: .1,
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        QvButton(
-                          height: 36,
-                          buttonColor: rarityButtonColor(enemyData.rarity),
-                          child: Center(
-                              child: Text(
-                            enemyData.name,
-                            style: QvTextStyles.title
-                                .copyWith(color: colorScheme.secondary),
-                          )),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10),
-                          child: QvBar(
-                            currentValue: enemy.currentHealth,
-                            maxValue: enemyData.health,
-                            insetBackgroundType:
-                                QvInsetBackgroundType.secondary,
-                            child: Text(
-                              '${enemy.currentHealth} / ${enemyData.health}',
-                              style: QvTextStyles.detail
-                                  .copyWith(color: Colors.grey[100], height: 1),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: QvFadingScrollable(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      EnemyNextAttackSlice(
-                        attackTimer: context
-                            .read<CombatCubit>()
-                            .state
-                            .attackTimerFor(enemy),
-                        enemyData: enemyData,
-                      ),
-                      EnemyStatusEffectsSlice(),
-                      Text(enemyData.rarity.name.toUpperCase()),
-                      Text(enemyData.enemyType.name.toUpperCase()),
-                      Text(enemyData.immunities
-                          .map((immunity) => immunity.name.toUpperCase())
-                          .join(', ')),
-                      Text(enemyData.resistances
-                          .map((resistance) => resistance.name.toUpperCase())
-                          .join(', ')),
-                      Text(enemyData.weaknesses
-                          .map((weakness) => weakness.name.toUpperCase())
-                          .join(', ')),
-                      Text(enemyData.attacks
-                          .map((attack) => attack.name.toUpperCase())
-                          .join(', ')),
-                      Text(enemyData.drops
-                          .map((drop) => drop.itemName.toUpperCase())
-                          .join(', ')),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            QvButton(
-              width: double.infinity,
-              height: 36,
-              buttonColor: ButtonColor.primary,
-              onTap: () => context.read<CombatCubit>().setIdle(),
-              child: Center(
-                  child: Text(
-                'Close',
-                style:
-                    QvTextStyles.title.copyWith(color: colorScheme.secondary),
-              )),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class EnemyNextAttackSlice extends StatefulWidget {
-  final ScheduledTimer? attackTimer;
-  final EnemyData enemyData;
-
-  const EnemyNextAttackSlice(
-      {super.key, required this.attackTimer, required this.enemyData});
-
-  @override
-  State<EnemyNextAttackSlice> createState() => _EnemyNextAttackSliceState();
-}
-
-class _EnemyNextAttackSliceState extends State<EnemyNextAttackSlice> {
-  Timer? _countdownRefreshTimer;
-
-  @override
-  void initState() {
-    super.initState();
-    // Recomputes nextTriggerAt - now() every second, so the countdown
-    // visibly ticks down rather than jumping in chunks — purely
-    // presentational when nothing has expired yet. But once the timer has
-    // actually reached zero, ticking the display alone would freeze it at
-    // 00:00 forever: nothing else re-triggers reconciliation while this
-    // box is open. Route through CombatCubit.reload() (which reconciles)
-    // instead.
-    _countdownRefreshTimer = Timer.periodic(
-      const Duration(seconds: 1),
-      (_) {
-        if (!mounted) return;
-        final timer = widget.attackTimer;
-        if (timer != null && !timer.nextTriggerAt.isAfter(DateTime.now())) {
-          context.read<CombatCubit>().reload();
-        } else {
-          setState(() {});
-        }
-      },
-    );
-  }
-
-  @override
-  void dispose() {
-    _countdownRefreshTimer?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-    final themeId = context.watch<ThemeCubit>().state.theme.id;
-
-    final timer = widget.attackTimer;
-    EnemyAttackData? attack;
-    String countdownLabel = '—';
-    if (timer != null) {
-      final now = DateTime.now();
-      final remaining = timer.nextTriggerAt.isAfter(now)
-          ? timer.nextTriggerAt.difference(now)
-          : Duration.zero;
-      countdownLabel = DataFormatters.formatCountdown(remaining);
-      attack = widget.enemyData.attacks
-          .firstWhereOrNull((a) => a.name == timer.payload);
-    }
-
-    return Column(
-      children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Padding(
-            padding: EdgeInsets.only(left: 20),
-            child: Text(
-              'Next Attack',
-              style: QvTextStyles.note
-                  .copyWith(color: colorScheme.primary, height: 1),
-              textAlign: TextAlign.left,
-            ),
-          ),
-        ),
-        Container(
-          height: 40,
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: jkAsset(
-                  'images/ui/backgrounds/$themeId/background-secondary.png'),
-              centerSlice: STANDARD_BORDER_SLICE,
-              fit: BoxFit.fill,
-              filterQuality: FilterQuality.none,
-            ),
-          ),
-          child: Flex(
-            direction: Axis.horizontal,
-            children: [
-              Expanded(
-                  child: Text(countdownLabel,
-                      style: QvTextStyles.label
-                          .copyWith(color: Colors.grey[100], height: 1),
-                      textAlign: TextAlign.center)),
-              Container(width: 2, height: 20, color: colorScheme.primary),
-              SizedBox(width: 20),
-              Expanded(
-                  flex: 3,
-                  child: Text(
-                    attack?.name ?? '—',
-                    style: QvTextStyles.label
-                        .copyWith(color: colorScheme.primary, height: 1),
-                  )),
-              Expanded(
-                  child: Text(attack == null ? '—' : '${attack.damage}',
-                      style: QvTextStyles.label
-                          .copyWith(color: colorScheme.primary, height: 1),
-                      textAlign: TextAlign.center)),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class EnemyStatusEffectsSlice extends StatelessWidget {
-  const EnemyStatusEffectsSlice({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final themeId = context.watch<ThemeCubit>().state.theme.id;
-    return Column(
-      children: [
-        Text('Status Effects'),
-        Container(
-          height: 40,
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: jkAsset(
-                  'images/ui/backgrounds/$themeId/background-secondary.png'),
-              centerSlice: STANDARD_BORDER_SLICE,
-              fit: BoxFit.fill,
-              filterQuality: FilterQuality.none,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class PlayerInfoBox extends StatelessWidget {
-  const PlayerInfoBox({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: EdgeInsets.all(20),
-      child: QvButton(
-        buttonColor: ButtonColor.surfaceContainer,
-        width: double.infinity,
-        height: double.infinity,
-        padding: EdgeInsets.all(10),
-        child: Column(
-          children: [
-            Text('Player'),
-            Expanded(child: Container()),
-            QvButton(
-              width: double.infinity,
-              height: 36,
-              buttonColor: ButtonColor.primary,
-              onTap: () => context.read<CombatCubit>().setIdle(),
-              child: Center(
-                  child: Text(
-                'Close',
-                style:
-                    QvTextStyles.title.copyWith(color: colorScheme.secondary),
-              )),
-            ),
-          ],
-        ),
       ),
     );
   }
