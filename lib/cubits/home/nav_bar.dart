@@ -123,7 +123,7 @@ class NavBar extends StatelessWidget {
       return Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage(
+            image: jkAsset(
                 QvBackgroundType.surfaceNoTopNoBottom.assetPath(themeId)),
             centerSlice: STANDARD_BORDER_SLICE,
             fit: BoxFit.fill,

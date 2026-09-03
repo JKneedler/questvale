@@ -84,7 +84,7 @@ class ChestLootView extends StatelessWidget {
                           horizontal: 10, vertical: 10),
                       decoration: BoxDecoration(
                         image: DecorationImage(
-                          image: AssetImage(
+                          image: jkAsset(
                               'images/ui/backgrounds/$themeId/background-secondary.png'),
                           centerSlice: STANDARD_BORDER_SLICE,
                           fit: BoxFit.fill,
