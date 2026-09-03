@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/nav_cubit.dart';
+import 'package:questvale/cubits/home/nav_state.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/home/player_state.dart';
 import 'package:questvale/cubits/world_tab/questing/combat/combat_cubit.dart';
@@ -131,6 +132,17 @@ class CombatView extends StatelessWidget {
                 next.lastEnemyDamageTaken != prev.lastEnemyDamageTaken,
             listener: (context, combatState) =>
                 showDamageToast(context, combatState.lastEnemyDamageTaken!),
+          ),
+          // See NavState.combatRefreshRequestId's doc comment — an admin
+          // action elsewhere (Settings' Reset all skill cooldowns) can
+          // change DB state this page's own CombatCubit has no other way
+          // to learn about while it sits mounted-but-backgrounded under
+          // HomeView's IndexedStack.
+          BlocListener<NavCubit, NavState>(
+            listenWhen: (prev, next) =>
+                next.combatRefreshRequestId != prev.combatRefreshRequestId,
+            listener: (context, navState) =>
+                context.read<CombatCubit>().reload(),
           ),
         ],
         child: BlocBuilder<PlayerCubit, PlayerState>(
@@ -355,6 +367,8 @@ class CombatVitalsAndSkillsCard extends StatelessWidget {
                         combatState.status == CombatStatus.targetingSkill &&
                             combatState.targetingSkill?.id !=
                                 playerSkills.activeSkillSlot1!.id,
+                    cooldownTimer: combatState
+                        .skillCooldownFor(playerSkills.activeSkillSlot1!),
                   ),
                 if (playerSkills.activeSkillSlot2 != null)
                   CombatSkillButton(
@@ -365,6 +379,8 @@ class CombatVitalsAndSkillsCard extends StatelessWidget {
                         combatState.status == CombatStatus.targetingSkill &&
                             combatState.targetingSkill?.id !=
                                 playerSkills.activeSkillSlot2!.id,
+                    cooldownTimer: combatState
+                        .skillCooldownFor(playerSkills.activeSkillSlot2!),
                   ),
                 if (playerSkills.activeSkillSlot3 != null)
                   CombatSkillButton(
@@ -375,6 +391,8 @@ class CombatVitalsAndSkillsCard extends StatelessWidget {
                         combatState.status == CombatStatus.targetingSkill &&
                             combatState.targetingSkill?.id !=
                                 playerSkills.activeSkillSlot3!.id,
+                    cooldownTimer: combatState
+                        .skillCooldownFor(playerSkills.activeSkillSlot3!),
                   ),
                 if (playerSkills.activeSkillSlot4 != null)
                   CombatSkillButton(
@@ -385,6 +403,8 @@ class CombatVitalsAndSkillsCard extends StatelessWidget {
                         combatState.status == CombatStatus.targetingSkill &&
                             combatState.targetingSkill?.id !=
                                 playerSkills.activeSkillSlot4!.id,
+                    cooldownTimer: combatState
+                        .skillCooldownFor(playerSkills.activeSkillSlot4!),
                   ),
                 if (playerSkills.activeSkillSlot5 != null)
                   CombatSkillButton(
@@ -395,6 +415,8 @@ class CombatVitalsAndSkillsCard extends StatelessWidget {
                         combatState.status == CombatStatus.targetingSkill &&
                             combatState.targetingSkill?.id !=
                                 playerSkills.activeSkillSlot5!.id,
+                    cooldownTimer: combatState
+                        .skillCooldownFor(playerSkills.activeSkillSlot5!),
                   ),
               ],
             ),
@@ -407,20 +429,58 @@ class CombatVitalsAndSkillsCard extends StatelessWidget {
   }
 }
 
-class CombatSkillButton extends StatelessWidget {
+class CombatSkillButton extends StatefulWidget {
   final VoidCallback onTap;
   final BaseActiveSkill skill;
   final bool darkened;
+  // Real cooldown timer for this skill (see CombatState.skillCooldowns) —
+  // null means never cast yet, which reads the same as "ready" below.
+  final ScheduledTimer? cooldownTimer;
 
   const CombatSkillButton({
     super.key,
     required this.onTap,
     required this.skill,
     required this.darkened,
+    this.cooldownTimer,
   });
 
   @override
+  State<CombatSkillButton> createState() => _CombatSkillButtonState();
+}
+
+class _CombatSkillButtonState extends State<CombatSkillButton> {
+  // Ticks the cooldown countdown text down live between CombatCubit
+  // reloads — display-only, same pattern as EnemyNextAttackSlice's own
+  // timer below. Nothing needs to be reconciled when a cooldown actually
+  // expires (unlike an enemy attack timer), so this never calls
+  // CombatCubit.reload() itself — the next real reload picks up the DB
+  // state naturally.
+  Timer? _countdownRefreshTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _countdownRefreshTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _countdownRefreshTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final timer = widget.cooldownTimer;
+    final now = DateTime.now();
+    final remaining = timer != null && timer.nextTriggerAt.isAfter(now)
+        ? timer.nextTriggerAt.difference(now)
+        : null;
+    final onCooldown = remaining != null;
+
     // A small level badge sits over the button's bottom-right corner —
     // QvSkillButton itself stays level-agnostic (it's also used by the
     // Skills Gear-Up screen and loadout slot cards, neither of which wants
@@ -431,13 +491,32 @@ class CombatSkillButton extends StatelessWidget {
       clipBehavior: Clip.none,
       children: [
         QvSkillButton(
-          skillIconPath: skill.data.iconPath,
-          onTap: onTap,
+          skillIconPath: widget.skill.data.iconPath,
+          // Untappable while on cooldown — targeting an unusable skill
+          // would otherwise let the player pick a target and only find out
+          // the cast is blocked once they hit Attack (see
+          // CombatService.castSkill's onCooldown result).
+          onTap: onCooldown ? () {} : widget.onTap,
           width: 65,
           height: 65,
-          skillButtonColor: skill.data.buttonColor,
-          darkened: darkened,
+          skillButtonColor: widget.skill.data.buttonColor,
+          darkened: widget.darkened || onCooldown,
         ),
+        if (onCooldown)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Center(
+                child: Text(
+                  DataFormatters.formatCountdown(remaining),
+                  textAlign: TextAlign.center,
+                  style: QvTextStyles.itemTitle.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ),
         Positioned(
           right: -2,
           bottom: -2,
@@ -449,7 +528,7 @@ class CombatSkillButton extends StatelessWidget {
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
-                'Lv ${skill.level}',
+                'Lv ${widget.skill.level}',
                 style: const TextStyle(
                     fontSize: 10, color: Colors.white, height: 1.2),
               ),
@@ -700,6 +779,7 @@ class EnemyInfoBox extends StatelessWidget {
                   QvCardBorder(
                     width: 80,
                     height: 80,
+                    rarityBorderAssetPath: enemyData.rarity.borderAssetPath,
                     child: Image.asset(
                       'images/enemies/${enemyData.id.toLowerCase()}.png',
                       filterQuality: FilterQuality.none,
@@ -878,7 +958,7 @@ class _EnemyNextAttackSliceState extends State<EnemyNextAttackSlice> {
           padding: EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: AssetImage(
+              image: jkAsset(
                   'images/ui/backgrounds/$themeId/background-secondary.png'),
               centerSlice: STANDARD_BORDER_SLICE,
               fit: BoxFit.fill,
@@ -928,7 +1008,7 @@ class EnemyStatusEffectsSlice extends StatelessWidget {
           height: 40,
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: AssetImage(
+              image: jkAsset(
                   'images/ui/backgrounds/$themeId/background-secondary.png'),
               centerSlice: STANDARD_BORDER_SLICE,
               fit: BoxFit.fill,

@@ -48,6 +48,12 @@ class CombatState extends Equatable {
   // reloaded alongside enemies in CombatCubit.reload().
   final Map<String, ScheduledTimer> attackTimers;
 
+  // Real skill-cooldown timers for this encounter, keyed by skill id
+  // (BaseActiveSkill.id / SkillData.id, which are the same string — see
+  // CombatService.buildCooldownTimer's payload) — reloaded alongside
+  // attackTimers in CombatCubit.reload().
+  final Map<String, ScheduledTimer> skillCooldowns;
+
   // Total HP just lost to enemy attacks resolved by the most recent
   // reload() call — null when that call resolved no attacks. A
   // BlocListener uses this to fire a one-shot damage-taken toast.
@@ -60,10 +66,14 @@ class CombatState extends Equatable {
     this.targetingSkill,
     this.inspectingEnemyIndex = -1,
     this.attackTimers = const {},
+    this.skillCooldowns = const {},
     this.lastEnemyDamageTaken,
   });
 
   ScheduledTimer? attackTimerFor(Enemy enemy) => attackTimers[enemy.id];
+
+  ScheduledTimer? skillCooldownFor(BaseActiveSkill skill) =>
+      skillCooldowns[skill.id];
 
   // lastEnemyDamageTaken deliberately isn't merged with `?? this.field` like
   // the rest of these — it's a one-shot event, not persistent state, so
@@ -77,6 +87,7 @@ class CombatState extends Equatable {
     BaseActiveSkill? targetingSkill,
     int? inspectingEnemyIndex,
     Map<String, ScheduledTimer>? attackTimers,
+    Map<String, ScheduledTimer>? skillCooldowns,
     int? lastEnemyDamageTaken,
   }) {
     return CombatState(
@@ -87,6 +98,7 @@ class CombatState extends Equatable {
         inspectingEnemyIndex:
             inspectingEnemyIndex ?? this.inspectingEnemyIndex,
         attackTimers: attackTimers ?? this.attackTimers,
+        skillCooldowns: skillCooldowns ?? this.skillCooldowns,
         lastEnemyDamageTaken: lastEnemyDamageTaken);
   }
 
@@ -98,6 +110,7 @@ class CombatState extends Equatable {
         targetingSkill,
         inspectingEnemyIndex,
         attackTimers,
+        skillCooldowns,
         lastEnemyDamageTaken,
       ];
 }

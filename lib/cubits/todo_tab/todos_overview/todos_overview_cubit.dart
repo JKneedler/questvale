@@ -76,6 +76,7 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
     // above, rather than a dedicated app-lifecycle/background-timer hook.
     var reconciledCharacter = character;
     Map<String, ScheduledTimer> attackTimers = const {};
+    Map<String, ScheduledTimer> skillCooldowns = const {};
     int? damageTaken;
     if (encounter != null &&
         encounter.completedAt == null &&
@@ -101,6 +102,17 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
       damageTaken = reconciliation.totalDamageDealt > 0
           ? reconciliation.totalDamageDealt
           : null;
+
+      // Real skill-cooldown timers for this encounter, keyed by skill id —
+      // same "filter the encounter's mixed-kind timers down to one kind"
+      // idiom EnemyAttackSchedulingService.reconcile uses for enemyMove.
+      skillCooldowns = {
+        for (final timer in await enemyAttackSchedulingService
+            .scheduledTimerRepository
+            .getTimersByEncounterId(encounter.id))
+          if (timer.kind == ScheduledTimerKind.skillCooldown)
+            timer.payload: timer
+      };
     }
 
     if (!isClosed) {
@@ -124,6 +136,7 @@ class TodosOverviewCubit extends Cubit<TodosOverviewState> {
           activeEncounter: encounter,
           activeQuestZone: questZone,
           enemyAttackTimers: attackTimers,
+          skillCooldowns: skillCooldowns,
           lastEnemyDamageTaken: damageTaken,
         ),
       );

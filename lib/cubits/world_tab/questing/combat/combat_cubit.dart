@@ -5,6 +5,7 @@ import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/world_tab/questing/combat/combat_state.dart';
 import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/models/player_combat_stats.dart';
+import 'package:questvale/data/models/scheduled_timer.dart';
 import 'package:questvale/data/providers/game_data_models/quest_zone.dart';
 import 'package:questvale/data/providers/game_data_models/skill_data.dart';
 import 'package:questvale/data/repositories/character_repository.dart';
@@ -84,6 +85,18 @@ class CombatCubit extends Cubit<CombatState> {
     encounter = await encounterRepository.getEncounterById(encounterId);
     await playerCubit.loadCharacter();
 
+    // Real skill-cooldown timers for this encounter, keyed by skill id.
+    // getTimersByEncounterId returns every kind sharing this encounter (see
+    // EnemyAttackSchedulingService.reconcile's own doc comment) — filter to
+    // skillCooldown, the one kind this cubit surfaces directly rather than
+    // reconciling (a cooldown expiring has no side effect to apply; it just
+    // makes the skill castable again).
+    final skillCooldowns = {
+      for (final timer in await scheduledTimerRepository
+          .getTimersByEncounterId(encounterId))
+        if (timer.kind == ScheduledTimerKind.skillCooldown) timer.payload: timer
+    };
+
     final enemies = encounter.enemies;
     CombatStatus newStatus = state.status;
     if (state.status != CombatStatus.complete) {
@@ -101,6 +114,7 @@ class CombatCubit extends Cubit<CombatState> {
         target: SkillTarget.none,
         inspectingEnemyIndex: -1,
         attackTimers: reconciliation.attackTimersByEnemyId,
+        skillCooldowns: skillCooldowns,
         lastEnemyDamageTaken: reconciliation.totalDamageDealt > 0
             ? reconciliation.totalDamageDealt
             : null,
