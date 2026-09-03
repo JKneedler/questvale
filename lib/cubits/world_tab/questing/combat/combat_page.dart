@@ -481,12 +481,6 @@ class _CombatSkillButtonState extends State<CombatSkillButton> {
         : null;
     final onCooldown = remaining != null;
 
-    // A small level badge sits over the button's bottom-right corner —
-    // QvSkillButton itself stays level-agnostic (it's also used by the
-    // Skills Gear-Up screen and loadout slot cards, neither of which wants
-    // this badge baked in), so it's layered on here instead. IgnorePointer
-    // keeps the badge from stealing the tap QvSkillButton's own internal
-    // GestureDetector would otherwise handle.
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -517,24 +511,6 @@ class _CombatSkillButtonState extends State<CombatSkillButton> {
               ),
             ),
           ),
-        Positioned(
-          right: -2,
-          bottom: -2,
-          child: IgnorePointer(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.75),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                'Lv ${widget.skill.level}',
-                style: const TextStyle(
-                    fontSize: 10, color: Colors.white, height: 1.2),
-              ),
-            ),
-          ),
-        ),
       ],
     );
   }
