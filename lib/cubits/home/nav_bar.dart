@@ -17,12 +17,13 @@ class NavBar extends StatelessWidget {
   final ValueChanged<int> onTap;
   final bool showSeparator;
 
-  // True while CombatPage is showing (see NavState.showCombatNavBackground's
-  // own doc comment) — swaps the flat colorScheme.surface fill for a
-  // 9-sliced QvBackgroundType.surfaceNoTopNoBottom texture instead, so the
-  // nav bar's own left/right edge lines continue
-  // CombatVitalsAndSkillsCard's surfaceNoBottom texture right above it,
-  // rather than the border lines stopping dead where that card ends.
+  // True for the whole quest-encounter flow (see
+  // NavState.showCombatNavBackground's own doc comment) — swaps the flat
+  // colorScheme.surface fill for a 9-sliced QvBackgroundType.
+  // surfaceNoTopNoBottom texture instead, so the nav bar's own left/right
+  // edge lines continue QuestVitalsAndSkillsCard's surfaceNoBottom texture
+  // right above it, rather than the border lines stopping dead where that
+  // card ends.
   final bool useCombatBackground;
 
   // Width of the sliding QvInsetBackground highlight and the height of the

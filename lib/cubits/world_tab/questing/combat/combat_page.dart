@@ -6,14 +6,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/nav_cubit.dart';
 import 'package:questvale/cubits/home/nav_state.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
-import 'package:questvale/cubits/home/player_state.dart';
 import 'package:questvale/cubits/world_tab/questing/combat/combat_cubit.dart';
 import 'package:questvale/cubits/world_tab/questing/combat/combat_state.dart';
 import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_encounter_cubit.dart';
 import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_flee_confirmation_modal.dart';
-import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/enemy.dart';
-import 'package:questvale/data/models/mage_motes.dart';
 import 'package:questvale/data/models/player_combat_stats.dart';
 import 'package:questvale/data/models/scheduled_timer.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_attack_data.dart';
@@ -23,10 +20,7 @@ import 'package:questvale/data/skills/base_active_skill.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/data_formatters.dart';
 import 'package:questvale/helpers/shared_enums.dart';
-import 'package:questvale/widgets/qv_character_vitals_row.dart';
 import 'package:questvale/widgets/qv_damage_toast.dart';
-import 'package:questvale/widgets/qv_skill_button.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 // Shared with TargetEnemySkillBox's effect-line list below — same
@@ -50,56 +44,12 @@ String _cooldownText(double? cooldownHours) {
   return '${wholeHours}h ${minutes}m';
 }
 
-class CombatPage extends StatefulWidget {
-  const CombatPage({super.key, required this.encounterId});
-  final String encounterId;
-
-  @override
-  State<CombatPage> createState() => _CombatPageState();
-}
-
-// StatefulWidget (rather than the StatelessWidget this used to be) purely
-// to hook NavBar's own useCombatBackground over its mounted lifetime — see
-// NavState.showCombatNavBackground's doc comment. NavCubit is captured
-// once in initState rather than re-read via context in dispose, since
-// reading InheritedWidgets from a State that's already mid-teardown is
-// fragile; a plain captured reference isn't. The toggle-on call is
-// deferred a frame (addPostFrameCallback) because emitting into NavCubit
-// synchronously from initState — while this exact frame's build is still
-// in progress — risks flutter_bloc's BlocBuilder above (HomeView's own)
-// calling setState mid-build; the mounted check guards the rare case
-// where this page unmounts again before that deferred callback fires.
-class _CombatPageState extends State<CombatPage> {
-  late final NavCubit _navCubit;
-
-  @override
-  void initState() {
-    super.initState();
-    _navCubit = context.read<NavCubit>();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _navCubit.setShowCombatNavBackground(true);
-    });
-  }
-
-  @override
-  void dispose() {
-    _navCubit.setShowCombatNavBackground(false);
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocProvider<CombatCubit>(
-        create: (context) => CombatCubit(
-              encounterId: widget.encounterId,
-              questZone: context.read<QuestEncounterCubit>().questZone,
-              playerCubit: context.read<PlayerCubit>(),
-              db: context.read<Database>(),
-            ),
-        child: const CombatView());
-  }
-}
-
+// CombatCubit is now provided by QuestEncounterView, not created here — see
+// its own doc comment. Live combat's own step in the quest flow no longer
+// needs a StatefulWidget of its own for this: NavCubit's
+// setShowCombatNavBackground toggle (formerly hooked to this page's own
+// initState/dispose) now spans the whole quest-encounter flow instead, and
+// belongs to QuestEncounterView for the same reason.
 class CombatView extends StatelessWidget {
   const CombatView({super.key});
 
@@ -145,31 +95,13 @@ class CombatView extends StatelessWidget {
                 context.read<CombatCubit>().reload(),
           ),
         ],
-        child: BlocBuilder<PlayerCubit, PlayerState>(
-            builder: (context, playerState) {
-          final character = playerState.character;
-          final playerSkills = playerState.playerSkills;
-          final playerCombatStats = playerState.playerCombatStats;
-          if (character == null ||
-              playerSkills == null ||
-              playerCombatStats == null) {
-            return const SizedBox.shrink();
-          }
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _CombatActionBar(combatState: combatState),
-              BattleFieldDisplay(),
-              const SizedBox(height: 10),
-              CombatVitalsAndSkillsCard(
-                character: character,
-                mageMotes: playerState.mageMotes,
-                playerSkills: playerSkills,
-                combatState: combatState,
-              ),
-            ],
-          );
-        }),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _CombatActionBar(combatState: combatState),
+            BattleFieldDisplay(),
+          ],
+        ),
       );
     });
   }
@@ -268,250 +200,6 @@ class _CombatActionBar extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-// Skill buttons + health/motes, as one list-item area — no gap below it
-// down to the nav bar (see CombatView.build, which used to add a trailing
-// spacer here), and a QvBackground(surfaceNoBottom) shell instead of a
-// bordered QvButton card: that texture's flat, cap-free bottom edge is
-// what actually sells "extension of the nav bar" — a bordered button shape
-// would still read as a floating card even with the gap removed. Colored
-// off colorScheme.surface specifically (a new button-surface-no-bottom.png
-// per theme, not the surfaceContainer default QvBackground normally uses)
-// because that's the exact color NavBar itself paints its own Material
-// with (see nav_bar.dart) — matching it, not just approximating it, is
-// what makes the seam disappear.
-//
-// Health/motes still reuses CombatStatusCard's exact CharacterVitalsRow
-// (todos_overview/combat_status_card.dart) so the two read as the same
-// vitals language despite the different shell. Skill buttons stay the
-// real CombatSkillButton (skill icon + level badge, live targeting/
-// darkened state) rather than CombatStatusCard's placeholder cooldown
-// buttons — there's a real cooldown/target flow here already. Skills sit
-// above vitals here (unlike CombatStatusCard's own order), per feedback —
-// they're the primary action in this card.
-//
-// AP sits as a small top-right badge above the skill row rather than
-// between health and motes (its old spot, and CombatStatusCard's own
-// _ApBadge placement) — chosen over two other options (a slim column
-// back between Health/Motes, or a HUD chip up near "Encounter N / M")
-// because AP is what gates tapping a skill, so pairing it visually with
-// the skill row it limits reads clearer than grouping it with the
-// vitals row below.
-class CombatVitalsAndSkillsCard extends StatelessWidget {
-  const CombatVitalsAndSkillsCard({
-    super.key,
-    required this.character,
-    required this.mageMotes,
-    required this.playerSkills,
-    required this.combatState,
-  });
-
-  final Character character;
-  final MageMotes? mageMotes;
-  final PlayerSkills playerSkills;
-  final CombatState combatState;
-
-  @override
-  Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-    return QvBackground(
-      width: double.infinity,
-      type: QvBackgroundType.surfaceNoBottom,
-      padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Matches every other Town Square list-item card's own
-              // leading sectionHeader label (Equipment, Weapon &
-              // Artifact, Potions) — this card didn't have one yet, and
-              // it fills what was otherwise a big blank stretch to the
-              // AP badge's left.
-              Expanded(
-                child: Text(
-                  'Skills',
-                  style: QvTextStyles.sectionHeader
-                      .copyWith(color: colorScheme.onSurface),
-                ),
-              ),
-              QvButton(
-                height: 26,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Center(
-                  child: Text(
-                    '${character.actionPoints} AP',
-                    style: QvTextStyles.itemTitle
-                        .copyWith(color: colorScheme.secondary),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          SizedBox(
-            height: 65,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                if (playerSkills.activeSkillSlot1 != null)
-                  CombatSkillButton(
-                    onTap: () => context.read<CombatCubit>().onSkillButtonTap(
-                        context, playerSkills.activeSkillSlot1!),
-                    skill: playerSkills.activeSkillSlot1!,
-                    darkened:
-                        combatState.status == CombatStatus.targetingSkill &&
-                            combatState.targetingSkill?.id !=
-                                playerSkills.activeSkillSlot1!.id,
-                    cooldownTimer: combatState
-                        .skillCooldownFor(playerSkills.activeSkillSlot1!),
-                  ),
-                if (playerSkills.activeSkillSlot2 != null)
-                  CombatSkillButton(
-                    onTap: () => context.read<CombatCubit>().onSkillButtonTap(
-                        context, playerSkills.activeSkillSlot2!),
-                    skill: playerSkills.activeSkillSlot2!,
-                    darkened:
-                        combatState.status == CombatStatus.targetingSkill &&
-                            combatState.targetingSkill?.id !=
-                                playerSkills.activeSkillSlot2!.id,
-                    cooldownTimer: combatState
-                        .skillCooldownFor(playerSkills.activeSkillSlot2!),
-                  ),
-                if (playerSkills.activeSkillSlot3 != null)
-                  CombatSkillButton(
-                    onTap: () => context.read<CombatCubit>().onSkillButtonTap(
-                        context, playerSkills.activeSkillSlot3!),
-                    skill: playerSkills.activeSkillSlot3!,
-                    darkened:
-                        combatState.status == CombatStatus.targetingSkill &&
-                            combatState.targetingSkill?.id !=
-                                playerSkills.activeSkillSlot3!.id,
-                    cooldownTimer: combatState
-                        .skillCooldownFor(playerSkills.activeSkillSlot3!),
-                  ),
-                if (playerSkills.activeSkillSlot4 != null)
-                  CombatSkillButton(
-                    onTap: () => context.read<CombatCubit>().onSkillButtonTap(
-                        context, playerSkills.activeSkillSlot4!),
-                    skill: playerSkills.activeSkillSlot4!,
-                    darkened:
-                        combatState.status == CombatStatus.targetingSkill &&
-                            combatState.targetingSkill?.id !=
-                                playerSkills.activeSkillSlot4!.id,
-                    cooldownTimer: combatState
-                        .skillCooldownFor(playerSkills.activeSkillSlot4!),
-                  ),
-                if (playerSkills.activeSkillSlot5 != null)
-                  CombatSkillButton(
-                    onTap: () => context.read<CombatCubit>().onSkillButtonTap(
-                        context, playerSkills.activeSkillSlot5!),
-                    skill: playerSkills.activeSkillSlot5!,
-                    darkened:
-                        combatState.status == CombatStatus.targetingSkill &&
-                            combatState.targetingSkill?.id !=
-                                playerSkills.activeSkillSlot5!.id,
-                    cooldownTimer: combatState
-                        .skillCooldownFor(playerSkills.activeSkillSlot5!),
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-          CharacterVitalsRow(character: character, mageMotes: mageMotes),
-        ],
-      ),
-    );
-  }
-}
-
-class CombatSkillButton extends StatefulWidget {
-  final VoidCallback onTap;
-  final BaseActiveSkill skill;
-  final bool darkened;
-  // Real cooldown timer for this skill (see CombatState.skillCooldowns) —
-  // null means never cast yet, which reads the same as "ready" below.
-  final ScheduledTimer? cooldownTimer;
-
-  const CombatSkillButton({
-    super.key,
-    required this.onTap,
-    required this.skill,
-    required this.darkened,
-    this.cooldownTimer,
-  });
-
-  @override
-  State<CombatSkillButton> createState() => _CombatSkillButtonState();
-}
-
-class _CombatSkillButtonState extends State<CombatSkillButton> {
-  // Ticks the cooldown countdown text down live between CombatCubit
-  // reloads — display-only, same pattern as EnemyNextAttackSlice's own
-  // timer below. Nothing needs to be reconciled when a cooldown actually
-  // expires (unlike an enemy attack timer), so this never calls
-  // CombatCubit.reload() itself — the next real reload picks up the DB
-  // state naturally.
-  Timer? _countdownRefreshTimer;
-
-  @override
-  void initState() {
-    super.initState();
-    _countdownRefreshTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) setState(() {});
-    });
-  }
-
-  @override
-  void dispose() {
-    _countdownRefreshTimer?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final timer = widget.cooldownTimer;
-    final now = DateTime.now();
-    final remaining = timer != null && timer.nextTriggerAt.isAfter(now)
-        ? timer.nextTriggerAt.difference(now)
-        : null;
-    final onCooldown = remaining != null;
-
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        QvSkillButton(
-          skillIconPath: widget.skill.data.iconPath,
-          // Untappable while on cooldown — targeting an unusable skill
-          // would otherwise let the player pick a target and only find out
-          // the cast is blocked once they hit Attack (see
-          // CombatService.castSkill's onCooldown result).
-          onTap: onCooldown ? () {} : widget.onTap,
-          width: 65,
-          height: 65,
-          skillButtonColor: widget.skill.data.buttonColor,
-          darkened: widget.darkened || onCooldown,
-        ),
-        if (onCooldown)
-          Positioned.fill(
-            child: IgnorePointer(
-              child: Center(
-                child: Text(
-                  DataFormatters.formatCountdown(remaining),
-                  textAlign: TextAlign.center,
-                  style: QvTextStyles.itemTitle.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ),
-          ),
-      ],
     );
   }
 }

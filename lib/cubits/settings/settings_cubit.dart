@@ -194,9 +194,9 @@ class SettingsCubit extends Cubit<SettingsState> {
   // combat) reads as ready again. The home overview's Skills row picks this
   // up on its own next TodosOverviewCubit.loadCharacter() (its periodic
   // countdown ticker already reloads once a timer it's watching expires,
-  // and it re-reads on tab focus regardless), but a CombatCubit — if
-  // CombatPage happens to be mounted right now — has no such trigger of its
-  // own for a change that didn't come from combat, so it's nudged directly
+  // and it re-reads on tab focus regardless), but a CombatCubit — if a
+  // combat encounter happens to be live right now — has no such trigger of
+  // its own for a change that didn't come from combat, so it's nudged directly
   // via NavCubit's cross-tab signal (see NavState.combatRefreshRequestId).
   Future<void> resetAllSkillCooldowns() async {
     await scheduledTimerRepository

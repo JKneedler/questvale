@@ -3,25 +3,28 @@ import 'package:equatable/equatable.dart';
 class NavState extends Equatable {
   final int tab;
 
-  // True while CombatPage (lib/cubits/world_tab/questing/combat/
-  // combat_page.dart) is mounted — NavBar reads this to swap its flat
-  // colorScheme.surface fill for the 9-sliced surfaceNoTopNoBottom texture,
-  // so the nav bar's edge lines continue CombatVitalsAndSkillsCard's own
-  // left/right border rather than stopping dead where the card ends.
-  // Toggled by CombatPage's own State (initState/dispose), not read
+  // True while QuestEncounterView (lib/cubits/world_tab/questing/
+  // quest_encounter/quest_encounter_page.dart) is mounted — i.e. for the
+  // whole quest-encounter flow, not just live combat — NavBar reads this to
+  // swap its flat colorScheme.surface fill for the 9-sliced
+  // surfaceNoTopNoBottom texture, so the nav bar's edge lines continue
+  // QuestVitalsAndSkillsCard's own left/right border (a constant presence
+  // across that same flow) rather than stopping dead where the card ends.
+  // Toggled by QuestEncounterView's own State (initState/dispose), not read
   // anywhere else.
   final bool showCombatNavBackground;
 
   // Bumped by NavCubit.requestCombatRefresh() — a lightweight cross-tab
   // signal for "an admin action changed something CombatCubit's live state
   // won't otherwise notice" (e.g. Settings' Reset all skill cooldowns).
-  // NavCubit is the one cubit both SettingsPage and CombatPage already sit
-  // under (see HomeView's MultiBlocProvider), so it doubles as the signal
-  // channel rather than inventing a dedicated event bus — CombatPage isn't
-  // reachable directly from Settings since IndexedStack keeps every tab's
-  // Navigator in its own sibling subtree. Just a counter (not a bool) so
-  // two requests in a row without CombatPage rebuilding between them still
-  // both register as changes.
+  // NavCubit is the one cubit both SettingsPage and QuestEncounterView
+  // already sit under (see HomeView's MultiBlocProvider), so it doubles as
+  // the signal channel rather than inventing a dedicated event bus — a live
+  // CombatCubit (only provided while a combat encounter is actually in
+  // progress — see QuestEncounterView's build) isn't reachable directly
+  // from Settings since IndexedStack keeps every tab's Navigator in its own
+  // sibling subtree. Just a counter (not a bool) so two requests in a row
+  // without an intervening rebuild still both register as changes.
   final int combatRefreshRequestId;
 
   const NavState({

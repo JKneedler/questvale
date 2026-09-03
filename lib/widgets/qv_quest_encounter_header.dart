@@ -27,7 +27,7 @@ class QvQuestEncounterHeader extends StatelessWidget {
   final int curEncounterNum;
   final int numEncountersCurFloor;
 
-  // False only while CombatPage's own action-button bar (Flee/Potions/Bag,
+  // False only while live combat's own action-button bar (Flee/Potions/Bag,
   // see combat_page.dart's _CombatActionBar) is about to render directly
   // below this with no gap — that bar carries the actual cap/bottom
   // border instead, so this bar renders flat (surfaceNoTopNoBottom) to
