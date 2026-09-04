@@ -777,50 +777,37 @@ class _SkillTargetContentState extends State<_SkillTargetContent> {
                   // Cost/cooldown moved here from the description column,
                   // per feedback — reads as a property of the skill/icon
                   // itself rather than another description-column line.
-                  // Two separate QvInsetBackground boxes (surfaceContainer —
-                  // same fill colorScheme.surfaceContainer uses everywhere
-                  // else, e.g. this card's own Cancel button below) rather
-                  // than one shared box with an internal divider.
-                  // QvBarSize.small swaps in the same smaller-bordered
-                  // background QvBar's own compact bars use (20px min,
-                  // vs the standard inset's 36px) — a plain
-                  // QvInsetBackground reads oversized for a short "1 AP"/
-                  // "30m" label. Text is wrapped in Center since Container
-                  // only aligns its child top-left by default; without it,
-                  // a box taller than its text (however slightly) reads as
-                  // top-aligned instead of centered. Narrower than the
-                  // icon and back to a smaller font, per feedback — at the
-                  // icon's own width/label-size these were overshadowing
-                  // it rather than reading as a secondary detail beneath it.
-                  SizedBox(
-                    width: 50,
+                  // Back to one shared QvInsetBackground with a thin
+                  // primary-colored divider (rather than two separate
+                  // boxes) now that it's using QvBarSize.small's shorter
+                  // 20px-minimum border — at that size the combined box no
+                  // longer reads oversized the way it did against the
+                  // standard 36px-minimum border early on.
+                  QvInsetBackground(
+                    width: 54,
+                    type: QvInsetBackgroundType.surfaceContainer,
+                    size: QvBarSize.small,
+                    padding: const EdgeInsets.symmetric(vertical: 5),
                     child: Column(
                       children: [
-                        QvInsetBackground(
-                          width: 50,
-                          type: QvInsetBackgroundType.surfaceContainer,
-                          size: QvBarSize.small,
+                        Text('${skill.data.apCost ?? 0} AP',
+                            textAlign: TextAlign.center,
+                            style: QvTextStyles.note
+                                .copyWith(color: colorScheme.onSurface)),
+                        Padding(
                           padding: const EdgeInsets.symmetric(vertical: 3),
                           child: Center(
-                            child: Text('${skill.data.apCost ?? 0} AP',
-                                textAlign: TextAlign.center,
-                                style: QvTextStyles.note
-                                    .copyWith(color: colorScheme.onSurface)),
+                            child: Container(
+                              width: 24,
+                              height: 2,
+                              color: colorScheme.primary,
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        QvInsetBackground(
-                          width: 50,
-                          type: QvInsetBackgroundType.surfaceContainer,
-                          size: QvBarSize.small,
-                          padding: const EdgeInsets.symmetric(vertical: 3),
-                          child: Center(
-                            child: Text(_cooldownText(skill.data.cooldown),
-                                textAlign: TextAlign.center,
-                                style: QvTextStyles.note
-                                    .copyWith(color: colorScheme.onSurface)),
-                          ),
-                        ),
+                        Text(_cooldownText(skill.data.cooldown),
+                            textAlign: TextAlign.center,
+                            style: QvTextStyles.note
+                                .copyWith(color: colorScheme.onSurface)),
                       ],
                     ),
                   ),
