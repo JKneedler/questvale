@@ -130,7 +130,11 @@ class QuestVitalsAndSkillsCard extends StatelessWidget {
     } else if (isTargetingSkill) {
       content = SizedBox(
         height: _skillTargetHeight,
-        child: _SkillTargetContent(skill: combatState.targetingSkill!),
+        child: _SkillTargetContent(
+          skill: combatState.targetingSkill!,
+          cooldownTimer:
+              combatState.skillCooldownFor(combatState.targetingSkill!),
+        ),
       );
     } else {
       content = _NormalContent(
@@ -706,9 +710,41 @@ String _cooldownText(double? cooldownHours) {
 // same onAttackButtonTap the old "Attack" button called — tapping an
 // enemy to (re)target it is untouched, still CombatCubit.onEnemyTap via
 // EnemyDisplay in combat_page.dart.
-class _SkillTargetContent extends StatelessWidget {
+//
+// A skill on cooldown can still be selected here (CombatSkillButton's own
+// onTap is no longer cooldown-gated — see that class) — the icon carries
+// the same live countdown overlay it shows in the Skills row, and Confirm
+// itself is what's disabled (QvButton's own onTap: null + darkened, same
+// "disabled" idiom used elsewhere) rather than blocking selection
+// entirely, so the player can still read a cooling-down skill's
+// description without it staying invisible until ready.
+class _SkillTargetContent extends StatefulWidget {
   final BaseActiveSkill skill;
-  const _SkillTargetContent({required this.skill});
+  final ScheduledTimer? cooldownTimer;
+  const _SkillTargetContent({required this.skill, this.cooldownTimer});
+
+  @override
+  State<_SkillTargetContent> createState() => _SkillTargetContentState();
+}
+
+class _SkillTargetContentState extends State<_SkillTargetContent> {
+  // Same live-ticking idiom as _CombatSkillButtonState's own timer — purely
+  // display, recomputed from cooldownTimer.nextTriggerAt each second.
+  Timer? _countdownRefreshTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _countdownRefreshTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _countdownRefreshTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -718,17 +754,45 @@ class _SkillTargetContent extends StatelessWidget {
     if (playerCombatStats == null) {
       return const SizedBox.shrink();
     }
+    final skill = widget.skill;
+    final timer = widget.cooldownTimer;
+    final now = DateTime.now();
+    final remaining = timer != null && timer.nextTriggerAt.isAfter(now)
+        ? timer.nextTriggerAt.difference(now)
+        : null;
+    final onCooldown = remaining != null;
+
     return Column(
       children: [
         Expanded(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              QvSkillButton(
-                skillIconPath: skill.data.iconPath,
-                skillButtonColor: skill.data.buttonColor,
-                width: 65,
-                height: 65,
+              Stack(
+                children: [
+                  QvSkillButton(
+                    skillIconPath: skill.data.iconPath,
+                    skillButtonColor: skill.data.buttonColor,
+                    width: 65,
+                    height: 65,
+                    darkened: onCooldown,
+                  ),
+                  if (onCooldown)
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: Center(
+                          child: Text(
+                            DataFormatters.formatCountdown(remaining),
+                            textAlign: TextAlign.center,
+                            style: QvTextStyles.caption.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -796,8 +860,15 @@ class _SkillTargetContent extends StatelessWidget {
               child: QvButton(
                 height: 40,
                 buttonColor: ButtonColor.primary,
-                onTap: () =>
-                    context.read<CombatCubit>().onAttackButtonTap(context),
+                darkened: onCooldown,
+                // Passing null (rather than a no-op closure) also drops
+                // QvButton's own press-down animation, so a cooling-down
+                // skill's Confirm button doesn't even flash pressed —
+                // reads as truly inert, not just "does nothing."
+                onTap: onCooldown
+                    ? null
+                    : () =>
+                        context.read<CombatCubit>().onAttackButtonTap(context),
                 child: Center(
                   child: Icon(Symbols.check,
                       color: colorScheme.secondary, size: 24),
@@ -819,6 +890,7 @@ class _SkillTargetContent extends StatelessWidget {
   // shield), so this can't drift from what actually lands when Confirm is
   // tapped.
   List<String> _effectLines(PlayerCombatStats playerCombatStats) {
+    final skill = widget.skill;
     final lines = <String>[];
 
     final damage = skill.data.damageEffect;
@@ -905,11 +977,13 @@ class _CombatSkillButtonState extends State<CombatSkillButton> {
       children: [
         QvSkillButton(
           skillIconPath: widget.skill.data.iconPath,
-          // Untappable while on cooldown — targeting an unusable skill
-          // would otherwise let the player pick a target and only find out
-          // the cast is blocked once they hit Attack (see
-          // CombatService.castSkill's onCooldown result).
-          onTap: onCooldown ? () {} : widget.onTap,
+          // Tappable even on cooldown now — selecting it opens
+          // _SkillTargetContent same as any other skill (icon + live
+          // countdown carried over there too), which disables its own
+          // Confirm button instead of blocking selection at this level.
+          // Previously untappable here, which hid a cooling-down skill's
+          // description/effects entirely until it was ready.
+          onTap: widget.onTap,
           width: 65,
           height: 65,
           skillButtonColor: widget.skill.data.buttonColor,
