@@ -684,40 +684,47 @@ String _cooldownText(double? cooldownHours) {
   return '${wholeHours}h ${minutes}m';
 }
 
-// Highlights every case-sensitive, whole-word match of `word` in `text` in
-// `highlightColor`, leaving the rest at `baseStyle` — used to color a
-// skill's damage-type name (e.g. "Fire") within its own combat
-// description. Case-sensitive and whole-word rather than a plain
-// contains/replace is deliberate: skill descriptions only capitalize an
-// element's name when naming the actual mechanic ("Fire Damage", "Fire
-// mote"), and use it lowercase in flavor text ("a bolt of fire", "protective
-// ice") — matching the capitalized form highlights the mechanic callouts
-// (damage AND mote mentions alike, since both are the same color-coded
-// element as the mote pips elsewhere in this UI) without touching the
-// flavor text around them. `word`/`highlightColor` are null for a skill
-// with no damage component (Frost Armor) or no fixed color for its type
-// (weaponType, e.g. Arcane Bolt) — either falls back to a plain Text.
-Widget _highlightedDescription(String text, TextStyle baseStyle,
-    {String? word, Color? highlightColor}) {
-  if (word == null || word.isEmpty || highlightColor == null) {
+// One "find this, style it differently" rule for _highlightedDescription
+// below — pattern's matches get `style` layered on top of the paragraph's
+// base style, everything else stays plain.
+class _DescriptionHighlight {
+  final RegExp pattern;
+  final TextStyle style;
+  const _DescriptionHighlight(this.pattern, this.style);
+}
+
+// Builds a skill's combatDescription into a Text (no highlights) or a
+// Text.rich (one or more) — every match of every rule in `highlights` gets
+// that rule's style layered over `baseStyle`, everything else stays plain.
+// Rules are expected not to overlap (word-boundary element/status names vs.
+// a digits-only number pattern never do here); a later rule's match starting
+// inside an earlier one's is silently dropped rather than corrupting the
+// span order.
+Widget _highlightedDescription(
+    String text, TextStyle baseStyle, List<_DescriptionHighlight> highlights) {
+  if (highlights.isEmpty) {
     return Text(text, style: baseStyle);
   }
-  final matches =
-      RegExp('\\b${RegExp.escape(word)}\\b').allMatches(text).toList();
+
+  final matches = <MapEntry<Match, TextStyle>>[
+    for (final highlight in highlights)
+      for (final match in highlight.pattern.allMatches(text))
+        MapEntry(match, highlight.style),
+  ]..sort((a, b) => a.key.start.compareTo(b.key.start));
   if (matches.isEmpty) {
     return Text(text, style: baseStyle);
   }
 
   final spans = <TextSpan>[];
   var cursor = 0;
-  for (final match in matches) {
+  for (final entry in matches) {
+    final match = entry.key;
+    if (match.start < cursor) continue;
     if (match.start > cursor) {
       spans.add(TextSpan(text: text.substring(cursor, match.start)));
     }
     spans.add(TextSpan(
-      text: text.substring(match.start, match.end),
-      style: TextStyle(color: highlightColor),
-    ));
+        text: text.substring(match.start, match.end), style: entry.value));
     cursor = match.end;
   }
   if (cursor < text.length) {
@@ -730,6 +737,40 @@ Widget _highlightedDescription(String text, TextStyle baseStyle,
   // through that merge. Text.rich goes through the same DefaultTextStyle
   // merge plain Text does.
   return Text.rich(TextSpan(style: baseStyle, children: spans));
+}
+
+// Matches the real, already-computed number combatDescription splices into
+// its template (see BaseActiveSkill.combatDescription), wherever it
+// directly precedes a damage-type or HP callout — bolded so the number a
+// cast will actually deal/grant stands out. Deliberately narrower than "any
+// digits in the string": a static rate straight from the template (e.g.
+// Firebolt's "20% chance to apply Burn") isn't a per-cast combat-realized
+// amount and shouldn't read as one.
+final RegExp _combatNumberPattern =
+    RegExp(r'\d+(?=\s+(?:Fire Damage|Ice Damage|HP))');
+
+// One highlight rule per element/status name this skill's description can
+// mention, built from its own data rather than hardcoded per skill — a
+// null color (weaponType's damage type, or a non-elemental status like
+// Weakness/Shield) is simply skipped, so a skill with nothing to highlight
+// falls back to a plain Text via the empty-list branch above.
+List<_DescriptionHighlight> _descriptionHighlights(BaseActiveSkill skill) {
+  final damageType = skill.data.damageEffect?.damageType;
+  return [
+    _DescriptionHighlight(
+        _combatNumberPattern, const TextStyle(fontWeight: FontWeight.bold)),
+    if (damageType?.color != null)
+      _DescriptionHighlight(
+        RegExp('\\b${RegExp.escape(damageType!.name)}\\b'),
+        TextStyle(color: damageType.color),
+      ),
+    for (final chance in skill.data.statusEffectChances)
+      if (chance.statusEffectType?.color != null)
+        _DescriptionHighlight(
+          RegExp('\\b${RegExp.escape(chance.statusEffectType!.label)}\\b'),
+          TextStyle(color: chance.statusEffectType!.color),
+        ),
+  ];
 }
 
 // Moved from combat_page.dart's old floating TargetEnemySkillBox, laid out
@@ -889,19 +930,17 @@ class _SkillTargetContentState extends State<_SkillTargetContent> {
                         // number a cast will deal/grant (e.g. "dealing 3
                         // Fire Damage per mote consumed") instead of a
                         // separate "Fire Damage: 3" line underneath it. The
-                        // damage type's own name (if any) is highlighted in
-                        // its color wherever it appears — see
-                        // _highlightedDescription's own doc comment for why
-                        // that's a case-sensitive whole-word match rather
-                        // than a fixed "X Damage" phrase.
+                        // damage type's and any status effect's own name
+                        // are highlighted in their color, and the
+                        // combat-realized number itself is bolded — see
+                        // _descriptionHighlights/_highlightedDescription's
+                        // own doc comments for the exact matching rules.
                         _highlightedDescription(
                           skill.combatDescription(playerCombatStats),
                           QvTextStyles.note.copyWith(
                               color: colorScheme.onSurface
                                   .withValues(alpha: 0.85)),
-                          word: skill.data.damageEffect?.damageType?.name,
-                          highlightColor:
-                              skill.data.damageEffect?.damageType?.color,
+                          _descriptionHighlights(skill),
                         ),
                       ],
                     ),
