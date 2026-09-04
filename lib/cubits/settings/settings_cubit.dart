@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:questvale/cubits/home/nav_cubit.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/settings/settings_state.dart';
 import 'package:questvale/data/models/character.dart';
@@ -14,7 +15,9 @@ import 'package:questvale/data/repositories/character_repository.dart';
 import 'package:questvale/data/repositories/encounter_repository.dart';
 import 'package:questvale/data/repositories/equipment_repository.dart';
 import 'package:questvale/data/repositories/quest_repository.dart';
+import 'package:questvale/data/repositories/scheduled_timer_repository.dart';
 import 'package:questvale/data/repositories/todo_repository.dart';
+import 'package:questvale/data/models/scheduled_timer.dart';
 import 'package:questvale/helpers/shared_enums.dart';
 import 'package:questvale/services/equipment_service.dart';
 import 'package:questvale/services/leveling_service.dart';
@@ -28,17 +31,20 @@ class SettingsCubit extends Cubit<SettingsState> {
   final GameData gameData;
   final PlayerCubit playerCubit;
   final ThemeCubit themeCubit;
+  final NavCubit navCubit;
   late EquipmentRepository equipmentRepository;
   late CharacterRepository characterRepository;
   late QuestRepository questRepository;
   late EncounterRepository encounterRepository;
   late TodoRepository todoRepository;
+  late ScheduledTimerRepository scheduledTimerRepository;
 
   SettingsCubit(
       {required this.db,
       required this.gameData,
       required this.playerCubit,
       required this.themeCubit,
+      required this.navCubit,
       required Character character})
       : super(SettingsState(character: character)) {
     equipmentRepository = EquipmentRepository(db: db);
@@ -46,6 +52,7 @@ class SettingsCubit extends Cubit<SettingsState> {
     questRepository = QuestRepository(db: db);
     encounterRepository = EncounterRepository(db: db);
     todoRepository = TodoRepository(db: db);
+    scheduledTimerRepository = ScheduledTimerRepository(db: db);
   }
 
   void setTheme(String themeId) => themeCubit.setTheme(themeId);
@@ -181,6 +188,21 @@ class SettingsCubit extends Cubit<SettingsState> {
     }
     await questRepository.deleteQuestsForCharacter(state.character.id);
     await playerCubit.loadCharacter();
+  }
+
+  // Clears every skillCooldown ScheduledTimer so every skill (in or out of
+  // combat) reads as ready again. The home overview's Skills row picks this
+  // up on its own next TodosOverviewCubit.loadCharacter() (its periodic
+  // countdown ticker already reloads once a timer it's watching expires,
+  // and it re-reads on tab focus regardless), but a CombatCubit — if a
+  // combat encounter happens to be live right now — has no such trigger of
+  // its own for a change that didn't come from combat, so it's nudged directly
+  // via NavCubit's cross-tab signal (see NavState.combatRefreshRequestId).
+  Future<void> resetAllSkillCooldowns() async {
+    await scheduledTimerRepository
+        .deleteTimersByKind(ScheduledTimerKind.skillCooldown);
+    await playerCubit.loadCharacter();
+    navCubit.requestCombatRefresh();
   }
 
   Future<void> resetCharacter() async {

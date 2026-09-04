@@ -14,6 +14,15 @@ class EmberBurst extends BaseActiveSkill {
   String get description => data.description
       .replaceAll('x%', percentText(data.damageEffect?.valueAtLevel(level)));
 
+  // Same per-mote amount basicEnemyDamage's damageMultiplierOverride uses
+  // below (data.damageEffect.valueAtLevel(level), times attack power) —
+  // the template already reads "per mote consumed", so a bare real number
+  // (no motesConsumed multiplication) is the correct substitution.
+  @override
+  String combatDescription(PlayerCombatStats playerCombatStats) =>
+      data.description
+          .replaceAll('x%', '${realDamageAmount(playerCombatStats)}');
+
   // Fire's mote payoff — CombatService.castSkill already resolved the
   // consume-all call into context.moteResult before this runs, so
   // motesConsumed is however many Fire motes were actually banked (0 is a

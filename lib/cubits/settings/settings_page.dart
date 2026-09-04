@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:questvale/cubits/home/nav_cubit.dart';
 import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/home/player_state.dart';
 import 'package:questvale/cubits/settings/settings_cubit.dart';
@@ -26,6 +27,7 @@ class SettingsPage extends StatelessWidget {
               gameData: context.read<GameData>(),
               playerCubit: context.read<PlayerCubit>(),
               themeCubit: context.read<ThemeCubit>(),
+              navCubit: context.read<NavCubit>(),
               character: characterDataState.character!),
           child: BlocBuilder<SettingsCubit, SettingsState>(
               builder: (context, settingsState) {
@@ -223,6 +225,22 @@ class SettingsPage extends StatelessWidget {
                                   onConfirm: () => context
                                       .read<SettingsCubit>()
                                       .cancelQuest(),
+                                ),
+                              ),
+                              _AdminActionRow(
+                                label: 'Reset all skill cooldowns',
+                                buttonLabel: 'Reset',
+                                onTap: () => QvConfirmationModal.showModal(
+                                  context,
+                                  title: 'Reset skill cooldowns?',
+                                  description:
+                                      'Clears every skill\'s cooldown so '
+                                      'they\'re all ready to cast again '
+                                      'immediately. This can\'t be undone.',
+                                  confirmLabel: 'Reset Cooldowns',
+                                  onConfirm: () => context
+                                      .read<SettingsCubit>()
+                                      .resetAllSkillCooldowns(),
                                 ),
                               ),
                               _AdminActionRow(

@@ -53,6 +53,18 @@ class ScheduledTimerRepository {
         whereArgs: [encounterId]);
   }
 
+  // DELETE EVERY TIMER OF A GIVEN KIND, REGARDLESS OF OWNER/ENCOUNTER — e.g.
+  // the "reset all skill cooldowns" admin action. Fine to be this broad
+  // since there's only ever one character in local storage (see
+  // CharacterRepository.getSingleCharacter) — a skillCooldown timer's
+  // ownerId is always that one character's, composite-keyed with the skill
+  // id (see CombatService.cooldownOwnerId), so there's no per-character
+  // filtering to do here.
+  Future<void> deleteTimersByKind(ScheduledTimerKind kind) async {
+    await db.delete(ScheduledTimer.scheduledTimerTableName,
+        where: '${ScheduledTimer.kindColumnName} = ?', whereArgs: [kind.index]);
+  }
+
   ScheduledTimer _getTimerFromMap(Map<String, Object?> map) {
     return ScheduledTimer(
       id: map[ScheduledTimer.idColumnName] as String,

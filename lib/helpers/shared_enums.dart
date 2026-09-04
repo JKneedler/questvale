@@ -159,4 +159,31 @@ enum StatusEffectType {
   // a one-shot statusEffectExpiry timer removes it (every other effect so
   // far — a rate modifier, a stat modifier, or a shield, not a DoT).
   bool get ticks => this == StatusEffectType.burn;
+
+  // Capitalized label for matching a skill's own description text (e.g.
+  // "20% chance to apply Burn") — deliberately not the same as this enum's
+  // built-in `.name`, which stays the raw lowercase value already
+  // persisted as a ScheduledTimer payload (status_effect_service.dart)
+  // and can't change without breaking that.
+  String get label => {
+        StatusEffectType.burn: 'Burn',
+        StatusEffectType.slow: 'Slow',
+        StatusEffectType.freeze: 'Freeze',
+        StatusEffectType.weakness: 'Weakness',
+        StatusEffectType.shield: 'Shield',
+      }[this]!;
+
+  // Same hex values as SkillDamageType's fire/ice
+  // (game_data_models/skill_data.dart) — burn and slow/freeze are
+  // fire/ice-flavored effects respectively, so for now they borrow that
+  // element's color in description-text highlighting rather than getting
+  // a distinct color of their own. weakness/shield aren't elemental, so
+  // null (no highlight) for those.
+  Color? get color => {
+        StatusEffectType.burn: const Color(0xffFF6B3D),
+        StatusEffectType.slow: const Color(0xff3DA9FF),
+        StatusEffectType.freeze: const Color(0xff3DA9FF),
+        StatusEffectType.weakness: null,
+        StatusEffectType.shield: null,
+      }[this];
 }

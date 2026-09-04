@@ -106,7 +106,14 @@ class HomeView extends StatelessWidget {
             ],
             currentIndex: navState.tab,
             onTap: (index) => context.read<NavCubit>().changeTab(index),
-            useCombatBackground: navState.showCombatNavBackground,
+            // Also requires tab == 0 (World) — showCombatNavBackground
+            // alone isn't enough. IndexedStack below keeps every tab
+            // mounted at once so switching tabs mid-quest never disposes
+            // QuestEncounterView (only actually leaving the quest does),
+            // so the flag itself stays true globally the whole time a
+            // quest is in progress, on every tab — not just World's.
+            useCombatBackground:
+                navState.showCombatNavBackground && navState.tab == 0,
           ),
         );
       });

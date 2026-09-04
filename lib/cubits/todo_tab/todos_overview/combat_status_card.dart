@@ -1,15 +1,17 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_cubit.dart';
 import 'package:questvale/cubits/todo_tab/todos_overview/todos_overview_state.dart';
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/models/scheduled_timer.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
+import 'package:questvale/data/providers/game_data_models/skill_data.dart';
+import 'package:questvale/data/skills/base_active_skill.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/helpers/data_formatters.dart';
 import 'package:questvale/helpers/shared_enums.dart';
@@ -18,16 +20,13 @@ import 'package:questvale/widgets/qv_character_vitals_row.dart';
 import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 
 // Scaffold for the character/combat status block pinned above the todo
-// list. XP (level/currentExp), health/AP/mana, in-combat enemy state, and
-// enemy attack countdowns read real data from TodosOverviewCubit. Leveling
-// itself is real now (see LevelingService) — completing an encounter can
-// roll currentExp into a level-up and grant Skill Points — but the curve it
-// rolls against is still the same placeholder `level * 100` the exp-needed
-// denominator below always used; real curve design is separate balance
-// work. Skill cooldowns still have no real system behind them (no live
-// cooldown tracking exists anywhere in the codebase yet), so that piece
-// remains a placeholder value laid out so the real system can slot in
-// later.
+// list. XP (level/currentExp), health/AP/mana, in-combat enemy state, enemy
+// attack countdowns, and skill cooldowns all read real data from
+// TodosOverviewCubit/PlayerCubit. Leveling itself is real now (see
+// LevelingService) — completing an encounter can roll currentExp into a
+// level-up and grant Skill Points — but the curve it rolls against is still
+// the same placeholder `level * 100` the exp-needed denominator below
+// always used; real curve design is separate balance work.
 class CombatStatusCard extends StatefulWidget {
   const CombatStatusCard({super.key});
 
@@ -36,40 +35,11 @@ class CombatStatusCard extends StatefulWidget {
 }
 
 class _CombatStatusCardState extends State<CombatStatusCard> {
-  static const _skillSlotCount = 5;
-  static const _placeholderColorChoices = [
-    ButtonColor.fireRed,
-    ButtonColor.iceBlue,
-    ButtonColor.arcanePurple,
-  ];
-
-  late final List<ButtonColor> _placeholderSkillColors;
-  late final List<Duration> _placeholderSkillCooldowns;
   Timer? _countdownRefreshTimer;
 
   @override
   void initState() {
     super.initState();
-    // Generated once per mount rather than on every build, so the row
-    // doesn't reshuffle whenever an unrelated todo interaction reloads
-    // TodosOverviewCubit's state.
-    final random = Random();
-    _placeholderSkillColors = List.generate(
-      _skillSlotCount,
-      (_) => _placeholderColorChoices[
-          random.nextInt(_placeholderColorChoices.length)],
-    );
-    // Cooldowns run on an hours-scale cadence, not seconds — matches the
-    // real-world-task -> AP -> combat pacing of the game. Capped at 12h,
-    // seconds-granular so both the hh:mm and mm:ss display cases show up.
-    _placeholderSkillCooldowns = List.generate(
-      _skillSlotCount,
-      (_) => Duration(seconds: random.nextInt(12 * 3600 + 1)),
-    );
-    // Guarantee at least one ready (no-cooldown) slot so both rectangle
-    // styles are represented.
-    _placeholderSkillCooldowns[random.nextInt(_skillSlotCount)] = Duration.zero;
-
     // Recomputes nextTriggerAt - now() every second, so the countdown
     // visibly ticks down rather than jumping in chunks — purely
     // presentational when nothing has expired yet. But once an enemy's
@@ -112,6 +82,14 @@ class _CombatStatusCardState extends State<CombatStatusCard> {
         final character = state.character;
         if (character == null) return const SizedBox.shrink();
         final isExpanded = character.combatStatusCardExpanded;
+        final playerSkills = context.watch<PlayerCubit>().state.playerSkills;
+        final equippedSkills = [
+          playerSkills?.activeSkillSlot1,
+          playerSkills?.activeSkillSlot2,
+          playerSkills?.activeSkillSlot3,
+          playerSkills?.activeSkillSlot4,
+          playerSkills?.activeSkillSlot5,
+        ].whereType<BaseActiveSkill>().toList();
 
         return Container(
           margin: const EdgeInsets.only(bottom: 10),
@@ -163,8 +141,8 @@ class _CombatStatusCardState extends State<CombatStatusCard> {
                             const _SectionHeader(label: 'Skills'),
                             const SizedBox(height: 4),
                             _SkillCooldownRow(
-                              colors: _placeholderSkillColors,
-                              cooldowns: _placeholderSkillCooldowns,
+                              skills: equippedSkills,
+                              skillCooldowns: state.skillCooldowns,
                             ),
                             const SizedBox(height: 6),
                             const _SectionHeader(label: 'Enemies'),
@@ -308,27 +286,43 @@ class _ApBadge extends StatelessWidget {
 // widget so the Combat page's own vitals+skills card can reuse the exact
 // same styling — see that file's own doc comment.
 
-// Row 2 — 5 skill-cooldown buttons. Placeholder colors/cooldowns only; no
-// live skill-cooldown tracking exists yet (see class doc comment above).
+// Row 2 — one cooldown slot per equipped active skill (up to 5), real
+// SkillButtonColor/cooldown data straight from PlayerCubit/TodosOverviewCubit
+// — no placeholder generation. An empty loadout (nothing slotted yet) just
+// renders no slots, same as a class with fewer than 5 active skills unlocked.
 class _SkillCooldownRow extends StatelessWidget {
-  final List<ButtonColor> colors;
-  final List<Duration> cooldowns;
-  const _SkillCooldownRow({required this.colors, required this.cooldowns});
+  final List<BaseActiveSkill> skills;
+  final Map<String, ScheduledTimer> skillCooldowns;
+  const _SkillCooldownRow(
+      {required this.skills, required this.skillCooldowns});
 
   @override
   Widget build(BuildContext context) {
+    if (skills.isEmpty) {
+      final colorScheme = Theme.of(context).colorScheme;
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Text(
+          'No skills equipped',
+          textAlign: TextAlign.center,
+          style: QvTextStyles.caption
+              .copyWith(color: colorScheme.onSurface.withValues(alpha: 0.6)),
+        ),
+      );
+    }
     return SizedBox(
       height: 40,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: List.generate(colors.length, (index) {
+        children: List.generate(skills.length, (index) {
+          final skill = skills[index];
           return Expanded(
             child: Padding(
               padding:
-                  EdgeInsets.only(right: index == colors.length - 1 ? 0 : 6),
+                  EdgeInsets.only(right: index == skills.length - 1 ? 0 : 6),
               child: _SkillCooldownSlot(
-                color: colors[index],
-                cooldown: cooldowns[index],
+                skill: skill,
+                cooldownTimer: skillCooldowns[skill.id],
               ),
             ),
           );
@@ -338,21 +332,46 @@ class _SkillCooldownRow extends StatelessWidget {
   }
 }
 
+// QvButton's ButtonColor is the generic 9-slice button skin (also used for
+// rarity/theme buttons app-wide); SkillButtonColor is the skill-specific
+// icon/border pairing QvSkillButton reads. This slot renders as a plain
+// QvButton (no icon), so it maps down to the nearest ButtonColor instead —
+// weaponType (Warrior/Rogue's non-elemental skills) has no elemental
+// equivalent here, so it falls back to silver, ButtonColor's own neutral
+// tone.
+ButtonColor _buttonColorForSkill(SkillButtonColor color) {
+  switch (color) {
+    case SkillButtonColor.weaponType:
+      return ButtonColor.silver;
+    case SkillButtonColor.fireRed:
+      return ButtonColor.fireRed;
+    case SkillButtonColor.iceBlue:
+      return ButtonColor.iceBlue;
+    case SkillButtonColor.arcanePurple:
+      return ButtonColor.arcanePurple;
+  }
+}
+
 class _SkillCooldownSlot extends StatelessWidget {
-  final ButtonColor color;
-  final Duration cooldown;
-  const _SkillCooldownSlot({required this.color, required this.cooldown});
+  final BaseActiveSkill skill;
+  final ScheduledTimer? cooldownTimer;
+  const _SkillCooldownSlot({required this.skill, this.cooldownTimer});
 
   @override
   Widget build(BuildContext context) {
-    final onCooldown = cooldown > Duration.zero;
+    final timer = cooldownTimer;
+    final now = DateTime.now();
+    final remaining = timer != null && timer.nextTriggerAt.isAfter(now)
+        ? timer.nextTriggerAt.difference(now)
+        : null;
+    final onCooldown = remaining != null;
     return QvButton(
-      buttonColor: color,
+      buttonColor: _buttonColorForSkill(skill.data.buttonColor),
       darkened: onCooldown,
       child: Center(
         child: onCooldown
             ? Text(
-                DataFormatters.formatCountdown(cooldown),
+                DataFormatters.formatCountdown(remaining),
                 style: QvTextStyles.itemTitle.copyWith(color: Colors.white),
               )
             : const Icon(Symbols.check, color: Colors.white, size: 20),
