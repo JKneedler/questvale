@@ -92,7 +92,7 @@ class QuestVitalsAndSkillsCard extends StatelessWidget {
   // _FleeConfirmationContent's own height — a title, a divider, one short
   // paragraph, and a button row need even less room than
   // _skillTargetHeight's icon+description layout. Tuned live the same way.
-  static const double _fleeHeight = 160;
+  static const double _fleeHeight = 190;
 
   // This card's own rendered height in its normal (Skills-or-placeholder +
   // vitals) state — QuestEncounterView reads this to reserve exactly that
