@@ -737,13 +737,19 @@ class _SkillTargetContent extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(skill.data.name,
-                            style: QvTextStyles.itemTitle
-                                .copyWith(color: colorScheme.onSurface)),
-                        Text('Lv ${skill.level}',
-                            style: QvTextStyles.micro.copyWith(
-                                color: colorScheme.onSurface
-                                    .withValues(alpha: 0.75))),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(skill.data.name,
+                                  style: QvTextStyles.itemTitle
+                                      .copyWith(color: colorScheme.onSurface)),
+                            ),
+                            Text('Lv ${skill.level}',
+                                style: QvTextStyles.micro.copyWith(
+                                    color: colorScheme.onSurface
+                                        .withValues(alpha: 0.75))),
+                          ],
+                        ),
                         const SizedBox(height: 4),
                         Text(skill.description,
                             style: QvTextStyles.note
