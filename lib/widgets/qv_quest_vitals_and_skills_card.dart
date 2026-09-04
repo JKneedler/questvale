@@ -789,31 +789,39 @@ class _SkillTargetContentState extends State<_SkillTargetContent> {
                   // Cost/cooldown moved here from the description column,
                   // per feedback — reads as a property of the skill/icon
                   // itself rather than another description-column line. One
-                  // shared QvInsetBackground rather than two bare Text
-                  // widgets (also per feedback), with a thin divider line
+                  // shared QvInsetBackground (surfaceContainer — same fill
+                  // colorScheme.surfaceContainer uses everywhere else, e.g.
+                  // this card's own Cancel button below) rather than two
+                  // bare Text widgets, with a short primary-colored divider
                   // standing in for the seam a second inset box would
                   // otherwise have — same "row split by a hairline" idiom
-                  // as _EnemyNextAttackSlice's countdown/attack Flex above.
+                  // as _EnemyNextAttackSlice's countdown/attack Flex above,
+                  // just narrower than a full-width rule reads better at
+                  // this box's width.
                   QvInsetBackground(
                     width: 65,
+                    type: QvInsetBackgroundType.surfaceContainer,
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     child: Column(
                       children: [
                         Text('${skill.data.apCost ?? 0} AP',
                             textAlign: TextAlign.center,
                             style: QvTextStyles.caption
-                                .copyWith(color: Colors.grey[100])),
+                                .copyWith(color: colorScheme.onSurface)),
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 3),
-                          child: Container(
-                            height: 1,
-                            color: Colors.grey[100]?.withValues(alpha: 0.3),
+                          child: Center(
+                            child: Container(
+                              width: 28,
+                              height: 2,
+                              color: colorScheme.primary,
+                            ),
                           ),
                         ),
                         Text(_cooldownText(skill.data.cooldown),
                             textAlign: TextAlign.center,
                             style: QvTextStyles.caption
-                                .copyWith(color: Colors.grey[100])),
+                                .copyWith(color: colorScheme.onSurface)),
                       ],
                     ),
                   ),
