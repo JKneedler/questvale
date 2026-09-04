@@ -415,16 +415,18 @@ class _EnemyDetailContent extends StatelessWidget {
             ),
           ),
         ),
+        // Same X/surfaceContainer styling as _SkillTargetContent's own
+        // Cancel button, per feedback — full width here instead of that
+        // one's 50/50 split with a Confirm button, since Close is this
+        // view's only action.
         QvButton(
           width: double.infinity,
-          height: 36,
-          buttonColor: ButtonColor.primary,
+          height: 40,
+          buttonColor: ButtonColor.surfaceContainer,
           onTap: () => context.read<CombatCubit>().setIdle(),
           child: Center(
-              child: Text(
-            'Close',
-            style: QvTextStyles.title.copyWith(color: colorScheme.secondary),
-          )),
+            child: Icon(Symbols.close, color: colorScheme.onSurface, size: 24),
+          ),
         ),
       ],
     );
@@ -588,16 +590,18 @@ class _PlayerDetailContent extends StatelessWidget {
       children: [
         Text('Player'),
         Expanded(child: Container()),
+        // Same X/surfaceContainer styling as _SkillTargetContent's own
+        // Cancel button, per feedback — full width here instead of that
+        // one's 50/50 split with a Confirm button, since Close is this
+        // view's only action.
         QvButton(
           width: double.infinity,
-          height: 36,
-          buttonColor: ButtonColor.primary,
+          height: 40,
+          buttonColor: ButtonColor.surfaceContainer,
           onTap: () => context.read<CombatCubit>().setIdle(),
           child: Center(
-              child: Text(
-            'Close',
-            style: QvTextStyles.title.copyWith(color: colorScheme.secondary),
-          )),
+            child: Icon(Symbols.close, color: colorScheme.onSurface, size: 24),
+          ),
         ),
       ],
     );
