@@ -88,7 +88,7 @@ class QuestVitalsAndSkillsCard extends StatelessWidget {
   // button row need far less room than the other three detail views'
   // portrait/stat-list layouts, and stretching it to match would just
   // leave dead space. Tuned live the same way.
-  static const double _skillTargetHeight = 220;
+  static const double _skillTargetHeight = 200;
 
   // This card's own rendered height in its normal (Skills-or-placeholder +
   // vitals) state — QuestEncounterView reads this to reserve exactly that
@@ -793,28 +793,42 @@ class _SkillTargetContentState extends State<_SkillTargetContent> {
                   // same fill colorScheme.surfaceContainer uses everywhere
                   // else, e.g. this card's own Cancel button below) rather
                   // than one shared box with an internal divider.
+                  // QvBarSize.small swaps in the same smaller-bordered
+                  // background QvBar's own compact bars use (20px min,
+                  // vs the standard inset's 36px) — a plain
+                  // QvInsetBackground reads oversized for a short "1 AP"/
+                  // "30m" label. Text is wrapped in Center since Container
+                  // only aligns its child top-left by default; without it,
+                  // a box taller than its text (however slightly) reads as
+                  // top-aligned instead of centered.
                   SizedBox(
-                    width: 65,
+                    width: 54,
                     child: Column(
                       children: [
                         QvInsetBackground(
-                          width: 65,
+                          width: 54,
                           type: QvInsetBackgroundType.surfaceContainer,
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          child: Text('${skill.data.apCost ?? 0} AP',
-                              textAlign: TextAlign.center,
-                              style: QvTextStyles.caption
-                                  .copyWith(color: colorScheme.onSurface)),
+                          size: QvBarSize.small,
+                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          child: Center(
+                            child: Text('${skill.data.apCost ?? 0} AP',
+                                textAlign: TextAlign.center,
+                                style: QvTextStyles.note
+                                    .copyWith(color: colorScheme.onSurface)),
+                          ),
                         ),
                         const SizedBox(height: 4),
                         QvInsetBackground(
-                          width: 65,
+                          width: 54,
                           type: QvInsetBackgroundType.surfaceContainer,
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          child: Text(_cooldownText(skill.data.cooldown),
-                              textAlign: TextAlign.center,
-                              style: QvTextStyles.caption
-                                  .copyWith(color: colorScheme.onSurface)),
+                          size: QvBarSize.small,
+                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          child: Center(
+                            child: Text(_cooldownText(skill.data.cooldown),
+                                textAlign: TextAlign.center,
+                                style: QvTextStyles.note
+                                    .copyWith(color: colorScheme.onSurface)),
+                          ),
                         ),
                       ],
                     ),
