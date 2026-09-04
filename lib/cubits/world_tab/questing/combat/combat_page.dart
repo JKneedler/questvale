@@ -206,13 +206,12 @@ class BattleFieldDisplay extends StatelessWidget {
     return QvAnimatedTransitionType.slideLeft;
   }
 
-  // Whether QuestVitalsAndSkillsCard is currently showing one of the
-  // three detail views tapping the battlefield's empty space should
-  // dismiss back to its normal Skills+Vitals content — see
-  // BattleFieldDisplay.build's own GestureDetector below. targetingSkill
-  // deliberately isn't included here: that flow already has its own
-  // cancel path (re-tap the same skill), and background-tap-to-dismiss
-  // was only asked for player/enemy/flee.
+  // Whether QuestVitalsAndSkillsCard is currently showing one of the three
+  // detail views any tap on the battlefield should dismiss back to its
+  // normal Skills+Vitals content — see BattleFieldDisplay.build's own mask
+  // layer below. targetingSkill deliberately isn't included here: that
+  // flow already has its own cancel path (re-tap the same skill), and
+  // tap-to-dismiss was only asked for player/enemy/flee.
   static bool _showsDismissableDetail(CombatState combatState) =>
       combatState.status == CombatStatus.inspectingPlayer ||
       combatState.status == CombatStatus.inspectingEnemy ||
@@ -221,107 +220,117 @@ class BattleFieldDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final combatState = context.read<CombatCubit>().state;
+    final showsDismissableDetail = _showsDismissableDetail(combatState);
 
     return Expanded(
-      // Tapping empty battlefield space (not the player sprite or an
-      // EnemyDisplay, both of which have their own GestureDetector that
-      // wins the tap over this one) dismisses whichever detail view
-      // QuestVitalsAndSkillsCard is currently showing, same as its own
-      // Close/Cancel button. HitTestBehavior.opaque so the scenic
-      // background image (not opaque itself, pixel-wise) still counts as
-      // "tapped" rather than only the sprites drawn on it.
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () {
-          if (_showsDismissableDetail(combatState)) {
-            context.read<CombatCubit>().setIdle();
-          }
-        },
-        child: Row(
-          children: [
-            Expanded(
-              child: Stack(
-                children: [
-                  Center(
-                    child: GestureDetector(
-                      onTap: () =>
-                          context.read<CombatCubit>().onPlayerTap(context),
-                      child: SizedBox(
-                        width: 100,
-                        height: 100,
-                        child: Image.asset(
-                          'images/characters/mage.png',
-                          filterQuality: FilterQuality.none,
+      child: Stack(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Stack(
+                  children: [
+                    Center(
+                      child: GestureDetector(
+                        onTap: () =>
+                            context.read<CombatCubit>().onPlayerTap(context),
+                        child: SizedBox(
                           width: 100,
                           height: 100,
-                          scale: .1,
+                          child: Image.asset(
+                            'images/characters/mage.png',
+                            filterQuality: FilterQuality.none,
+                            width: 100,
+                            height: 100,
+                            scale: .1,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  QvAnimatedTransition(
-                    duration: Duration(milliseconds: 200),
-                    type: getSkillAnimationTransitionType(combatState),
-                    child: (combatState.status == CombatStatus.targetingSkill)
-                        ? TargetEnemySkillBox(
-                            skill: combatState.targetingSkill!)
-                        : SizedBox.shrink(),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                // top/bottom trimmed from 40 to 24 — the new AP badge row
-                // in QuestVitalsAndSkillsCard added ~32px below, shrinking
-                // this Expanded area enough to overflow the enemy column
-                // by a few px; this reclaims that headroom at the source
-                // rather than shrinking the badge to compensate.
-                padding: const EdgeInsets.only(
-                    left: 30, right: 30, top: 24, bottom: 24),
-                // LayoutBuilder + a ConstrainedBox(minHeight) + scrollable
-                // wrapper rather than a bare Column: this area shrinks a lot
-                // while QuestVitalsAndSkillsCard is showing player/enemy
-                // detail content (it grows upward into this same Expanded —
-                // see that class's own doc comment), and on this app's usual
-                // screen heights 3 enemies' natural size no longer fits
-                // underneath it, which overflowed here before this fix. The
-                // minHeight keeps today's exact spaceEvenly spread whenever
-                // there's enough room (the untouched, common case); only
-                // when there isn't does it degrade to scrolling instead of
-                // erroring.
-                child: LayoutBuilder(builder: (context, constraints) {
-                  return SingleChildScrollView(
-                    child: ConstrainedBox(
-                      constraints:
-                          BoxConstraints(minHeight: constraints.maxHeight),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          for (int i = 0; i < combatState.enemies.length; i++)
-                            EnemyDisplay(
-                              enemy: combatState.enemies[i],
-                              onTap: () => context
-                                  .read<CombatCubit>()
-                                  .onEnemyTap(context, i),
-                              alignment:
-                                  getAlignment(i, combatState.enemies.length),
-                              isTargeted: combatState.status ==
-                                      CombatStatus.targetingSkill &&
-                                  (combatState.target.getEnemyIndex() == i ||
-                                      (combatState.target == SkillTarget.all &&
-                                          combatState.enemies[i].currentHealth >
-                                              0)),
-                            ),
-                        ],
-                      ),
+                    QvAnimatedTransition(
+                      duration: Duration(milliseconds: 200),
+                      type: getSkillAnimationTransitionType(combatState),
+                      child: (combatState.status == CombatStatus.targetingSkill)
+                          ? TargetEnemySkillBox(
+                              skill: combatState.targetingSkill!)
+                          : SizedBox.shrink(),
                     ),
-                  );
-                }),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  // top/bottom trimmed from 40 to 24 — the new AP badge row
+                  // in QuestVitalsAndSkillsCard added ~32px below, shrinking
+                  // this Expanded area enough to overflow the enemy column
+                  // by a few px; this reclaims that headroom at the source
+                  // rather than shrinking the badge to compensate.
+                  padding: const EdgeInsets.only(
+                      left: 30, right: 30, top: 24, bottom: 24),
+                  // LayoutBuilder + a ConstrainedBox(minHeight) + scrollable
+                  // wrapper rather than a bare Column: this area shrinks a lot
+                  // while QuestVitalsAndSkillsCard is showing player/enemy
+                  // detail content (it grows upward into this same Expanded —
+                  // see that class's own doc comment), and on this app's usual
+                  // screen heights 3 enemies' natural size no longer fits
+                  // underneath it, which overflowed here before this fix. The
+                  // minHeight keeps today's exact spaceEvenly spread whenever
+                  // there's enough room (the untouched, common case); only
+                  // when there isn't does it degrade to scrolling instead of
+                  // erroring.
+                  child: LayoutBuilder(builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      child: ConstrainedBox(
+                        constraints:
+                            BoxConstraints(minHeight: constraints.maxHeight),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            for (int i = 0; i < combatState.enemies.length; i++)
+                              EnemyDisplay(
+                                enemy: combatState.enemies[i],
+                                onTap: () => context
+                                    .read<CombatCubit>()
+                                    .onEnemyTap(context, i),
+                                alignment:
+                                    getAlignment(i, combatState.enemies.length),
+                                isTargeted: combatState.status ==
+                                        CombatStatus.targetingSkill &&
+                                    (combatState.target.getEnemyIndex() == i ||
+                                        (combatState.target ==
+                                                SkillTarget.all &&
+                                            combatState
+                                                    .enemies[i].currentHealth >
+                                                0)),
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              ),
+            ],
+          ),
+          // A literal mask over the whole battlefield while
+          // QuestVitalsAndSkillsCard is showing a dismissable detail view —
+          // painted (and hit-tested) on top of the player sprite/every
+          // EnemyDisplay, so *any* tap here (including on another enemy or
+          // the player) just dismisses back to Skills+Vitals rather than
+          // switching to a new target. Per the player's own framing: to
+          // inspect something else, dismiss first, then tap it. Only
+          // present at all while dismissable, so it doesn't eat normal
+          // taps (targeting a skill, opening player/enemy info from idle)
+          // the rest of the time. HitTestBehavior.opaque so the scenic
+          // background's own transparency doesn't leave gaps in the mask.
+          if (showsDismissableDetail)
+            Positioned.fill(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => context.read<CombatCubit>().setIdle(),
               ),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }
