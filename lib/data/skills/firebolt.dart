@@ -29,6 +29,11 @@ class Firebolt extends BaseActiveSkill {
   String get description => data.description
       .replaceAll('x%', percentText(data.damageEffect?.valueAtLevel(level)));
 
+  @override
+  String combatDescription(PlayerCombatStats playerCombatStats) =>
+      data.description
+          .replaceAll('x%', '${realDamageAmount(playerCombatStats)}');
+
   // Fire's mote generator (see SkillData.moteInteraction/moteElement on
   // this skill's data — CombatService.castSkill already resolved the
   // generate call into context.moteResult before this runs). Burn's 20%
@@ -43,13 +48,14 @@ class Firebolt extends BaseActiveSkill {
       PlayerCombatStats playerCombatStats,
       List<Enemy> targettedEnemies,
       SkillCastContext context) async {
-    final damageResults =
-        await basicEnemyDamage(combatService, playerCombatStats, targettedEnemies);
+    final damageResults = await basicEnemyDamage(
+        combatService, playerCombatStats, targettedEnemies);
     if (targettedEnemies.isEmpty || damageResults.isEmpty) return;
     if (damageResults.first.didKill) return;
 
     final procChance = data.statusEffectChances
-            .firstWhereOrNull((e) => e.statusEffectType == StatusEffectType.burn)
+            .firstWhereOrNull(
+                (e) => e.statusEffectType == StatusEffectType.burn)
             ?.valueAtLevel(level) ??
         0;
     if (random.nextDouble() >= procChance) return;

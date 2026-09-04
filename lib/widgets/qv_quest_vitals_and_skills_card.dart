@@ -12,11 +12,9 @@ import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_encoun
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/models/mage_motes.dart';
-import 'package:questvale/data/models/player_combat_stats.dart';
 import 'package:questvale/data/models/scheduled_timer.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_attack_data.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
-import 'package:questvale/data/providers/game_data_models/skill_data.dart';
 import 'package:questvale/data/skills/base_active_skill.dart';
 import 'package:questvale/helpers/data_formatters.dart';
 import 'package:questvale/helpers/shared_enums.dart';
@@ -674,15 +672,6 @@ class _FleeConfirmationContent extends StatelessWidget {
   }
 }
 
-// Shared with _SkillTargetContent's own effect-line list below — same
-// formatting convention as skills_gear_up_page.dart's identically-named
-// top-level helpers (SkillEffectComponent.baseValue is stored as a
-// fraction, e.g. 0.2 == 20%).
-String _percentText(double value) => '${(value * 100).round()}%';
-
-String _capitalize(String value) =>
-    value.isEmpty ? value : '${value[0].toUpperCase()}${value.substring(1)}';
-
 // SkillData.cooldown is in fractional hours (e.g. 0.5 for Firebolt) — see
 // its own doc comment. 0/null both mean "no cooldown" (Arcane Bolt).
 String _cooldownText(double? cooldownHours) {
@@ -799,21 +788,32 @@ class _SkillTargetContentState extends State<_SkillTargetContent> {
                   const SizedBox(height: 4),
                   // Cost/cooldown moved here from the description column,
                   // per feedback — reads as a property of the skill/icon
-                  // itself rather than another description-column line.
-                  SizedBox(
+                  // itself rather than another description-column line. One
+                  // shared QvInsetBackground rather than two bare Text
+                  // widgets (also per feedback), with a thin divider line
+                  // standing in for the seam a second inset box would
+                  // otherwise have — same "row split by a hairline" idiom
+                  // as _EnemyNextAttackSlice's countdown/attack Flex above.
+                  QvInsetBackground(
                     width: 65,
+                    padding: const EdgeInsets.symmetric(vertical: 4),
                     child: Column(
                       children: [
                         Text('${skill.data.apCost ?? 0} AP',
                             textAlign: TextAlign.center,
-                            style: QvTextStyles.caption.copyWith(
-                                color: colorScheme.onSurface
-                                    .withValues(alpha: 0.75))),
+                            style: QvTextStyles.caption
+                                .copyWith(color: Colors.grey[100])),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 3),
+                          child: Container(
+                            height: 1,
+                            color: Colors.grey[100]?.withValues(alpha: 0.3),
+                          ),
+                        ),
                         Text(_cooldownText(skill.data.cooldown),
                             textAlign: TextAlign.center,
-                            style: QvTextStyles.caption.copyWith(
-                                color: colorScheme.onSurface
-                                    .withValues(alpha: 0.75))),
+                            style: QvTextStyles.caption
+                                .copyWith(color: Colors.grey[100])),
                       ],
                     ),
                   ),
@@ -840,17 +840,16 @@ class _SkillTargetContentState extends State<_SkillTargetContent> {
                           ],
                         ),
                         const SizedBox(height: 4),
-                        Text(skill.description,
+                        // Combat-realized text, not the plain 'x%' template
+                        // the Skills Gear-Up screen's `description` shows —
+                        // this screen has a real caster to compute against,
+                        // so the description itself carries the actual
+                        // number a cast will deal/grant (e.g. "dealing 3
+                        // Fire Damage per mote consumed") instead of a
+                        // separate "Fire Damage: 3" line underneath it.
+                        Text(skill.combatDescription(playerCombatStats),
                             style: QvTextStyles.note
                                 .copyWith(color: colorScheme.onSurface)),
-                        const SizedBox(height: 4),
-                        ..._effectLines(playerCombatStats)
-                            .map((line) => Padding(
-                                  padding: const EdgeInsets.only(top: 2),
-                                  child: Text(line,
-                                      style: QvTextStyles.caption.copyWith(
-                                          color: colorScheme.onSurface)),
-                                )),
                       ],
                     ),
                   ),
@@ -897,44 +896,6 @@ class _SkillTargetContentState extends State<_SkillTargetContent> {
         ),
       ],
     );
-  }
-
-  // One line per real effect component this skill actually declares —
-  // damage, shield, status-effect proc chance — rather than a fixed
-  // Damage/Damage Type pair, which would show a misleading blank/zero
-  // damage line for a skill with no damage component at all (e.g. Frost
-  // Armor). Values are computed the same way each skill's own execute()
-  // computes them (attackPowerFor for damage, maxHealth-scaled for
-  // shield), so this can't drift from what actually lands when Confirm is
-  // tapped.
-  List<String> _effectLines(PlayerCombatStats playerCombatStats) {
-    final skill = widget.skill;
-    final lines = <String>[];
-
-    final damage = skill.data.damageEffect;
-    if (damage != null) {
-      final amount = (damage.valueAtLevel(skill.level) *
-              playerCombatStats.attackPowerFor(
-                  damage.damageType ?? SkillDamageType.physical))
-          .round();
-      lines.add('${damage.damageType?.name ?? 'Weapon Type'} Damage: $amount');
-    }
-
-    final shield = skill.data.shieldEffect;
-    if (shield != null) {
-      final amount =
-          (shield.valueAtLevel(skill.level) * playerCombatStats.maxHealth)
-              .round();
-      lines.add('Shield: $amount HP');
-    }
-
-    for (final chance in skill.data.statusEffectChances) {
-      final label = _capitalize(chance.statusEffectType?.name ?? 'Status');
-      lines.add(
-          '$label Chance: ${_percentText(chance.valueAtLevel(skill.level))}');
-    }
-
-    return lines;
   }
 }
 

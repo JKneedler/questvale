@@ -25,6 +25,14 @@ class FrostArmor extends BaseActiveSkill {
   String get description => data.description
       .replaceAll('x%', percentText(data.shieldEffect?.valueAtLevel(level)));
 
+  // The template reads "...equal to x% of Max HP" — a bare 'x%' swap would
+  // read as "equal to 20 of Max HP", so the whole "x% of Max HP" phrase is
+  // replaced with the real HP amount instead.
+  @override
+  String combatDescription(PlayerCombatStats playerCombatStats) => data
+      .description
+      .replaceAll('x% of Max HP', '${realShieldAmount(playerCombatStats)} HP');
+
   @override
   Future<void> execute(
       CombatService combatService,
