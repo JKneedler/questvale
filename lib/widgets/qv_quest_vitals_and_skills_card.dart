@@ -768,30 +768,55 @@ class _SkillTargetContentState extends State<_SkillTargetContent> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Stack(
+              Column(
                 children: [
-                  QvSkillButton(
-                    skillIconPath: skill.data.iconPath,
-                    skillButtonColor: skill.data.buttonColor,
-                    width: 65,
-                    height: 65,
-                    darkened: onCooldown,
-                  ),
-                  if (onCooldown)
-                    Positioned.fill(
-                      child: IgnorePointer(
-                        child: Center(
-                          child: Text(
-                            DataFormatters.formatCountdown(remaining),
-                            textAlign: TextAlign.center,
-                            style: QvTextStyles.caption.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
+                  Stack(
+                    children: [
+                      QvSkillButton(
+                        skillIconPath: skill.data.iconPath,
+                        skillButtonColor: skill.data.buttonColor,
+                        width: 65,
+                        height: 65,
+                        darkened: onCooldown,
+                      ),
+                      if (onCooldown)
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            child: Center(
+                              child: Text(
+                                DataFormatters.formatCountdown(remaining),
+                                textAlign: TextAlign.center,
+                                style: QvTextStyles.caption.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  // Cost/cooldown moved here from the description column,
+                  // per feedback — reads as a property of the skill/icon
+                  // itself rather than another description-column line.
+                  SizedBox(
+                    width: 65,
+                    child: Column(
+                      children: [
+                        Text('${skill.data.apCost ?? 0} AP',
+                            textAlign: TextAlign.center,
+                            style: QvTextStyles.caption.copyWith(
+                                color: colorScheme.onSurface
+                                    .withValues(alpha: 0.75))),
+                        Text(_cooldownText(skill.data.cooldown),
+                            textAlign: TextAlign.center,
+                            style: QvTextStyles.caption.copyWith(
+                                color: colorScheme.onSurface
+                                    .withValues(alpha: 0.75))),
+                      ],
                     ),
+                  ),
                 ],
               ),
               const SizedBox(width: 12),
@@ -818,14 +843,7 @@ class _SkillTargetContentState extends State<_SkillTargetContent> {
                         Text(skill.description,
                             style: QvTextStyles.note
                                 .copyWith(color: colorScheme.onSurface)),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Text(
-                              'AP Cost: ${skill.data.apCost ?? 0} • Cooldown: ${_cooldownText(skill.data.cooldown)}',
-                              style: QvTextStyles.caption.copyWith(
-                                  color: colorScheme.onSurface
-                                      .withValues(alpha: 0.75))),
-                        ),
+                        const SizedBox(height: 4),
                         ..._effectLines(playerCombatStats)
                             .map((line) => Padding(
                                   padding: const EdgeInsets.only(top: 2),
