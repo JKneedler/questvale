@@ -97,7 +97,7 @@ class QuestVitalsAndSkillsCard extends StatelessWidget {
   // that content instead of resizing it. Tuned live the same way
   // _detailHeight is; keep in sync if this card's own padding/content ever
   // changes height.
-  static const double collapsedHeight = 198;
+  static const double collapsedHeight = 204;
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +146,13 @@ class QuestVitalsAndSkillsCard extends StatelessWidget {
     return QvBackground(
       width: double.infinity,
       type: QvBackgroundType.surfaceNoBottom,
-      padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+      // Top padding bumped from the other 3 sides' 12/12/12 — per
+      // feedback, _SkillTargetContent's icon read too close to the top
+      // edge with the old uniform-ish 10. This is the whole card's own
+      // padding (every state's content sits inside it, not just the
+      // skill-target one), so collapsedHeight below grows by the same
+      // 6px this adds.
+      padding: const EdgeInsets.fromLTRB(12, 16, 12, 12),
       child: AnimatedSize(
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeInOut,
