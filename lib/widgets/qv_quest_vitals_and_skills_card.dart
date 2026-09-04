@@ -813,7 +813,7 @@ class _SkillTargetContentState extends State<_SkillTargetContent> {
                           child: Center(
                             child: Text('${skill.data.apCost ?? 0} AP',
                                 textAlign: TextAlign.center,
-                                style: QvTextStyles.note
+                                style: QvTextStyles.label
                                     .copyWith(color: colorScheme.onSurface)),
                           ),
                         ),
@@ -826,7 +826,7 @@ class _SkillTargetContentState extends State<_SkillTargetContent> {
                           child: Center(
                             child: Text(_cooldownText(skill.data.cooldown),
                                 textAlign: TextAlign.center,
-                                style: QvTextStyles.note
+                                style: QvTextStyles.label
                                     .copyWith(color: colorScheme.onSurface)),
                           ),
                         ),
@@ -846,7 +846,7 @@ class _SkillTargetContentState extends State<_SkillTargetContent> {
                           children: [
                             Expanded(
                               child: Text(skill.data.name,
-                                  style: QvTextStyles.itemTitle
+                                  style: QvTextStyles.sectionTitle
                                       .copyWith(color: colorScheme.onSurface)),
                             ),
                             Text('Lv ${skill.level}',
@@ -864,8 +864,9 @@ class _SkillTargetContentState extends State<_SkillTargetContent> {
                         // Fire Damage per mote consumed") instead of a
                         // separate "Fire Damage: 3" line underneath it.
                         Text(skill.combatDescription(playerCombatStats),
-                            style: QvTextStyles.note
-                                .copyWith(color: colorScheme.onSurface)),
+                            style: QvTextStyles.body.copyWith(
+                                color: colorScheme.onSurface
+                                    .withValues(alpha: 0.85))),
                       ],
                     ),
                   ),
