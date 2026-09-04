@@ -88,7 +88,7 @@ class QuestVitalsAndSkillsCard extends StatelessWidget {
   // button row need far less room than the other three detail views'
   // portrait/stat-list layouts, and stretching it to match would just
   // leave dead space. Tuned live the same way.
-  static const double _skillTargetHeight = 190;
+  static const double _skillTargetHeight = 220;
 
   // This card's own rendered height in its normal (Skills-or-placeholder +
   // vitals) state — QuestEncounterView reads this to reserve exactly that
@@ -788,40 +788,34 @@ class _SkillTargetContentState extends State<_SkillTargetContent> {
                   const SizedBox(height: 4),
                   // Cost/cooldown moved here from the description column,
                   // per feedback — reads as a property of the skill/icon
-                  // itself rather than another description-column line. One
-                  // shared QvInsetBackground (surfaceContainer — same fill
-                  // colorScheme.surfaceContainer uses everywhere else, e.g.
-                  // this card's own Cancel button below) rather than two
-                  // bare Text widgets, with a short primary-colored divider
-                  // standing in for the seam a second inset box would
-                  // otherwise have — same "row split by a hairline" idiom
-                  // as _EnemyNextAttackSlice's countdown/attack Flex above,
-                  // just narrower than a full-width rule reads better at
-                  // this box's width.
-                  QvInsetBackground(
+                  // itself rather than another description-column line.
+                  // Two separate QvInsetBackground boxes (surfaceContainer —
+                  // same fill colorScheme.surfaceContainer uses everywhere
+                  // else, e.g. this card's own Cancel button below) rather
+                  // than one shared box with an internal divider.
+                  SizedBox(
                     width: 65,
-                    type: QvInsetBackgroundType.surfaceContainer,
-                    padding: const EdgeInsets.symmetric(vertical: 4),
                     child: Column(
                       children: [
-                        Text('${skill.data.apCost ?? 0} AP',
-                            textAlign: TextAlign.center,
-                            style: QvTextStyles.caption
-                                .copyWith(color: colorScheme.onSurface)),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 3),
-                          child: Center(
-                            child: Container(
-                              width: 28,
-                              height: 2,
-                              color: colorScheme.primary,
-                            ),
-                          ),
+                        QvInsetBackground(
+                          width: 65,
+                          type: QvInsetBackgroundType.surfaceContainer,
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Text('${skill.data.apCost ?? 0} AP',
+                              textAlign: TextAlign.center,
+                              style: QvTextStyles.caption
+                                  .copyWith(color: colorScheme.onSurface)),
                         ),
-                        Text(_cooldownText(skill.data.cooldown),
-                            textAlign: TextAlign.center,
-                            style: QvTextStyles.caption
-                                .copyWith(color: colorScheme.onSurface)),
+                        const SizedBox(height: 4),
+                        QvInsetBackground(
+                          width: 65,
+                          type: QvInsetBackgroundType.surfaceContainer,
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Text(_cooldownText(skill.data.cooldown),
+                              textAlign: TextAlign.center,
+                              style: QvTextStyles.caption
+                                  .copyWith(color: colorScheme.onSurface)),
+                        ),
                       ],
                     ),
                   ),
