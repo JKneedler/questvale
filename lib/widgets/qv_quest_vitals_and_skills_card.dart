@@ -802,14 +802,14 @@ class _SkillTargetContentState extends State<_SkillTargetContent> {
                   // a box taller than its text (however slightly) reads as
                   // top-aligned instead of centered.
                   SizedBox(
-                    width: 54,
+                    width: 65,
                     child: Column(
                       children: [
                         QvInsetBackground(
-                          width: 54,
+                          width: 65,
                           type: QvInsetBackgroundType.surfaceContainer,
                           size: QvBarSize.small,
-                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          padding: const EdgeInsets.symmetric(vertical: 4),
                           child: Center(
                             child: Text('${skill.data.apCost ?? 0} AP',
                                 textAlign: TextAlign.center,
@@ -819,10 +819,10 @@ class _SkillTargetContentState extends State<_SkillTargetContent> {
                         ),
                         const SizedBox(height: 4),
                         QvInsetBackground(
-                          width: 54,
+                          width: 65,
                           type: QvInsetBackgroundType.surfaceContainer,
                           size: QvBarSize.small,
-                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          padding: const EdgeInsets.symmetric(vertical: 4),
                           child: Center(
                             child: Text(_cooldownText(skill.data.cooldown),
                                 textAlign: TextAlign.center,
