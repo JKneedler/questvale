@@ -88,7 +88,7 @@ class QuestVitalsAndSkillsCard extends StatelessWidget {
   // button row need far less room than the other three detail views'
   // portrait/stat-list layouts, and stretching it to match would just
   // leave dead space. Tuned live the same way.
-  static const double _skillTargetHeight = 200;
+  static const double _skillTargetHeight = 190;
 
   // This card's own rendered height in its normal (Skills-or-placeholder +
   // vitals) state — QuestEncounterView reads this to reserve exactly that
@@ -684,6 +684,54 @@ String _cooldownText(double? cooldownHours) {
   return '${wholeHours}h ${minutes}m';
 }
 
+// Highlights every case-sensitive, whole-word match of `word` in `text` in
+// `highlightColor`, leaving the rest at `baseStyle` — used to color a
+// skill's damage-type name (e.g. "Fire") within its own combat
+// description. Case-sensitive and whole-word rather than a plain
+// contains/replace is deliberate: skill descriptions only capitalize an
+// element's name when naming the actual mechanic ("Fire Damage", "Fire
+// mote"), and use it lowercase in flavor text ("a bolt of fire", "protective
+// ice") — matching the capitalized form highlights the mechanic callouts
+// (damage AND mote mentions alike, since both are the same color-coded
+// element as the mote pips elsewhere in this UI) without touching the
+// flavor text around them. `word`/`highlightColor` are null for a skill
+// with no damage component (Frost Armor) or no fixed color for its type
+// (weaponType, e.g. Arcane Bolt) — either falls back to a plain Text.
+Widget _highlightedDescription(String text, TextStyle baseStyle,
+    {String? word, Color? highlightColor}) {
+  if (word == null || word.isEmpty || highlightColor == null) {
+    return Text(text, style: baseStyle);
+  }
+  final matches =
+      RegExp('\\b${RegExp.escape(word)}\\b').allMatches(text).toList();
+  if (matches.isEmpty) {
+    return Text(text, style: baseStyle);
+  }
+
+  final spans = <TextSpan>[];
+  var cursor = 0;
+  for (final match in matches) {
+    if (match.start > cursor) {
+      spans.add(TextSpan(text: text.substring(cursor, match.start)));
+    }
+    spans.add(TextSpan(
+      text: text.substring(match.start, match.end),
+      style: TextStyle(color: highlightColor),
+    ));
+    cursor = match.end;
+  }
+  if (cursor < text.length) {
+    spans.add(TextSpan(text: text.substring(cursor)));
+  }
+  // Text.rich, not a bare RichText — RichText's TextSpan.style is used
+  // exactly as given with no DefaultTextStyle merging, so it'd silently
+  // drop the app-wide Pixel1 fontFamily (set on MaterialApp's ThemeData,
+  // not on QvTextStyles.note itself) that every plain Text picks up
+  // through that merge. Text.rich goes through the same DefaultTextStyle
+  // merge plain Text does.
+  return Text.rich(TextSpan(style: baseStyle, children: spans));
+}
+
 // Moved from combat_page.dart's old floating TargetEnemySkillBox, laid out
 // per the player's own spec instead of that widget's plain top-to-bottom
 // stack: the skill's icon sits to the left, its name/level/description/
@@ -773,7 +821,7 @@ class _SkillTargetContentState extends State<_SkillTargetContent> {
                     height: 65,
                     darkened: onCooldown,
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 8),
                   // Cost/cooldown moved here from the description column,
                   // per feedback — reads as a property of the skill/icon
                   // itself rather than another description-column line.
@@ -840,11 +888,21 @@ class _SkillTargetContentState extends State<_SkillTargetContent> {
                         // so the description itself carries the actual
                         // number a cast will deal/grant (e.g. "dealing 3
                         // Fire Damage per mote consumed") instead of a
-                        // separate "Fire Damage: 3" line underneath it.
-                        Text(skill.combatDescription(playerCombatStats),
-                            style: QvTextStyles.note.copyWith(
-                                color: colorScheme.onSurface
-                                    .withValues(alpha: 0.85))),
+                        // separate "Fire Damage: 3" line underneath it. The
+                        // damage type's own name (if any) is highlighted in
+                        // its color wherever it appears — see
+                        // _highlightedDescription's own doc comment for why
+                        // that's a case-sensitive whole-word match rather
+                        // than a fixed "X Damage" phrase.
+                        _highlightedDescription(
+                          skill.combatDescription(playerCombatStats),
+                          QvTextStyles.note.copyWith(
+                              color: colorScheme.onSurface
+                                  .withValues(alpha: 0.85)),
+                          word: skill.data.damageEffect?.damageType?.name,
+                          highlightColor:
+                              skill.data.damageEffect?.damageType?.color,
+                        ),
                       ],
                     ),
                   ),
