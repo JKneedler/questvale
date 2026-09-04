@@ -76,19 +76,23 @@ class QuestVitalsAndSkillsCard extends StatelessWidget {
   // see this class's own doc comment.
   final CombatState? combatState;
 
-  // Fixed height for the player/enemy/flee detail views — drives
-  // AnimatedSize's grow-upward animation below. Tuned live in the
-  // simulator (comfortably fits _EnemyDetailContent's tallest case)
-  // rather than derived, same as every other fixed pixel-art dimension in
-  // this UI.
+  // Fixed height for the player/enemy detail views — drives AnimatedSize's
+  // grow-upward animation below. Tuned live in the simulator (comfortably
+  // fits _EnemyDetailContent's tallest case) rather than derived, same as
+  // every other fixed pixel-art dimension in this UI.
   static const double _detailHeight = 300;
 
   // _SkillTargetContent's own height — deliberately smaller than
   // _detailHeight: an icon-plus-description row and a confirm/cancel
-  // button row need far less room than the other three detail views'
+  // button row need far less room than the other two detail views'
   // portrait/stat-list layouts, and stretching it to match would just
   // leave dead space. Tuned live the same way.
   static const double _skillTargetHeight = 190;
+
+  // _FleeConfirmationContent's own height — a title, a divider, one short
+  // paragraph, and a button row need even less room than
+  // _skillTargetHeight's icon+description layout. Tuned live the same way.
+  static const double _fleeHeight = 160;
 
   // This card's own rendered height in its normal (Skills-or-placeholder +
   // vitals) state — QuestEncounterView reads this to reserve exactly that
@@ -124,7 +128,7 @@ class QuestVitalsAndSkillsCard extends StatelessWidget {
           const SizedBox(height: _detailHeight, child: _PlayerDetailContent());
     } else if (isConfirmingFlee) {
       content = const SizedBox(
-          height: _detailHeight, child: _FleeConfirmationContent());
+          height: _fleeHeight, child: _FleeConfirmationContent());
     } else if (isTargetingSkill) {
       content = SizedBox(
         height: _skillTargetHeight,
