@@ -2,38 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:questvale/cubits/home/nav_cubit.dart';
 import 'package:questvale/cubits/home/nav_state.dart';
-import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/world_tab/questing/combat/combat_cubit.dart';
 import 'package:questvale/cubits/world_tab/questing/combat/combat_state.dart';
 import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_encounter_cubit.dart';
 import 'package:questvale/data/models/enemy.dart';
-import 'package:questvale/data/models/player_combat_stats.dart';
-import 'package:questvale/data/providers/game_data_models/skill_data.dart';
-import 'package:questvale/data/skills/base_active_skill.dart';
 import 'package:questvale/helpers/constants.dart';
 import 'package:questvale/widgets/qv_damage_toast.dart';
 import 'package:jk_pixel_ui/jk_pixel_ui.dart';
-
-// Shared with TargetEnemySkillBox's effect-line list below — same
-// formatting convention as skills_gear_up_page.dart's identically-named
-// top-level helpers (SkillEffectComponent.baseValue is stored as a
-// fraction, e.g. 0.2 == 20%).
-String _percentText(double value) => '${(value * 100).round()}%';
-
-String _capitalize(String value) =>
-    value.isEmpty ? value : '${value[0].toUpperCase()}${value.substring(1)}';
-
-// SkillData.cooldown is in fractional hours (e.g. 0.5 for Firebolt) — see
-// its own doc comment. 0/null both mean "no cooldown" (Arcane Bolt).
-String _cooldownText(double? cooldownHours) {
-  final hours = cooldownHours ?? 0;
-  if (hours <= 0) return 'None';
-  final wholeHours = hours.floor();
-  final minutes = ((hours % 1) * 60).round();
-  if (wholeHours == 0) return '${minutes}m';
-  if (minutes == 0) return '${wholeHours}h';
-  return '${wholeHours}h ${minutes}m';
-}
 
 // CombatCubit is now provided by QuestEncounterView, not created here — see
 // its own doc comment. Live combat's own step in the quest flow no longer
@@ -198,14 +173,6 @@ class BattleFieldDisplay extends StatelessWidget {
     return MainAxisAlignment.center;
   }
 
-  QvAnimatedTransitionType getSkillAnimationTransitionType(
-      CombatState combatState) {
-    if (combatState.status == CombatStatus.targetingSkill) {
-      return QvAnimatedTransitionType.slideRight;
-    }
-    return QvAnimatedTransitionType.slideLeft;
-  }
-
   // Whether QuestVitalsAndSkillsCard is currently showing one of the three
   // detail views any tap on the battlefield should dismiss back to its
   // normal Skills+Vitals content — see BattleFieldDisplay.build's own mask
@@ -228,34 +195,22 @@ class BattleFieldDisplay extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Stack(
-                  children: [
-                    Center(
-                      child: GestureDetector(
-                        onTap: () =>
-                            context.read<CombatCubit>().onPlayerTap(context),
-                        child: SizedBox(
-                          width: 100,
-                          height: 100,
-                          child: Image.asset(
-                            'images/characters/mage.png',
-                            filterQuality: FilterQuality.none,
-                            width: 100,
-                            height: 100,
-                            scale: .1,
-                          ),
-                        ),
+                child: Center(
+                  child: GestureDetector(
+                    onTap: () =>
+                        context.read<CombatCubit>().onPlayerTap(context),
+                    child: SizedBox(
+                      width: 100,
+                      height: 100,
+                      child: Image.asset(
+                        'images/characters/mage.png',
+                        filterQuality: FilterQuality.none,
+                        width: 100,
+                        height: 100,
+                        scale: .1,
                       ),
                     ),
-                    QvAnimatedTransition(
-                      duration: Duration(milliseconds: 200),
-                      type: getSkillAnimationTransitionType(combatState),
-                      child: (combatState.status == CombatStatus.targetingSkill)
-                          ? TargetEnemySkillBox(
-                              skill: combatState.targetingSkill!)
-                          : SizedBox.shrink(),
-                    ),
-                  ],
+                  ),
                 ),
               ),
               Expanded(
@@ -411,101 +366,5 @@ class EnemyDisplay extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-class TargetEnemySkillBox extends StatelessWidget {
-  final BaseActiveSkill skill;
-  const TargetEnemySkillBox({super.key, required this.skill});
-
-  @override
-  Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-    final playerCombatStats =
-        context.read<PlayerCubit>().state.playerCombatStats;
-    if (playerCombatStats == null) {
-      return const SizedBox.shrink();
-    }
-    return Padding(
-      padding: EdgeInsets.all(6),
-      child: QvButton(
-        buttonColor: ButtonColor.surfaceContainer,
-        width: double.infinity,
-        height: double.infinity,
-        padding: EdgeInsets.all(10),
-        child: Column(
-          children: [
-            Text(skill.data.name),
-            Text('Lv ${skill.level}',
-                style:
-                    QvTextStyles.micro.copyWith(color: colorScheme.onSurface)),
-            Text(skill.description),
-            Padding(
-              padding: const EdgeInsets.only(top: 2),
-              child: Text(
-                  'AP Cost: ${skill.data.apCost ?? 0} • Cooldown: ${_cooldownText(skill.data.cooldown)}',
-                  style: QvTextStyles.caption.copyWith(
-                      color: colorScheme.onSurface.withValues(alpha: 0.75))),
-            ),
-            ..._effectLines(playerCombatStats).map((line) => Padding(
-                  padding: const EdgeInsets.only(top: 2),
-                  child: Text(line,
-                      style: QvTextStyles.caption
-                          .copyWith(color: colorScheme.onSurface)),
-                )),
-            Expanded(child: Container()),
-            QvButton(
-              width: double.infinity,
-              height: 36,
-              buttonColor: ButtonColor.primary,
-              onTap: () =>
-                  context.read<CombatCubit>().onAttackButtonTap(context),
-              child: Center(
-                  child: Text(
-                'Attack',
-                style:
-                    QvTextStyles.title.copyWith(color: colorScheme.secondary),
-              )),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // One line per real effect component this skill actually declares —
-  // damage, shield, status-effect proc chance — rather than the old fixed
-  // Damage/Damage Type pair, which showed a misleading blank/zero damage
-  // line for a skill with no damage component at all (e.g. Frost Armor).
-  // Values are computed the same way each skill's own execute() computes
-  // them (attackPowerFor for damage, maxHealth-scaled for shield) so what
-  // this panel shows matches what actually lands when Attack is tapped.
-  List<String> _effectLines(PlayerCombatStats playerCombatStats) {
-    final lines = <String>[];
-
-    final damage = skill.data.damageEffect;
-    if (damage != null) {
-      final amount = (damage.valueAtLevel(skill.level) *
-              playerCombatStats.attackPowerFor(
-                  damage.damageType ?? SkillDamageType.physical))
-          .round();
-      lines.add('${damage.damageType?.name ?? 'Weapon Type'} Damage: $amount');
-    }
-
-    final shield = skill.data.shieldEffect;
-    if (shield != null) {
-      final amount =
-          (shield.valueAtLevel(skill.level) * playerCombatStats.maxHealth)
-              .round();
-      lines.add('Shield: $amount HP');
-    }
-
-    for (final chance in skill.data.statusEffectChances) {
-      final label = _capitalize(chance.statusEffectType?.name ?? 'Status');
-      lines.add(
-          '$label Chance: ${_percentText(chance.valueAtLevel(skill.level))}');
-    }
-
-    return lines;
   }
 }

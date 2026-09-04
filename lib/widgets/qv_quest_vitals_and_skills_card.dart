@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:material_symbols_icons/symbols.dart';
+import 'package:questvale/cubits/home/player_cubit.dart';
 import 'package:questvale/cubits/home/player_state.dart';
 import 'package:questvale/cubits/world_tab/questing/combat/combat_cubit.dart';
 import 'package:questvale/cubits/world_tab/questing/combat/combat_state.dart';
@@ -10,9 +12,11 @@ import 'package:questvale/cubits/world_tab/questing/quest_encounter/quest_encoun
 import 'package:questvale/data/models/character.dart';
 import 'package:questvale/data/models/enemy.dart';
 import 'package:questvale/data/models/mage_motes.dart';
+import 'package:questvale/data/models/player_combat_stats.dart';
 import 'package:questvale/data/models/scheduled_timer.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_attack_data.dart';
 import 'package:questvale/data/providers/game_data_models/enemy_data.dart';
+import 'package:questvale/data/providers/game_data_models/skill_data.dart';
 import 'package:questvale/data/skills/base_active_skill.dart';
 import 'package:questvale/helpers/data_formatters.dart';
 import 'package:questvale/helpers/shared_enums.dart';
@@ -38,12 +42,14 @@ import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 // non-null while a live combat encounter is actually in progress (see
 // QuestEncounterView's own doc comment for how that's wired).
 //
-// Also the destination for player/enemy inspection and the flee
-// confirmation — tapping the player or an enemy on the battlefield used to
-// slide a separate floating PlayerInfoBox/EnemyInfoBox in over it, and
-// Flee used to open a QuestFleeConfirmationModal dialog; all three are now
-// this card's own detail content instead (_PlayerDetailContent/
-// _EnemyDetailContent/_FleeConfirmationContent below), and the card grows
+// Also the destination for player/enemy inspection, the flee confirmation,
+// and skill targeting — tapping the player or an enemy on the battlefield
+// used to slide a separate floating PlayerInfoBox/EnemyInfoBox in over it,
+// Flee used to open a QuestFleeConfirmationModal dialog, and tapping a
+// skill used to slide a floating TargetEnemySkillBox in on the player's
+// side of the battlefield; all four are now this card's own detail content
+// instead (_PlayerDetailContent/_EnemyDetailContent/
+// _FleeConfirmationContent/_SkillTargetContent below), and the card grows
 // upward via AnimatedSize (alignment: bottomCenter, so the card's bottom
 // edge — anchored against the nav bar — stays put while its top edge moves
 // up) to show them, fully replacing the normal Skills+Vitals content
@@ -51,10 +57,11 @@ import 'package:jk_pixel_ui/jk_pixel_ui.dart';
 // growth overlays the battlefield instead of resizing it —
 // QuestEncounterView's own Stack reserves this card's `collapsedHeight`
 // for the quest-step content behind it and positions this card as a
-// separate layer on top, free to grow past that reservation. Skill-
-// targeting (TargetEnemySkillBox) and the other planned moves
-// (Potions/Bag) stay as their own thing for now — see the Skill Cooldown
-// UI ticket.
+// separate layer on top, free to grow past that reservation. Tapping an
+// enemy still targets it exactly like before (CombatCubit.onEnemyTap is
+// unchanged) — only *where* the skill's own info/confirm UI lives moved.
+// Potions/Bag stay their own thing for now — see the Skill Cooldown UI
+// ticket.
 class QuestVitalsAndSkillsCard extends StatelessWidget {
   const QuestVitalsAndSkillsCard({
     super.key,
@@ -71,11 +78,19 @@ class QuestVitalsAndSkillsCard extends StatelessWidget {
   // see this class's own doc comment.
   final CombatState? combatState;
 
-  // Fixed height for both detail views — drives AnimatedSize's grow-upward
-  // animation below. Tuned live in the simulator (comfortably fits
-  // _EnemyDetailContent's tallest case) rather than derived, same as every
-  // other fixed pixel-art dimension in this UI.
+  // Fixed height for the player/enemy/flee detail views — drives
+  // AnimatedSize's grow-upward animation below. Tuned live in the
+  // simulator (comfortably fits _EnemyDetailContent's tallest case)
+  // rather than derived, same as every other fixed pixel-art dimension in
+  // this UI.
   static const double _detailHeight = 300;
+
+  // _SkillTargetContent's own height — deliberately smaller than
+  // _detailHeight: an icon-plus-description row and a confirm/cancel
+  // button row need far less room than the other three detail views'
+  // portrait/stat-list layouts, and stretching it to match would just
+  // leave dead space. Tuned live the same way.
+  static const double _skillTargetHeight = 190;
 
   // This card's own rendered height in its normal (Skills-or-placeholder +
   // vitals) state — QuestEncounterView reads this to reserve exactly that
@@ -94,8 +109,10 @@ class QuestVitalsAndSkillsCard extends StatelessWidget {
         combatState.inspectingEnemyIndex != -1;
     final isInspectingPlayer = combatState != null &&
         combatState.status == CombatStatus.inspectingPlayer;
-    final isConfirmingFlee =
-        combatState != null && combatState.status == CombatStatus.confirmingFlee;
+    final isConfirmingFlee = combatState != null &&
+        combatState.status == CombatStatus.confirmingFlee;
+    final isTargetingSkill = combatState != null &&
+        combatState.status == CombatStatus.targetingSkill;
 
     final Widget content;
     if (isInspectingEnemy) {
@@ -110,6 +127,11 @@ class QuestVitalsAndSkillsCard extends StatelessWidget {
     } else if (isConfirmingFlee) {
       content = const SizedBox(
           height: _detailHeight, child: _FleeConfirmationContent());
+    } else if (isTargetingSkill) {
+      content = SizedBox(
+        height: _skillTargetHeight,
+        child: _SkillTargetContent(skill: combatState.targetingSkill!),
+      );
     } else {
       content = _NormalContent(
         character: character,
@@ -205,12 +227,12 @@ class _NormalContent extends StatelessWidget {
                             .onSkillButtonTap(
                                 context, playerSkills.activeSkillSlot1!),
                         skill: playerSkills.activeSkillSlot1!,
-                        darkened: combatState.status ==
-                                CombatStatus.targetingSkill &&
-                            combatState.targetingSkill?.id !=
-                                playerSkills.activeSkillSlot1!.id,
-                        cooldownTimer: combatState.skillCooldownFor(
-                            playerSkills.activeSkillSlot1!),
+                        darkened:
+                            combatState.status == CombatStatus.targetingSkill &&
+                                combatState.targetingSkill?.id !=
+                                    playerSkills.activeSkillSlot1!.id,
+                        cooldownTimer: combatState
+                            .skillCooldownFor(playerSkills.activeSkillSlot1!),
                       ),
                     if (playerSkills.activeSkillSlot2 != null)
                       CombatSkillButton(
@@ -219,12 +241,12 @@ class _NormalContent extends StatelessWidget {
                             .onSkillButtonTap(
                                 context, playerSkills.activeSkillSlot2!),
                         skill: playerSkills.activeSkillSlot2!,
-                        darkened: combatState.status ==
-                                CombatStatus.targetingSkill &&
-                            combatState.targetingSkill?.id !=
-                                playerSkills.activeSkillSlot2!.id,
-                        cooldownTimer: combatState.skillCooldownFor(
-                            playerSkills.activeSkillSlot2!),
+                        darkened:
+                            combatState.status == CombatStatus.targetingSkill &&
+                                combatState.targetingSkill?.id !=
+                                    playerSkills.activeSkillSlot2!.id,
+                        cooldownTimer: combatState
+                            .skillCooldownFor(playerSkills.activeSkillSlot2!),
                       ),
                     if (playerSkills.activeSkillSlot3 != null)
                       CombatSkillButton(
@@ -233,12 +255,12 @@ class _NormalContent extends StatelessWidget {
                             .onSkillButtonTap(
                                 context, playerSkills.activeSkillSlot3!),
                         skill: playerSkills.activeSkillSlot3!,
-                        darkened: combatState.status ==
-                                CombatStatus.targetingSkill &&
-                            combatState.targetingSkill?.id !=
-                                playerSkills.activeSkillSlot3!.id,
-                        cooldownTimer: combatState.skillCooldownFor(
-                            playerSkills.activeSkillSlot3!),
+                        darkened:
+                            combatState.status == CombatStatus.targetingSkill &&
+                                combatState.targetingSkill?.id !=
+                                    playerSkills.activeSkillSlot3!.id,
+                        cooldownTimer: combatState
+                            .skillCooldownFor(playerSkills.activeSkillSlot3!),
                       ),
                     if (playerSkills.activeSkillSlot4 != null)
                       CombatSkillButton(
@@ -247,12 +269,12 @@ class _NormalContent extends StatelessWidget {
                             .onSkillButtonTap(
                                 context, playerSkills.activeSkillSlot4!),
                         skill: playerSkills.activeSkillSlot4!,
-                        darkened: combatState.status ==
-                                CombatStatus.targetingSkill &&
-                            combatState.targetingSkill?.id !=
-                                playerSkills.activeSkillSlot4!.id,
-                        cooldownTimer: combatState.skillCooldownFor(
-                            playerSkills.activeSkillSlot4!),
+                        darkened:
+                            combatState.status == CombatStatus.targetingSkill &&
+                                combatState.targetingSkill?.id !=
+                                    playerSkills.activeSkillSlot4!.id,
+                        cooldownTimer: combatState
+                            .skillCooldownFor(playerSkills.activeSkillSlot4!),
                       ),
                     if (playerSkills.activeSkillSlot5 != null)
                       CombatSkillButton(
@@ -261,12 +283,12 @@ class _NormalContent extends StatelessWidget {
                             .onSkillButtonTap(
                                 context, playerSkills.activeSkillSlot5!),
                         skill: playerSkills.activeSkillSlot5!,
-                        darkened: combatState.status ==
-                                CombatStatus.targetingSkill &&
-                            combatState.targetingSkill?.id !=
-                                playerSkills.activeSkillSlot5!.id,
-                        cooldownTimer: combatState.skillCooldownFor(
-                            playerSkills.activeSkillSlot5!),
+                        darkened:
+                            combatState.status == CombatStatus.targetingSkill &&
+                                combatState.targetingSkill?.id !=
+                                    playerSkills.activeSkillSlot5!.id,
+                        cooldownTimer: combatState
+                            .skillCooldownFor(playerSkills.activeSkillSlot5!),
                       ),
                   ],
                 ),
@@ -359,10 +381,8 @@ class _EnemyDetailContent extends StatelessWidget {
               child: Column(
                 children: [
                   _EnemyNextAttackSlice(
-                    attackTimer: context
-                        .read<CombatCubit>()
-                        .state
-                        .attackTimerFor(enemy),
+                    attackTimer:
+                        context.read<CombatCubit>().state.attackTimerFor(enemy),
                     enemyData: enemyData,
                   ),
                   _EnemyStatusEffectsSlice(),
@@ -647,6 +667,178 @@ class _FleeConfirmationContent extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+// Shared with _SkillTargetContent's own effect-line list below — same
+// formatting convention as skills_gear_up_page.dart's identically-named
+// top-level helpers (SkillEffectComponent.baseValue is stored as a
+// fraction, e.g. 0.2 == 20%).
+String _percentText(double value) => '${(value * 100).round()}%';
+
+String _capitalize(String value) =>
+    value.isEmpty ? value : '${value[0].toUpperCase()}${value.substring(1)}';
+
+// SkillData.cooldown is in fractional hours (e.g. 0.5 for Firebolt) — see
+// its own doc comment. 0/null both mean "no cooldown" (Arcane Bolt).
+String _cooldownText(double? cooldownHours) {
+  final hours = cooldownHours ?? 0;
+  if (hours <= 0) return 'None';
+  final wholeHours = hours.floor();
+  final minutes = ((hours % 1) * 60).round();
+  if (wholeHours == 0) return '${minutes}m';
+  if (minutes == 0) return '${wholeHours}h';
+  return '${wholeHours}h ${minutes}m';
+}
+
+// Moved from combat_page.dart's old floating TargetEnemySkillBox, laid out
+// per the player's own spec instead of that widget's plain top-to-bottom
+// stack: the skill's icon sits to the left, its name/level/description/
+// cost/effect lines fill the remaining width to the right (wrapped in a
+// scrollable — same defensive reasoning as _EnemyDetailContent's stat
+// list, a verbose skill description shouldn't be able to overflow this
+// card), and a Cancel/Confirm button row sits below, X and check
+// (Symbols.close/Symbols.check) rather than text — mirroring
+// _FleeConfirmationContent's own Cancel/Yes-Flee pairing but iconic since
+// there's much less width to work with alongside the icon+text row above.
+// Cancel goes through CombatCubit.setIdle() (clears targetingSkill/target
+// exactly like re-tapping the same skill already did); Confirm is the
+// same onAttackButtonTap the old "Attack" button called — tapping an
+// enemy to (re)target it is untouched, still CombatCubit.onEnemyTap via
+// EnemyDisplay in combat_page.dart.
+class _SkillTargetContent extends StatelessWidget {
+  final BaseActiveSkill skill;
+  const _SkillTargetContent({required this.skill});
+
+  @override
+  Widget build(BuildContext context) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final playerCombatStats =
+        context.read<PlayerCubit>().state.playerCombatStats;
+    if (playerCombatStats == null) {
+      return const SizedBox.shrink();
+    }
+    return Column(
+      children: [
+        Expanded(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              QvSkillButton(
+                skillIconPath: skill.data.iconPath,
+                skillButtonColor: skill.data.buttonColor,
+                width: 65,
+                height: 65,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: QvFadingScrollable(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(skill.data.name,
+                            style: QvTextStyles.itemTitle
+                                .copyWith(color: colorScheme.onSurface)),
+                        Text('Lv ${skill.level}',
+                            style: QvTextStyles.micro.copyWith(
+                                color: colorScheme.onSurface
+                                    .withValues(alpha: 0.75))),
+                        const SizedBox(height: 4),
+                        Text(skill.description,
+                            style: QvTextStyles.note
+                                .copyWith(color: colorScheme.onSurface)),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                              'AP Cost: ${skill.data.apCost ?? 0} • Cooldown: ${_cooldownText(skill.data.cooldown)}',
+                              style: QvTextStyles.caption.copyWith(
+                                  color: colorScheme.onSurface
+                                      .withValues(alpha: 0.75))),
+                        ),
+                        ..._effectLines(playerCombatStats)
+                            .map((line) => Padding(
+                                  padding: const EdgeInsets.only(top: 2),
+                                  child: Text(line,
+                                      style: QvTextStyles.caption.copyWith(
+                                          color: colorScheme.onSurface)),
+                                )),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          spacing: 10,
+          children: [
+            Expanded(
+              child: QvButton(
+                height: 40,
+                buttonColor: ButtonColor.surfaceContainer,
+                onTap: () => context.read<CombatCubit>().setIdle(),
+                child: Center(
+                  child: Icon(Symbols.close,
+                      color: colorScheme.onSurface, size: 24),
+                ),
+              ),
+            ),
+            Expanded(
+              child: QvButton(
+                height: 40,
+                buttonColor: ButtonColor.primary,
+                onTap: () =>
+                    context.read<CombatCubit>().onAttackButtonTap(context),
+                child: Center(
+                  child: Icon(Symbols.check,
+                      color: colorScheme.secondary, size: 24),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // One line per real effect component this skill actually declares —
+  // damage, shield, status-effect proc chance — rather than a fixed
+  // Damage/Damage Type pair, which would show a misleading blank/zero
+  // damage line for a skill with no damage component at all (e.g. Frost
+  // Armor). Values are computed the same way each skill's own execute()
+  // computes them (attackPowerFor for damage, maxHealth-scaled for
+  // shield), so this can't drift from what actually lands when Confirm is
+  // tapped.
+  List<String> _effectLines(PlayerCombatStats playerCombatStats) {
+    final lines = <String>[];
+
+    final damage = skill.data.damageEffect;
+    if (damage != null) {
+      final amount = (damage.valueAtLevel(skill.level) *
+              playerCombatStats.attackPowerFor(
+                  damage.damageType ?? SkillDamageType.physical))
+          .round();
+      lines.add('${damage.damageType?.name ?? 'Weapon Type'} Damage: $amount');
+    }
+
+    final shield = skill.data.shieldEffect;
+    if (shield != null) {
+      final amount =
+          (shield.valueAtLevel(skill.level) * playerCombatStats.maxHealth)
+              .round();
+      lines.add('Shield: $amount HP');
+    }
+
+    for (final chance in skill.data.statusEffectChances) {
+      final label = _capitalize(chance.statusEffectType?.name ?? 'Status');
+      lines.add(
+          '$label Chance: ${_percentText(chance.valueAtLevel(skill.level))}');
+    }
+
+    return lines;
   }
 }
 
