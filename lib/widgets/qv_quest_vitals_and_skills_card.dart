@@ -701,12 +701,14 @@ String _cooldownText(double? cooldownHours) {
 // EnemyDisplay in combat_page.dart.
 //
 // A skill on cooldown can still be selected here (CombatSkillButton's own
-// onTap is no longer cooldown-gated — see that class) — the icon carries
-// the same live countdown overlay it shows in the Skills row, and Confirm
-// itself is what's disabled (QvButton's own onTap: null + darkened, same
-// "disabled" idiom used elsewhere) rather than blocking selection
-// entirely, so the player can still read a cooling-down skill's
-// description without it staying invisible until ready.
+// onTap is no longer cooldown-gated — see that class) — Confirm itself is
+// what's disabled (QvButton's own onTap: null + darkened, same "disabled"
+// idiom used elsewhere) rather than blocking selection entirely, so the
+// player can still read a cooling-down skill's description without it
+// staying invisible until ready. The live countdown itself moved off the
+// icon (which shows no overlay here, unlike the Skills row's own
+// CombatSkillButton) and onto the Confirm button, replacing its checkmark
+// — one readout for "why can't I cast this," not two.
 class _SkillTargetContent extends StatefulWidget {
   final BaseActiveSkill skill;
   final ScheduledTimer? cooldownTimer;
@@ -759,31 +761,17 @@ class _SkillTargetContentState extends State<_SkillTargetContent> {
             children: [
               Column(
                 children: [
-                  Stack(
-                    children: [
-                      QvSkillButton(
-                        skillIconPath: skill.data.iconPath,
-                        skillButtonColor: skill.data.buttonColor,
-                        width: 65,
-                        height: 65,
-                        darkened: onCooldown,
-                      ),
-                      if (onCooldown)
-                        Positioned.fill(
-                          child: IgnorePointer(
-                            child: Center(
-                              child: Text(
-                                DataFormatters.formatCountdown(remaining),
-                                textAlign: TextAlign.center,
-                                style: QvTextStyles.caption.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
+                  // No countdown overlay on the icon here (unlike the
+                  // Skills row's own CombatSkillButton) — per feedback, the
+                  // active countdown now lives on the Confirm button below
+                  // instead, replacing its checkmark, so it isn't shown
+                  // twice.
+                  QvSkillButton(
+                    skillIconPath: skill.data.iconPath,
+                    skillButtonColor: skill.data.buttonColor,
+                    width: 65,
+                    height: 65,
+                    darkened: onCooldown,
                   ),
                   const SizedBox(height: 4),
                   // Cost/cooldown moved here from the description column,
@@ -800,33 +788,36 @@ class _SkillTargetContentState extends State<_SkillTargetContent> {
                   // "30m" label. Text is wrapped in Center since Container
                   // only aligns its child top-left by default; without it,
                   // a box taller than its text (however slightly) reads as
-                  // top-aligned instead of centered.
+                  // top-aligned instead of centered. Narrower than the
+                  // icon and back to a smaller font, per feedback — at the
+                  // icon's own width/label-size these were overshadowing
+                  // it rather than reading as a secondary detail beneath it.
                   SizedBox(
-                    width: 65,
+                    width: 50,
                     child: Column(
                       children: [
                         QvInsetBackground(
-                          width: 65,
+                          width: 50,
                           type: QvInsetBackgroundType.surfaceContainer,
                           size: QvBarSize.small,
-                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          padding: const EdgeInsets.symmetric(vertical: 3),
                           child: Center(
                             child: Text('${skill.data.apCost ?? 0} AP',
                                 textAlign: TextAlign.center,
-                                style: QvTextStyles.label
+                                style: QvTextStyles.note
                                     .copyWith(color: colorScheme.onSurface)),
                           ),
                         ),
                         const SizedBox(height: 4),
                         QvInsetBackground(
-                          width: 65,
+                          width: 50,
                           type: QvInsetBackgroundType.surfaceContainer,
                           size: QvBarSize.small,
-                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          padding: const EdgeInsets.symmetric(vertical: 3),
                           child: Center(
                             child: Text(_cooldownText(skill.data.cooldown),
                                 textAlign: TextAlign.center,
-                                style: QvTextStyles.label
+                                style: QvTextStyles.note
                                     .copyWith(color: colorScheme.onSurface)),
                           ),
                         ),
@@ -864,7 +855,7 @@ class _SkillTargetContentState extends State<_SkillTargetContent> {
                         // Fire Damage per mote consumed") instead of a
                         // separate "Fire Damage: 3" line underneath it.
                         Text(skill.combatDescription(playerCombatStats),
-                            style: QvTextStyles.body.copyWith(
+                            style: QvTextStyles.note.copyWith(
                                 color: colorScheme.onSurface
                                     .withValues(alpha: 0.85))),
                       ],
@@ -903,9 +894,21 @@ class _SkillTargetContentState extends State<_SkillTargetContent> {
                     ? null
                     : () =>
                         context.read<CombatCubit>().onAttackButtonTap(context),
+                // The active cooldown countdown lives here instead of as an
+                // overlay on the icon above (see that Stack's own removal)
+                // — reads more directly as "why this button is disabled"
+                // than a second, separate timer readout would.
                 child: Center(
-                  child: Icon(Symbols.check,
-                      color: colorScheme.secondary, size: 24),
+                  child: onCooldown
+                      ? Text(
+                          DataFormatters.formatCountdown(remaining),
+                          textAlign: TextAlign.center,
+                          style: QvTextStyles.itemTitle.copyWith(
+                            color: Colors.white,
+                          ),
+                        )
+                      : Icon(Symbols.check,
+                          color: colorScheme.secondary, size: 24),
                 ),
               ),
             ),
