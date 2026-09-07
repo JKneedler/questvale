@@ -67,6 +67,8 @@ class QuestVitalsAndSkillsCard extends StatelessWidget {
     required this.mageMotes,
     required this.playerSkills,
     required this.combatState,
+    this.chestRarity,
+    this.onOpenChest,
   });
 
   final Character character;
@@ -75,6 +77,15 @@ class QuestVitalsAndSkillsCard extends StatelessWidget {
   // Non-null only while a live combat encounter is actually in progress —
   // see this class's own doc comment.
   final CombatState? combatState;
+  // Non-null only while a chest encounter is currently awaiting Open (i.e.
+  // combatState is null, no combat is involved) — QuestEncounterView
+  // computes this the same way it computes isLiveCombat. Both are always
+  // non-null together (chestRarity is what to show, onOpenChest is what a
+  // tap on the Open button does — see QuestEncounterCubit.completeEncounter,
+  // the same call ChestEncounterPage's own visual card used to make
+  // directly before this moved here).
+  final Rarity? chestRarity;
+  final VoidCallback? onOpenChest;
 
   // Fixed height for the player/enemy detail views — drives AnimatedSize's
   // grow-upward animation below. Tuned live in the simulator (comfortably
@@ -93,6 +104,11 @@ class QuestVitalsAndSkillsCard extends StatelessWidget {
   // paragraph, and a button row need even less room than
   // _skillTargetHeight's icon+description layout. Tuned live the same way.
   static const double _fleeHeight = 190;
+
+  // _ChestFoundContent's own height — just a title and a single Open
+  // button, even less than _fleeHeight's title+divider+paragraph+buttons.
+  // Tuned live the same way.
+  static const double _chestHeight = 130;
 
   // This card's own rendered height in its normal (Skills-or-placeholder +
   // vitals) state — QuestEncounterView reads this to reserve exactly that
@@ -137,6 +153,11 @@ class QuestVitalsAndSkillsCard extends StatelessWidget {
           cooldownTimer:
               combatState.skillCooldownFor(combatState.targetingSkill!),
         ),
+      );
+    } else if (chestRarity != null) {
+      content = SizedBox(
+        height: _chestHeight,
+        child: _ChestFoundContent(rarity: chestRarity!, onOpen: onOpenChest!),
       );
     } else {
       content = _NormalContent(
@@ -679,6 +700,43 @@ class _FleeConfirmationContent extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ],
+    );
+  }
+}
+
+// Moved from ChestEncounterPage's own floating "Found a chest!" banner +
+// blinking "Open" hint (which used to sit atop, and make, the whole visual
+// chest card tappable) — per the player's request, that copy and the
+// actual Open action now live here instead; the visual card itself (rarity
+// badge + chest icon) stays put on the battlefield/quest content area and
+// is no longer interactive on its own.
+class _ChestFoundContent extends StatelessWidget {
+  final Rarity rarity;
+  final VoidCallback onOpen;
+
+  const _ChestFoundContent({required this.rarity, required this.onOpen});
+
+  @override
+  Widget build(BuildContext context) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text('Found a chest!',
+            style: QvTextStyles.heading.copyWith(color: colorScheme.onSurface)),
+        const SizedBox(height: 14),
+        QvButton(
+          width: double.infinity,
+          height: 44,
+          buttonColor: ButtonColor.primary,
+          onTap: onOpen,
+          child: Center(
+            child: Text('Open',
+                style:
+                    QvTextStyles.title.copyWith(color: colorScheme.secondary)),
+          ),
         ),
       ],
     );

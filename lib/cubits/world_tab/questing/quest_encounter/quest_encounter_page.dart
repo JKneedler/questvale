@@ -157,6 +157,19 @@ class _QuestEncounterViewState extends State<QuestEncounterView> {
                 QuestStatus.encounterInProgress &&
             (questState.encounter?.encounterType.isCombatEncounter() ?? false);
 
+        // Same shape as isLiveCombat, for the chest-encounter equivalent of
+        // that state — used to feed QuestVitalsAndSkillsCard's own
+        // chestRarity/onOpenChest below (see its doc comment on those).
+        final isChestEncounter = questState.questStatus ==
+                QuestStatus.encounterInProgress &&
+            (questState.encounter?.encounterType.isChestEncounter() ?? false);
+        final chestRarity = isChestEncounter
+            ? (questState.encounter?.chestRarity ?? Rarity.common)
+            : null;
+        final onOpenChest = isChestEncounter
+            ? () => context.read<QuestEncounterCubit>().completeEncounter()
+            : null;
+
         final playerState = context.watch<PlayerCubit>().state;
         final character = playerState.character;
         final playerSkills = playerState.playerSkills;
@@ -187,6 +200,8 @@ class _QuestEncounterViewState extends State<QuestEncounterView> {
                     mageMotes: playerState.mageMotes,
                     playerSkills: playerSkills,
                     combatState: null,
+                    chestRarity: chestRarity,
+                    onOpenChest: onOpenChest,
                   );
 
         Widget body = MultiBlocListener(
