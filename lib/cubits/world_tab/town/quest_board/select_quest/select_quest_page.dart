@@ -218,7 +218,7 @@ class SelectQuestZoneCard extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   image: DecorationImage(
                                     centerSlice: STANDARD_BORDER_SLICE,
-                                    image: AssetImage(
+                                    image: jkAsset(
                                       'images/ui/buttons/$themeId/button-primary.png',
                                     ),
                                   ),
@@ -253,7 +253,7 @@ class SelectQuestZoneCard extends StatelessWidget {
                 ),
                 foregroundDecoration: BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage(
+                    image: jkAsset(
                         'images/ui/borders/$themeId/border-primary.png'),
                     centerSlice: STANDARD_BORDER_SLICE,
                     fit: BoxFit.fill,

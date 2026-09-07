@@ -14,6 +14,11 @@ class ArcaneBolt extends BaseActiveSkill {
   String get description => data.description
       .replaceAll('x%', percentText(data.damageEffect?.valueAtLevel(level)));
 
+  @override
+  String combatDescription(PlayerCombatStats playerCombatStats) =>
+      data.description
+          .replaceAll('x%', '${realDamageAmount(playerCombatStats)}');
+
   // Deliberately mote-free (see SkillData.moteInteraction on this skill's
   // data) — context.moteResult is always MoteInteractionResult.none for
   // Arcane Bolt, so context is unused here. Also the class's 0-cooldown

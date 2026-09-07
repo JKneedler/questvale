@@ -61,7 +61,7 @@ class QvSkillButton extends StatelessWidget {
                     child: Container(
                       foregroundDecoration: BoxDecoration(
                         image: DecorationImage(
-                          image: AssetImage(skillButtonColor.borderImagePath),
+                          image: jkAsset(skillButtonColor.borderImagePath),
                           centerSlice: STANDARD_BORDER_SLICE,
                           fit: BoxFit.fill,
                           filterQuality: FilterQuality.none,

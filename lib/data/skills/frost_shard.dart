@@ -29,6 +29,11 @@ class FrostShard extends BaseActiveSkill {
   String get description => data.description
       .replaceAll('x%', percentText(data.damageEffect?.valueAtLevel(level)));
 
+  @override
+  String combatDescription(PlayerCombatStats playerCombatStats) =>
+      data.description
+          .replaceAll('x%', '${realDamageAmount(playerCombatStats)}');
+
   // Ice's mote generator, symmetric with Firebolt. Slow's 20% proc chance
   // (the statusEffectChance component tagged slow) is the reference
   // rate-modifier case for the Skill System Foundations ticket's
@@ -41,13 +46,14 @@ class FrostShard extends BaseActiveSkill {
       PlayerCombatStats playerCombatStats,
       List<Enemy> targettedEnemies,
       SkillCastContext context) async {
-    final damageResults =
-        await basicEnemyDamage(combatService, playerCombatStats, targettedEnemies);
+    final damageResults = await basicEnemyDamage(
+        combatService, playerCombatStats, targettedEnemies);
     if (targettedEnemies.isEmpty || damageResults.isEmpty) return;
     if (damageResults.first.didKill) return;
 
     final procChance = data.statusEffectChances
-            .firstWhereOrNull((e) => e.statusEffectType == StatusEffectType.slow)
+            .firstWhereOrNull(
+                (e) => e.statusEffectType == StatusEffectType.slow)
             ?.valueAtLevel(level) ??
         0;
     if (random.nextDouble() >= procChance) return;

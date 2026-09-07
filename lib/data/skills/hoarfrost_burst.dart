@@ -15,6 +15,18 @@ class HoarfrostBurst extends BaseActiveSkill {
   String get description => data.description
       .replaceAll('x%', percentText(data.damageEffect?.valueAtLevel(level)));
 
+  // The template only carries one 'x%' placeholder but this skill has two
+  // independent per-mote magnitudes (damage and shield), so it's rewritten
+  // wholesale rather than reused via replaceAll — same real per-mote
+  // amounts basicEnemyDamage/applyShield's multipliers use in execute()
+  // below.
+  @override
+  String combatDescription(PlayerCombatStats playerCombatStats) =>
+      'Detonates every banked Ice mote on a single enemy, dealing '
+      '${realDamageAmount(playerCombatStats)} Ice Damage and granting a '
+      '${realShieldAmount(playerCombatStats)} HP shield, both per mote '
+      'consumed.';
+
   // Ice's mote payoff, symmetric with Ember Burst — damage scales with
   // Ice motes consumed (see EmberBurst's doc comment for the 0-consumed
   // case). The shield half (the shield-kind effect component, per mote

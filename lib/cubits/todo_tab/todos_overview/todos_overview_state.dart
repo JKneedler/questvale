@@ -86,6 +86,14 @@ class TodosOverviewState extends Equatable {
   // Empty (not just absent) when not in combat.
   final Map<String, ScheduledTimer> enemyAttackTimers;
 
+  // Real skill-cooldown timers for the current encounter, keyed by skill id
+  // (BaseActiveSkill.id / SkillData.id) — loaded alongside enemyAttackTimers
+  // in TodosOverviewCubit.loadCharacter. Empty when not in combat — see
+  // CombatService.buildCooldownTimer's doc comment: a cooldown timer is
+  // scoped to the encounter it was armed in, so it's cleared along with
+  // that encounter's other timers once the encounter ends.
+  final Map<String, ScheduledTimer> skillCooldowns;
+
   // Total HP just lost to enemy attacks resolved by the most recent
   // loadCharacter() call — null when that call resolved no attacks. A
   // BlocListener uses this to fire a one-shot damage-taken toast; it's not
@@ -106,6 +114,7 @@ class TodosOverviewState extends Equatable {
     this.activeEncounter,
     this.activeQuestZone,
     this.enemyAttackTimers = const {},
+    this.skillCooldowns = const {},
     this.lastEnemyDamageTaken,
   });
 
@@ -132,6 +141,7 @@ class TodosOverviewState extends Equatable {
       activeEncounter: activeEncounter,
       activeQuestZone: activeQuestZone,
       enemyAttackTimers: enemyAttackTimers,
+      skillCooldowns: skillCooldowns,
       lastEnemyDamageTaken: lastEnemyDamageTaken,
     );
   }
@@ -147,6 +157,8 @@ class TodosOverviewState extends Equatable {
       .firstWhereOrNull((data) => data.id == enemy.enemyDataId);
 
   ScheduledTimer? attackTimerFor(Enemy enemy) => enemyAttackTimers[enemy.id];
+
+  ScheduledTimer? skillCooldownFor(String skillId) => skillCooldowns[skillId];
 
   // "Today"/"This Week" are scoped by due date but don't hide completed
   // items — per the design, completion only dims a row; only the active
@@ -252,6 +264,7 @@ class TodosOverviewState extends Equatable {
         activeEncounter,
         activeQuestZone,
         enemyAttackTimers,
+        skillCooldowns,
         lastEnemyDamageTaken,
       ];
 }

@@ -22,6 +22,38 @@ abstract class BaseActiveSkill {
   // string.
   String percentText(double? value) => '${((value ?? 0) * 100).round()}%';
 
+  // Same template `description` renders, but with the real, already-
+  // computed final amount substituted for the level-scaled percentage —
+  // used specifically by the combat screen's skill-target view
+  // (QuestVitalsAndSkillsCard's _SkillTargetContent), where (unlike the
+  // Skills Gear-Up/upgrade screen `description` itself is written for,
+  // which has no caster to compute real stats against yet) the actual
+  // number a cast will deal/grant is fully knowable ahead of casting.
+  // Default falls back to `description` verbatim; only skills with a real
+  // damage/shield component need to override it — see each subclass.
+  String combatDescription(PlayerCombatStats playerCombatStats) => description;
+
+  // Shared rounding helper for combatDescription overrides — the same
+  // math basicEnemyDamage/CombatService.applyDamage ultimately run
+  // (valueAtLevel * attackPowerFor(damageType)), so a shown number can't
+  // drift from what actually lands when the skill is cast.
+  int realDamageAmount(PlayerCombatStats playerCombatStats) {
+    final damage = data.damageEffect;
+    if (damage == null) return 0;
+    return (damage.valueAtLevel(level) *
+            playerCombatStats
+                .attackPowerFor(damage.damageType ?? SkillDamageType.physical))
+        .round();
+  }
+
+  // Shared rounding helper mirroring StatusEffectService.applyShield's own
+  // magnitude math (see FrostArmor/HoarfrostBurst's execute()).
+  int realShieldAmount(PlayerCombatStats playerCombatStats) {
+    final shield = data.shieldEffect;
+    if (shield == null) return 0;
+    return (shield.valueAtLevel(level) * playerCombatStats.maxHealth).round();
+  }
+
   // context is everything CombatService.castSkill already resolved before
   // execute() ever runs — AP was checked/spent, the cooldown was checked/
   // armed, and the caster's class resource (Mote generation/consumption for
@@ -41,9 +73,9 @@ abstract class BaseActiveSkill {
   // Hoarfrost Burst) pass a multiplier computed from motesConsumed instead
   // of the flat data.damageEffect.baseValue every other skill uses as-is.
   Future<List<DamageResult>> basicEnemyDamage(
-      CombatService combatService,
-      PlayerCombatStats playerCombatStats,
-      List<Enemy> enemies, {
+    CombatService combatService,
+    PlayerCombatStats playerCombatStats,
+    List<Enemy> enemies, {
     double? damageMultiplierOverride,
   }) async {
     final damageEffect = data.damageEffect;
@@ -52,8 +84,9 @@ abstract class BaseActiveSkill {
       if (data.targetingType == SkillTargetingType.singleEnemy && i != 0) break;
 
       final damageData = DamageData(
-          damageMultiplier:
-              damageMultiplierOverride ?? damageEffect?.valueAtLevel(level) ?? 1,
+          damageMultiplier: damageMultiplierOverride ??
+              damageEffect?.valueAtLevel(level) ??
+              1,
           damageType: damageEffect?.damageType ?? SkillDamageType.physical);
       final damageResult = await combatService.applyDamage(
           damageData, playerCombatStats, enemies[i].id);

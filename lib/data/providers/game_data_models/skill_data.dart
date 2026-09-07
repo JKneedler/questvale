@@ -64,6 +64,21 @@ enum SkillDamageType {
         SkillDamageType.ice: 'Ice',
         SkillDamageType.poison: 'Poison',
       }[this]!;
+
+  // Same hex values as DamageType's own colors (helpers/shared_enums.dart)
+  // — kept independent rather than reusing that enum, same reasoning as
+  // MoteElement's own doc comment (this skill-effect notion of "damage
+  // type" and that one are conceptually distinct even where the values
+  // overlap). weaponType has no single fixed color (it's whatever's
+  // equipped), so it's the one case with nothing to highlight it with —
+  // callers should treat a null color as "don't highlight this".
+  Color? get color => {
+        SkillDamageType.weaponType: null,
+        SkillDamageType.physical: const Color(0xffD4A373),
+        SkillDamageType.fire: const Color(0xffFF6B3D),
+        SkillDamageType.ice: const Color(0xff3DA9FF),
+        SkillDamageType.poison: const Color(0xff9BDB3B),
+      }[this];
 }
 
 // What a skill does to the caster's Mote bank on a successful cast — see
@@ -215,8 +230,9 @@ class SkillData {
   SkillEffectComponent? get shieldEffect =>
       effects.firstWhereOrNull((e) => e.kind == SkillEffectKind.shield);
 
-  List<SkillEffectComponent> get statusEffectChances =>
-      effects.where((e) => e.kind == SkillEffectKind.statusEffectChance).toList();
+  List<SkillEffectComponent> get statusEffectChances => effects
+      .where((e) => e.kind == SkillEffectKind.statusEffectChance)
+      .toList();
 
   List<SkillEffectComponent> get statModifierEffects =>
       effects.where((e) => e.kind == SkillEffectKind.statModifier).toList();
@@ -243,7 +259,8 @@ class SkillData {
           : null,
       effects: json['effects'] != null
           ? (json['effects'] as List<dynamic>)
-              .map((e) => SkillEffectComponent.fromJson(e as Map<String, dynamic>))
+              .map((e) =>
+                  SkillEffectComponent.fromJson(e as Map<String, dynamic>))
               .toList()
           : const [],
       moteInteraction: json['moteInteraction'] != null

@@ -76,7 +76,7 @@ class QvEnemyInfoModal extends StatelessWidget {
                                 padding: const EdgeInsets.only(left: 16),
                                 decoration: BoxDecoration(
                                   image: DecorationImage(
-                                    image: AssetImage(
+                                    image: jkAsset(
                                         enemyData.rarity.buttonAssetPath),
                                     centerSlice: STANDARD_BORDER_SLICE,
                                     fit: BoxFit.fill,
@@ -282,7 +282,7 @@ class QvEnemyInfoModal extends StatelessWidget {
                                   height: enemyData.attacks.length * 53,
                                   decoration: BoxDecoration(
                                     image: DecorationImage(
-                                      image: AssetImage(
+                                      image: jkAsset(
                                         'images/ui/backgrounds/$themeId/background-secondary.png',
                                       ),
                                       centerSlice: STANDARD_BORDER_SLICE,
@@ -355,7 +355,7 @@ class QvEnemyInfoModal extends StatelessWidget {
                 child: Container(
                   foregroundDecoration: BoxDecoration(
                     image: DecorationImage(
-                      image: AssetImage(
+                      image: jkAsset(
                           'images/ui/borders/$themeId/border-primary-metal-edge.png'),
                       centerSlice: METAL_CORNER_BORDER_SLICE,
                       fit: BoxFit.fill,
@@ -434,7 +434,7 @@ class ElementsView extends StatelessWidget {
             height: height,
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage(
+                image: jkAsset(
                     'images/ui/backgrounds/$themeId/background-secondary.png'),
                 centerSlice: Rect.fromLTWH(16, 16, 32, 32),
                 fit: BoxFit.fill,
@@ -591,7 +591,7 @@ class EnemyDropView extends StatelessWidget {
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage(
+                    image: jkAsset(
                         'images/ui/backgrounds/$themeId/background-surface.png'),
                     centerSlice: STANDARD_BORDER_SLICE,
                     fit: BoxFit.fill,
