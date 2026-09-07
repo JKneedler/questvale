@@ -427,7 +427,6 @@ class _EnemyDetailContent extends StatelessWidget {
           width: double.infinity,
           height: 40,
           buttonColor: ButtonColor.surfaceContainer,
-          size: QvBarSize.small,
           onTap: () => context.read<CombatCubit>().setIdle(),
           child: Center(
             child: Icon(Symbols.close, color: colorScheme.onSurface, size: 24),
@@ -603,7 +602,6 @@ class _PlayerDetailContent extends StatelessWidget {
           width: double.infinity,
           height: 40,
           buttonColor: ButtonColor.surfaceContainer,
-          size: QvBarSize.small,
           onTap: () => context.read<CombatCubit>().setIdle(),
           child: Center(
             child: Icon(Symbols.close, color: colorScheme.onSurface, size: 24),
@@ -973,7 +971,6 @@ class _SkillTargetContentState extends State<_SkillTargetContent> {
               child: QvButton(
                 height: 40,
                 buttonColor: ButtonColor.surfaceContainer,
-                size: QvBarSize.small,
                 onTap: () => context.read<CombatCubit>().setIdle(),
                 child: Center(
                   child: Icon(Symbols.close,
@@ -985,7 +982,6 @@ class _SkillTargetContentState extends State<_SkillTargetContent> {
               child: QvButton(
                 height: 40,
                 buttonColor: ButtonColor.primary,
-                size: QvBarSize.small,
                 darkened: onCooldown,
                 // Passing null (rather than a no-op closure) also drops
                 // QvButton's own press-down animation, so a cooling-down

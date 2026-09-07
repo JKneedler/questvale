@@ -115,7 +115,6 @@ class _CombatActionBar extends StatelessWidget {
             child: QvButton(
               height: _buttonHeight,
               buttonColor: ButtonColor.surfaceContainer,
-              size: QvBarSize.small,
               onTap: () => context.read<CombatCubit>().onFleeButtonTap(),
               child: Center(
                 child: Image.asset(
@@ -132,7 +131,6 @@ class _CombatActionBar extends StatelessWidget {
             child: QvButton(
               height: _buttonHeight,
               buttonColor: ButtonColor.surfaceContainer,
-              size: QvBarSize.small,
               child: Center(
                 child: Image.asset(
                   'images/pixel-icons/potion-star.png',
@@ -148,7 +146,6 @@ class _CombatActionBar extends StatelessWidget {
             child: QvButton(
               height: _buttonHeight,
               buttonColor: ButtonColor.surfaceContainer,
-              size: QvBarSize.small,
               child: Center(
                 child: Image.asset(
                   'images/pixel-icons/bag.png',
